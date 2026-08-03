@@ -178,8 +178,8 @@
                 <el-option label="有" value="有" />
               </el-select>
             </el-form-item>
-            <el-form-item label="残疾等级">
-              <el-select v-model="singleForm.disabilityLevel" placeholder="请选择残疾等级">
+            <el-form-item label="残疾种类及等级">
+              <el-select v-model="singleForm.disabilityLevel" placeholder="请选择残疾种类及等级">
                 <el-option label="无" value="" />
                 <el-option label="一级" value="一级" />
                 <el-option label="二级" value="二级" />

@@ -143,7 +143,7 @@ const submitVisit = () => {
 }
 
 const goBack = () => {
-  router.push('/mobile/tasks')
+  router.push('/mobile/checkin')
 }
 </script>
 

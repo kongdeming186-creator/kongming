@@ -3,9 +3,13 @@
     <div class="page-header">
       <div class="page-title-wrapper">
         <h2 class="page-title">居民列表</h2>
-        <p class="page-subtitle">共 {{ totalCount }} 位居民，{{ tagTotalCount }} 个有效标签</p>
+        <p class="page-subtitle">共 {{ totalCount }} 位居民，{{ guaranteeCount }} 位保障人口</p>
       </div>
       <div class="header-actions">
+        <el-button type="info" @click="goToHistoryResident">
+          <el-icon><Clock /></el-icon>
+          历史居民
+        </el-button>
         <el-button type="primary" @click="showImportDialog = true">
           <el-icon><Upload /></el-icon>
           批量导入
@@ -17,7 +21,6 @@
       </div>
     </div>
 
-    <!-- 统计卡片 -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-icon blue"><el-icon><User /></el-icon></div>
@@ -27,10 +30,10 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon green"><el-icon><CircleCheck /></el-icon></div>
+        <div class="stat-icon green"><el-icon><Medal /></el-icon></div>
         <div class="stat-info">
-          <span class="stat-value">{{ residents.filter(r => r.survivalStatus === '在世').length }}</span>
-          <span class="stat-label">在世人数</span>
+          <span class="stat-value">{{ guaranteeCount }}</span>
+          <span class="stat-label">保障人口</span>
         </div>
       </div>
       <div class="stat-card">
@@ -50,7 +53,6 @@
     </div>
 
     <div class="content-card">
-      <!-- 高级搜索栏 -->
       <div class="search-bar">
         <div class="search-row">
           <div class="search-item">
@@ -74,8 +76,8 @@
             </el-select>
           </div>
           <div class="search-item">
-            <el-select v-model="searchForm.tagType" placeholder="标签类型" style="width: 130px" clearable>
-              <el-option v-for="t in tagTypes" :key="t" :label="t" :value="t" />
+            <el-select v-model="searchForm.personType" placeholder="人员类别" style="width: 120px" clearable>
+              <el-option v-for="p in personTypes" :key="p" :label="p" :value="p" />
             </el-select>
           </div>
           <div class="search-item search-actions">
@@ -85,36 +87,11 @@
           </div>
         </div>
         <div v-if="showAdvanced" class="search-row advanced">
-          <div class="search-item">
-            <el-select v-model="searchForm.hasWarning" placeholder="预警状态" style="width: 120px" clearable>
-              <el-option label="有预警" :value="true" />
-              <el-option label="无预警" :value="false" />
-            </el-select>
-          </div>
-          <div class="search-item">
-            <el-select v-model="searchForm.disabilityLevel" placeholder="残疾等级" style="width: 120px" clearable>
-              <el-option label="无残疾" value="" />
-              <el-option label="一级" value="一级" />
-              <el-option label="二级" value="二级" />
-              <el-option label="三级" value="三级" />
-              <el-option label="四级" value="四级" />
-            </el-select>
-          </div>
-          <div class="search-item">
-            <el-select v-model="searchForm.ageRange" placeholder="年龄范围" style="width: 130px" clearable>
-              <el-option label="0-17岁" value="0-17" />
-              <el-option label="18-59岁" value="18-59" />
-              <el-option label="60-79岁" value="60-79" />
-              <el-option label="80岁以上" value="80+" />
-            </el-select>
-          </div>
-          <div class="search-item">
-            <el-select v-model="searchForm.personType" placeholder="人员类别" style="width: 120px" clearable>
-              <el-option v-for="p in personTypes" :key="p" :label="p" :value="p" />
-            </el-select>
-          </div>
-          <div class="search-item">
-            <el-input-number v-model="searchForm.familyCountMin" :min="0" :max="20" placeholder="家庭人口≥" style="width: 110px" />
+          <div class="search-item tag-filter-item">
+            <span class="filter-label">保障类型(多选)：</span>
+            <el-checkbox-group v-model="searchForm.selectedTagTypes">
+              <el-checkbox v-for="t in guaranteeTagTypes" :key="t" :label="t" size="default">{{ t }}</el-checkbox>
+            </el-checkbox-group>
           </div>
         </div>
       </div>
@@ -155,40 +132,30 @@
               <span v-else class="no-warning">--</span>
             </template>
           </el-table-column>
-          <el-table-column label="标签信息" min-width="180">
+          <el-table-column label="保障信息" min-width="200">
             <template #default="scope">
-              <div class="tag-info-cell">
-                <div class="tag-count">
-                  <span class="count-num">{{ getResidentTags(scope.row.id).length }}</span>
-                  <span class="count-label">个</span>
-                </div>
-                <div class="tag-list">
-                  <el-tag v-for="tag in getResidentTags(scope.row.id).slice(0, 3)" :key="tag.id"
-                    :type="getTagType(tag.tagType)" size="small" effect="light" class="tag-item">
-                    {{ tag.tagType }}
-                  </el-tag>
-                  <el-tooltip v-if="getResidentTags(scope.row.id).length > 3" placement="top">
-                    <template #content>
-                      <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <span v-for="tag in getResidentTags(scope.row.id)" :key="tag.id">
-                          {{ tag.tagType }} - {{ tag.tagSubType }}
-                        </span>
-                      </div>
-                    </template>
-                    <span class="tag-more">+{{ getResidentTags(scope.row.id).length - 3 }}</span>
-                  </el-tooltip>
-                  <span v-if="getResidentTags(scope.row.id).length === 0" class="no-tag">暂无</span>
-                </div>
+              <div v-if="getResidentLevel1Tags(scope.row.id).length > 0" class="guarantee-tags">
+                <el-tag
+                  v-for="tagType in getResidentLevel1Tags(scope.row.id)"
+                  :key="tagType"
+                  :type="getTagType(tagType)"
+                  size="small"
+                  effect="light"
+                  class="guarantee-tag"
+                  @click="scrollToGuarantee(tagType)">
+                  {{ tagType }}
+                </el-tag>
               </div>
+              <span v-else class="no-tag">暂无</span>
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" width="100" />
-          <el-table-column label="操作" width="130" fixed="right" align="center">
+          <el-table-column label="操作" width="160" fixed="right" align="center">
             <template #default="scope">
               <div class="action-buttons">
                 <el-button type="primary" link size="small" @click="goToDetail(scope.row.id)">详情</el-button>
                 <el-button type="success" link size="small" @click="editResident(scope.row)">编辑</el-button>
-                <el-button type="danger" link size="small" @click="deleteResident(scope.row.id)">删除</el-button>
+                <el-button type="warning" link size="small" @click="refreshResident(scope.row)">刷新</el-button>
               </div>
             </template>
           </el-table-column>
@@ -202,7 +169,6 @@
       </div>
     </div>
 
-    <!-- 新增居民弹窗 -->
     <el-dialog title="新增居民" v-model="showAddDialog" width="600px" destroy-on-close>
       <el-form :model="addForm" :rules="addRules" ref="addFormRef" label-width="100px">
         <el-row :gutter="20">
@@ -252,7 +218,6 @@
       </template>
     </el-dialog>
 
-    <!-- 批量导入弹窗 -->
     <el-dialog title="批量导入" v-model="showImportDialog" width="500px" destroy-on-close>
       <div class="import-content">
         <div class="import-tip">
@@ -274,7 +239,6 @@
       </template>
     </el-dialog>
 
-    <!-- 家庭成员弹窗 -->
     <el-dialog :title="`${selectedResident?.name || ''} 的家庭成员`" v-model="showFamilyDialogVisible" width="500px">
       <div v-if="selectedResident" class="family-dialog-content">
         <div class="family-header">
@@ -306,7 +270,7 @@
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Upload, Plus, Refresh, Download, Warning, UploadFilled, User, CircleCheck, PriceTag } from '@element-plus/icons-vue'
+import { Search, Upload, Plus, Refresh, Download, Warning, UploadFilled, User, Medal, PriceTag, Clock } from '@element-plus/icons-vue'
 import { residents as mockResidents, tags, communities, grids, survivalStatus, tagTypes, personTypes, warnings } from '../../data/mock'
 
 const router = useRouter()
@@ -316,9 +280,15 @@ const showAdvanced = ref(false)
 const showFamilyDialogVisible = ref(false)
 const selectedResident = ref(null)
 
+const guaranteeTagTypes = ['低保', '残疾', '公租房', '老年', '计生', '社保', '重症', '涉军', '支农返汉', '困境儿童']
+
 const searchForm = reactive({
-  keyword: '', community: '', grid: '', survivalStatus: '', tagType: '',
-  hasWarning: '', disabilityLevel: '', ageRange: '', personType: '', familyCountMin: ''
+  keyword: '',
+  community: '',
+  grid: '',
+  survivalStatus: '',
+  personType: '',
+  selectedTagTypes: []
 })
 
 const currentPage = ref(1)
@@ -334,6 +304,18 @@ const addRules = {
 
 const totalCount = computed(() => residents.value.length)
 const tagTotalCount = computed(() => tags.length)
+
+const guaranteeCount = computed(() => {
+  const idCardSet = new Set()
+  tags.forEach(t => {
+    if (guaranteeTagTypes.includes(t.tagType)) {
+      const r = residents.value.find(r => r.id === t.residentId)
+      if (r) idCardSet.add(r.idCard)
+    }
+  })
+  return idCardSet.size
+})
+
 const residentsWithWarning = computed(() => {
   const warnedIds = new Set(warnings.map(w => w.residentId))
   return residents.value.filter(r => warnedIds.has(r.id))
@@ -348,23 +330,13 @@ const filteredResidents = computed(() => {
   if (searchForm.community) result = result.filter(r => r.community === searchForm.community)
   if (searchForm.grid) result = result.filter(r => r.grid === searchForm.grid)
   if (searchForm.survivalStatus) result = result.filter(r => r.survivalStatus === searchForm.survivalStatus)
-  if (searchForm.tagType) {
-    const residentIdsWithTag = tags.filter(t => t.tagType === searchForm.tagType).map(t => t.residentId)
-    result = result.filter(r => residentIdsWithTag.includes(r.id))
-  }
-  if (searchForm.hasWarning !== '') {
-    const warnedIds = new Set(warnings.map(w => w.residentId))
-    result = result.filter(r => searchForm.hasWarning ? warnedIds.has(r.id) : !warnedIds.has(r.id))
-  }
-  if (searchForm.disabilityLevel !== '') {
-    result = result.filter(r => r.disabilityLevel === searchForm.disabilityLevel)
-  }
-  if (searchForm.ageRange) {
-    const [min, max] = searchForm.ageRange === '80+' ? [80, 200] : searchForm.ageRange.split('-').map(Number)
-    result = result.filter(r => r.age >= min && r.age <= max)
-  }
   if (searchForm.personType) result = result.filter(r => r.personType === searchForm.personType)
-  if (searchForm.familyCountMin !== '') result = result.filter(r => (r.familyCount || 0) >= searchForm.familyCountMin)
+  if (searchForm.selectedTagTypes && searchForm.selectedTagTypes.length > 0) {
+    result = result.filter(r => {
+      const residentTagTypes = new Set(tags.filter(t => t.residentId === r.id).map(t => t.tagType))
+      return searchForm.selectedTagTypes.every(t => residentTagTypes.has(t))
+    })
+  }
   return result
 })
 
@@ -374,6 +346,11 @@ const pagedResidents = computed(() => {
 })
 
 const getResidentTags = (residentId) => tags.filter(t => t.residentId === residentId)
+const getResidentLevel1Tags = (residentId) => {
+  const tagTypes = new Set()
+  tags.filter(t => t.residentId === residentId).forEach(t => tagTypes.add(t.tagType))
+  return Array.from(tagTypes)
+}
 const getResidentWarnings = (residentId) => warnings.filter(w => w.residentId === residentId)
 
 const maskIdCard = (idCard) => idCard ? idCard.slice(0, 6) + '********' + idCard.slice(-4) : ''
@@ -384,7 +361,9 @@ const getTagType = (type) => ({
 }[type] || 'info')
 
 const goToDetail = (id) => router.push(`/resident/detail/${id}`)
+const goToHistoryResident = () => router.push('/resident/history')
 const editResident = (row) => ElMessage.info(`编辑居民: ${row.name}`)
+const refreshResident = (row) => ElMessage.info(`刷新居民数据: ${row.name}`)
 const deleteResident = (id) => {
   ElMessageBox.confirm('确定要删除该居民吗？删除后不可恢复。', '删除确认', { type: 'warning' }).then(() => {
     residents.value = residents.value.filter(r => r.id !== id)
@@ -393,7 +372,7 @@ const deleteResident = (id) => {
 }
 const handleSearch = () => { currentPage.value = 1 }
 const handleReset = () => {
-  Object.keys(searchForm).forEach(k => searchForm[k] = '')
+  Object.keys(searchForm).forEach(k => searchForm[k] = k === 'selectedTagTypes' ? [] : '')
   currentPage.value = 1
 }
 const handleSizeChange = (size) => { pageSize.value = size }
@@ -401,7 +380,7 @@ const handleCurrentChange = (page) => { currentPage.value = page }
 const handleAdd = () => {
   addFormRef.value?.validate((valid) => {
     if (valid) {
-      residents.value.unshift({ id: String(Date.now()), ...addForm, personType: '普通居民', politicalStatus: '群众', education: '', maritalStatus: '', householdAddress: '', residenceAddress: '', survivalStatus: '在世', disabilityLevel: '', workUnit: '', retirementType: '', criminalRecord: '无', familyCount: 1, createTime: new Date().toISOString().split('T')[0] })
+      residents.value.unshift({ id: String(Date.now()), ...addForm, personType: '常住', politicalStatus: '群众', education: '', maritalStatus: '', householdAddress: '', residenceAddress: '', survivalStatus: '在世', disabilityLevel: '', workUnit: '', retirementType: '', criminalRecord: '无', familyCount: 1, createTime: new Date().toISOString().split('T')[0] })
       showAddDialog.value = false
       ElMessage.success('新增成功')
       addFormRef.value?.resetFields()
@@ -412,6 +391,9 @@ const downloadTemplate = () => ElMessage.info('模板下载功能开发中')
 const triggerUpload = () => ElMessage.info('文件上传功能开发中')
 const handleImport = () => { showImportDialog.value = false; ElMessage.success('导入成功') }
 const showFamilyDialog = (row) => { selectedResident.value = row; showFamilyDialogVisible.value = true }
+const scrollToGuarantee = (tagType) => {
+  ElMessage.info(`定位到保障类型：${tagType}`)
+}
 </script>
 
 <style scoped>
@@ -438,15 +420,13 @@ const showFamilyDialog = (row) => { selectedResident.value = row; showFamilyDial
 .search-row.advanced { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e5e7eb; }
 .search-item { flex-shrink: 0; }
 .search-actions { margin-left: auto; display: flex; gap: 8px; }
+.tag-filter-item { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
+.filter-label { font-size: 13px; color: #6b7280; font-weight: 500; flex-shrink: 0; }
 
 .table-wrapper { overflow-x: auto; }
-.tag-info-cell { display: flex; align-items: center; gap: 10px; }
-.tag-count { display: flex; flex-direction: column; align-items: center; min-width: 36px; padding: 3px 6px; background: #f0f9ff; border-radius: 6px; }
-.count-num { font-size: 16px; font-weight: 600; color: #0ea5e9; line-height: 1.2; }
-.count-label { font-size: 10px; color: #0ea5e9; }
-.tag-list { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; min-width: 0; }
-.tag-item { flex-shrink: 0; }
-.tag-more { display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 6px; background: #f3f4f6; color: #6b7280; border-radius: 4px; font-size: 11px; cursor: pointer; }
+.guarantee-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.guarantee-tag { cursor: pointer; transition: all 0.2s; }
+.guarantee-tag:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .no-tag { font-size: 12px; color: #d1d5db; }
 .no-warning { font-size: 12px; color: #d1d5db; }
 .family-tag { cursor: pointer; }

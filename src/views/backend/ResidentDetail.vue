@@ -50,9 +50,20 @@
         </div>
       </div>
       <div class="overview-right">
-        <div class="stat-item">
-          <span class="stat-value">{{ residentTags.length }}</span>
-          <span class="stat-label">关联标签</span>
+        <div class="tag-quick-nav">
+          <div class="quick-nav-label">关联标签</div>
+          <div class="quick-nav-tags">
+            <el-tag
+              v-for="tag in residentTags"
+              :key="tag.id"
+              :type="getTagType(tag.tagType)"
+              effect="light"
+              size="small"
+              class="quick-nav-tag"
+              @click="scrollToTagCard(tag.id)">
+              {{ tag.tagSubType }}
+            </el-tag>
+          </div>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
@@ -117,7 +128,7 @@
           <span class="info-value">{{ resident.personType }}</span>
         </div>
         <div class="info-item">
-          <span class="info-label">残疾等级</span>
+          <span class="info-label">残疾种类及等级</span>
           <span class="info-value">{{ resident.disabilityLevel || '无' }}</span>
         </div>
         <div class="info-item">
@@ -171,27 +182,48 @@
       </div>
       
       <div v-if="residentTags.length > 0" class="benefit-info-container">
-        <div v-for="(group, tagType) in groupedTags" :key="tagType" class="benefit-group">
-          <div class="benefit-group-header">
+        <div class="benefit-tag-tabs">
+          <div
+            v-for="(group, tagType) in groupedTags"
+            :key="tagType"
+            :id="'tag-group-' + tagType"
+            class="benefit-tab-item"
+            :class="{ active: activeTagType === tagType }"
+            @click="toggleTagType(tagType)">
             <el-tag :type="getTagType(tagType)" effect="light" size="small">
               {{ tagType }}
             </el-tag>
-            <span class="benefit-group-title">{{ tagType }}</span>
-            <span class="benefit-group-count">{{ group.length }}项</span>
+            <span class="tab-label">{{ tagType }}</span>
+            <span class="tab-count">{{ group.length }}项</span>
+            <el-icon class="tab-arrow" :class="{ expanded: activeTagType === tagType }">
+              <ArrowDown />
+            </el-icon>
           </div>
-          <div class="benefit-cards">
-            <div v-for="tag in group" :key="tag.id" class="benefit-card">
-              <div class="benefit-card-header">
-                <span class="benefit-card-title">{{ tag.tagSubType }}</span>
+        </div>
+        
+        <div v-for="(group, tagType) in groupedTags" :key="'content-' + tagType" v-show="activeTagType === tagType" class="benefit-group-content">
+          <div v-if="tagType === '残疾' && disabilityGroupInfo.length > 0" class="group-base-info">
+            <div class="benefit-subtitle group-info-subtitle">残疾信息</div>
+            <div class="group-info-compact">
+              <div class="benefit-row">
+                <span class="benefit-label">残疾种类等级</span>
+                <span class="benefit-value highlight">{{ disabilityTypesDisplay }}</span>
+              </div>
+              <div class="benefit-row" v-if="disabilityCardsDisplay">
+                <span class="benefit-label">残疾证号</span>
+                <span class="benefit-value">{{ disabilityCardsDisplay }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="benefit-block-list">
+            <div v-for="tag in group" :key="tag.id" :id="'tag-card-' + tag.id" class="benefit-block">
+              <div class="benefit-block-header">
+                <span class="benefit-block-title">{{ tag.tagSubType }}</span>
                 <el-tag :type="tag.isEnjoy ? 'success' : 'info'" size="small" effect="plain">
                   {{ tag.isEnjoy ? '享受中' : '已停发' }}
                 </el-tag>
               </div>
-              <div class="benefit-card-body">
-                <div class="benefit-row">
-                  <span class="benefit-label">生效日期</span>
-                  <span class="benefit-value">{{ tag.effectiveDate }}</span>
-                </div>
+              <div class="benefit-block-body">
                 <div class="benefit-row">
                   <span class="benefit-label">失效日期</span>
                   <span class="benefit-value">{{ tag.expireDate || '长期有效' }}</span>
@@ -273,31 +305,9 @@
                 </template>
                 
                 <template v-else-if="tag.tagType === '残疾'">
-                  <div class="benefit-subsection">
-                    <div class="benefit-subtitle">残疾信息</div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">残疾种类</span>
-                      <span class="benefit-value">{{ tag.disabilityType || '肢体残疾' }}</span>
-                    </div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">残疾等级</span>
-                      <span class="benefit-value highlight">{{ tag.disabilityLevel || '二级' }}</span>
-                    </div>
-                    <div class="benefit-row" v-if="tag.disabilityCard">
-                      <span class="benefit-label">残疾证号</span>
-                      <span class="benefit-value">{{ tag.disabilityCard }}</span>
-                    </div>
-                    <div class="benefit-row" v-if="tag.cardExpireDate">
-                      <span class="benefit-label">证件有效期</span>
-                      <span class="benefit-value">{{ tag.cardExpireDate }}</span>
-                    </div>
-                  </div>
-                  <div class="benefit-subsection" v-if="tag.mutexNote">
-                    <div class="benefit-subtitle">互斥说明</div>
-                    <div class="benefit-row warning">
-                      <span class="benefit-label">注意</span>
-                      <span class="benefit-value">{{ tag.mutexNote }}</span>
-                    </div>
+                  <div class="benefit-row" v-if="tag.mutexNote">
+                    <span class="benefit-label">互斥说明</span>
+                    <span class="benefit-value warning-highlight">{{ tag.mutexNote }}</span>
                   </div>
                 </template>
                 
@@ -421,7 +431,7 @@
                   </div>
                 </template>
               </div>
-              <div class="benefit-card-footer">
+              <div class="benefit-block-footer">
                 <div class="footer-info">
                   <span class="info-text">{{ tag.operator || '网格员' }} | {{ tag.createTime }}</span>
                 </div>
@@ -479,9 +489,6 @@
             <el-option v-for="s in currentSubTypes" :key="s" :label="s" :value="s" />
           </el-select>
         </el-form-item>
-        <el-form-item label="生效日期">
-          <el-date-picker v-model="tagForm.effectiveDate" type="date" />
-        </el-form-item>
         <el-form-item label="失效日期">
           <el-date-picker v-model="tagForm.expireDate" type="date" />
         </el-form-item>
@@ -525,10 +532,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Plus, Check, Delete, User, Place } from '@element-plus/icons-vue'
+import { Edit, Plus, Check, Delete, User, Place, ArrowDown } from '@element-plus/icons-vue'
 import { residents, tags, tagTypes, tagSubTypes } from '../../data/mock'
 
 const router = useRouter()
@@ -539,7 +546,7 @@ const resident = ref(residents.find(r => r.id === residentId) || {})
 
 const showAddTagDialog = ref(false)
 const showFamilyMembers = ref(false)
-const activeTagNames = ref([])
+const activeTagType = ref('')
 
 const residentTags = computed(() => tags.filter(t => t.residentId === residentId))
 
@@ -552,6 +559,39 @@ const groupedTags = computed(() => {
     groups[tag.tagType].push(tag)
   })
   return groups
+})
+
+const disabilityGroupInfo = computed(() => {
+  const disabilityTags = residentTags.value.filter(t => t.tagType === '残疾')
+  if (disabilityTags.length === 0) return []
+  const seen = new Set()
+  const list = []
+  disabilityTags.forEach(t => {
+    const key = `${t.disabilityType}-${t.disabilityLevel}-${t.disabilityCard}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      list.push({
+        disabilityType: t.disabilityType,
+        disabilityLevel: t.disabilityLevel,
+        disabilityCard: t.disabilityCard
+      })
+    }
+  })
+  return list
+})
+
+const disabilityTypesDisplay = computed(() => {
+  const types = disabilityGroupInfo.value
+    .map(i => i.disabilityType && i.disabilityLevel ? `${i.disabilityType.replace('残疾', '')}${i.disabilityLevel}` : '')
+    .filter(v => v)
+  return [...new Set(types)].join('、')
+})
+
+const disabilityCardsDisplay = computed(() => {
+  const cards = disabilityGroupInfo.value
+    .map(i => i.disabilityCard)
+    .filter(v => v)
+  return [...new Set(cards)].join('、')
 })
 
 const pendingVerifyCount = computed(() => {
@@ -578,7 +618,6 @@ const handleEditResident = () => {
 const tagForm = reactive({
   tagType: '',
   tagSubType: '',
-  effectiveDate: '',
   expireDate: '',
   isEnjoy: true,
   subsidyAmount: ''
@@ -612,6 +651,40 @@ const goBack = () => {
   router.push('/resident')
 }
 
+const scrollToTagGroup = (tagType) => {
+  activeTagType.value = tagType
+  setTimeout(() => {
+    const el = document.getElementById('tag-group-' + tagType)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, 50)
+}
+
+const scrollToTagCard = (tagId) => {
+  const tag = residentTags.value.find(t => t.id === tagId)
+  if (tag) {
+    activeTagType.value = tag.tagType
+  }
+  setTimeout(() => {
+    const el = document.getElementById('tag-card-' + tagId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, 50)
+}
+
+const toggleTagType = (tagType) => {
+  activeTagType.value = activeTagType.value === tagType ? '' : tagType
+}
+
+watch(groupedTags, (groups) => {
+  const types = Object.keys(groups)
+  if (types.length > 0 && !activeTagType.value) {
+    activeTagType.value = types[0]
+  }
+}, { immediate: true })
+
 const onTagTypeChange = () => {
   tagForm.tagSubType = ''
 }
@@ -623,7 +696,6 @@ const handleVerify = (tag) => {
 const editTag = (tag) => {
   tagForm.tagType = tag.tagType
   tagForm.tagSubType = tag.tagSubType
-  tagForm.effectiveDate = tag.effectiveDate
   tagForm.expireDate = tag.expireDate
   tagForm.isEnjoy = tag.isEnjoy
   tagForm.subsidyAmount = tag.subsidyAmount
@@ -763,6 +835,34 @@ const handleAddTag = () => {
   flex-shrink: 0;
 }
 
+.tag-quick-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+}
+
+.quick-nav-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.quick-nav-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-nav-tag {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.quick-nav-tag:hover {
+  transform: translateY(-1px);
+  opacity: 0.9;
+}
+
 .stat-divider {
   width: 1px;
   height: 36px;
@@ -900,68 +1000,158 @@ const handleAddTag = () => {
 .benefit-info-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
-.benefit-group {
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 16px;
+.benefit-tag-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 4px 0;
 }
 
-.benefit-group-header {
+.benefit-tab-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 6px;
+  padding: 6px 18px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.benefit-group-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #1f2937;
+.benefit-tab-item:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
 }
 
-.benefit-group-count {
+.benefit-tab-item.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.tab-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.benefit-tab-item:hover .tab-label {
+  color: #3b82f6;
+}
+
+.benefit-tab-item.active .tab-label {
+  color: #fff;
+}
+
+.tab-count {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.benefit-tab-item.active .tab-count {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.tab-arrow {
   font-size: 12px;
   color: #9ca3af;
-  background: #fff;
-  padding: 2px 8px;
-  border-radius: 10px;
+  transition: transform 0.2s ease;
 }
 
-.benefit-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 14px;
+.benefit-tab-item.active .tab-arrow {
+  color: #fff;
 }
 
-.benefit-card {
+.tab-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.benefit-group-content {
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.group-base-info {
   background: #fff;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  padding: 12px 16px;
+  margin-bottom: 12px;
 }
 
-.benefit-card-header {
+.group-info-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  padding-left: 8px;
+  border-left: 3px solid #3b82f6;
+  margin-bottom: 8px;
+}
+
+.group-info-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.benefit-block-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.benefit-block {
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 14px 18px;
+}
+
+.benefit-block-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
-  background: #f9fafb;
-  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.benefit-card-title {
+.benefit-block-title {
   font-size: 14px;
   font-weight: 600;
   color: #1f2937;
 }
 
-.benefit-card-body {
-  padding: 14px;
+.benefit-block-body {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 24px;
+}
+
+.benefit-block-body .benefit-subsection {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-top: 10px;
+}
+
+.benefit-block-body .benefit-subsection + .benefit-subsection {
+  margin-top: 4px;
+}
+
+.benefit-block-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .benefit-row {

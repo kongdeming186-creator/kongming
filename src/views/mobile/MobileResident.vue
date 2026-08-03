@@ -121,7 +121,7 @@ const getTagType = (type) => {
 }
 
 const goBack = () => {
-  router.push('/mobile/tasks')
+  router.push('/mobile/checkin')
 }
 
 const showTagDetail = (tag) => {

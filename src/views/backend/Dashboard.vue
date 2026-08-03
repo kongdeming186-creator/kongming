@@ -54,66 +54,14 @@
       </div>
     </div>
     
-    <!-- 下方两列 -->
-    <div class="bottom-row">
-      <!-- 待处理任务 -->
-      <div class="content-card task-card">
-        <div class="card-header">
-          <div class="card-title-wrapper">
-            <h3 class="card-title">待处理任务</h3>
-            <span class="card-subtitle">共 {{ pendingTasks.length }} 条待处理</span>
-          </div>
-          <router-link to="/task" class="view-all">
-            查看全部
-            <el-icon><ArrowRight /></el-icon>
-          </router-link>
-        </div>
-        <div class="task-list">
-          <button 
-            v-for="task in pendingTasks" 
-            :key="task.id" 
-            class="task-item"
-            @click="goToTask(task.id)"
-          >
-            <div class="task-avatar" :class="getUrgencyClass(task.urgency)">
-              <el-icon><Warning /></el-icon>
-            </div>
-            <div class="task-content">
-              <div class="task-top">
-                <span class="task-title">{{ task.title }}</span>
-                <el-tag :type="getUrgencyType(task.urgency)" size="small" effect="light">
-                  {{ task.urgency }}
-                </el-tag>
-              </div>
-              <div class="task-meta">
-                <span class="meta-item">
-                  <el-icon><User /></el-icon>
-                  {{ task.residentName }}
-                </span>
-                <span class="meta-item">
-                  <el-icon><Place /></el-icon>
-                  {{ task.gridName }}
-                </span>
-                <span class="meta-item">
-                  <el-icon><Clock /></el-icon>
-                  {{ formatTime(task.createTime) }}
-                </span>
-              </div>
-            </div>
-            <el-icon class="task-arrow"><ArrowRight /></el-icon>
-          </button>
-          <div v-if="pendingTasks.length === 0" class="empty-list">
-            暂无待处理任务
-          </div>
-        </div>
-      </div>
-      
+    <!-- 下方预警全宽 -->
+    <div class="bottom-row full-width">
       <!-- 最新预警 -->
       <div class="content-card warning-card">
         <div class="card-header">
           <div class="card-title-wrapper">
-            <h3 class="card-title">最新预警</h3>
-            <span class="card-subtitle">最近产生的预警消息</span>
+            <h3 class="card-title">待处理预警</h3>
+            <span class="card-subtitle">共 {{ pendingWarnings.length }} 条待处理</span>
           </div>
           <router-link to="/warning" class="view-all">
             查看全部
@@ -121,7 +69,7 @@
           </router-link>
         </div>
         <div class="warning-list">
-          <div v-for="warning in latestWarnings" :key="warning.id" class="warning-item">
+          <div v-for="warning in pendingWarnings" :key="warning.id" class="warning-item">
             <div class="warning-icon" :class="getWarningClass(warning.level)">
               <el-icon><BellFilled /></el-icon>
             </div>
@@ -140,6 +88,13 @@
                 </span>
               </div>
             </div>
+            <div class="warning-actions">
+              <el-button type="primary" size="small">处理</el-button>
+              <el-button size="small">忽略</el-button>
+            </div>
+          </div>
+          <div v-if="pendingWarnings.length === 0" class="empty-list">
+            暂无待处理预警
           </div>
         </div>
       </div>
@@ -152,10 +107,10 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import { 
-  User, Warning, Clock, PieChart, TrendCharts, Bottom, 
+  User, Warning, PieChart, TrendCharts, Bottom, 
   ArrowRight, Place, BellFilled, Plus 
 } from '@element-plus/icons-vue'
-import { residents, warnings, tasks, tags, gridWorkers } from '../../data/mock'
+import { residents, warnings, tags, gridWorkers } from '../../data/mock'
 
 const router = useRouter()
 const chartPeriod = ref('week')
@@ -189,12 +144,12 @@ const statCards = computed(() => [
     trendText: '较昨日+2'
   },
   {
-    label: '待处理任务',
-    value: tasks.filter(t => t.status === '待处理').length,
-    icon: Clock,
+    label: '享受中标签',
+    value: tags.filter(t => t.isEnjoy).length,
+    icon: BellFilled,
     iconClass: 'icon-green',
-    trendType: 'down',
-    trendText: '较昨日-1'
+    trendType: 'up',
+    trendText: '本月新增3个'
   },
   {
     label: '标签总数',
@@ -222,19 +177,10 @@ const statCards = computed(() => [
   }
 ])
 
-const pendingTasks = computed(() => tasks.filter(t => t.status === '待处理').slice(0, 4))
-const latestWarnings = computed(() => warnings.slice(0, 4))
+const pendingWarnings = computed(() => warnings.filter(w => w.status === '待处理').slice(0, 6))
 
 const chartRef = ref(null)
 const pieChartRef = ref(null)
-
-const getUrgencyType = (urgency) => {
-  return urgency === '紧急' ? 'danger' : 'warning'
-}
-
-const getUrgencyClass = (urgency) => {
-  return urgency === '紧急' ? 'avatar-danger' : 'avatar-warning'
-}
 
 const getWarningType = (type) => {
   const map = {
@@ -254,10 +200,6 @@ const getWarningClass = (level) => {
 const formatTime = (time) => {
   if (!time) return ''
   return time.split(' ')[1]?.substring(0, 5) || time
-}
-
-const goToTask = (id) => {
-  router.push(`/task/detail/${id}`)
 }
 
 const initLineChart = () => {
@@ -745,5 +687,16 @@ onMounted(() => {
 
 .warning-level.warning {
   color: #f59e0b;
+}
+
+.bottom-row.full-width {
+  grid-template-columns: 1fr;
+}
+
+.warning-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
 }
 </style>

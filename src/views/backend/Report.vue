@@ -36,10 +36,10 @@
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon green"><el-icon><CircleCheck /></el-icon></div>
+        <div class="stat-icon green"><el-icon><PriceTag /></el-icon></div>
         <div class="stat-info">
-          <span class="stat-value">{{ tasks.filter(t => t.status === '已完成').length }}</span>
-          <span class="stat-label">已完成任务</span>
+          <span class="stat-value">{{ tags.filter(t => t.isEnjoy).length }}</span>
+          <span class="stat-label">享受中标签</span>
         </div>
       </div>
       <div class="stat-card">
@@ -271,7 +271,6 @@
         <span class="card-title">近期动态</span>
         <el-radio-group v-model="activityTab" size="small">
           <el-radio-button label="预警">预警</el-radio-button>
-          <el-radio-button label="任务">任务</el-radio-button>
           <el-radio-button label="操作">操作</el-radio-button>
         </el-radio-group>
       </div>
@@ -280,14 +279,6 @@
           <div class="timeline-content">
             <span class="timeline-title">{{ w.residentName }} - {{ w.type }}</span>
             <p class="timeline-desc">{{ w.content }}</p>
-          </div>
-        </el-timeline-item>
-      </el-timeline>
-      <el-timeline v-else-if="activityTab === '任务'">
-        <el-timeline-item v-for="t in recentTasks" :key="t.id" :type="t.status === '已完成' ? 'success' : 'primary'" :timestamp="t.createTime">
-          <div class="timeline-content">
-            <span class="timeline-title">{{ t.title }}</span>
-            <p class="timeline-desc">{{ t.gridWorker }} | {{ t.status }}</p>
           </div>
         </el-timeline-item>
       </el-timeline>
@@ -307,7 +298,7 @@
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Download, User, PriceTag, Warning, CircleCheck, UserFilled, Money, HomeFilled, Calendar, Document } from '@element-plus/icons-vue'
-import { residents, tags, warnings, tasks, gridWorkers } from '../../data/mock'
+import { residents, tags, warnings, gridWorkers } from '../../data/mock'
 
 const activityTab = ref('预警')
 
@@ -378,13 +369,12 @@ const warningDistribution = computed(() => {
 })
 
 const recentWarnings = computed(() => warnings.slice(0, 5))
-const recentTasks = computed(() => tasks.slice(0, 5))
 const recentOperations = ref([
   { time: '2024-06-20 14:30', operator: '管理员', action: '处理预警', content: '李四死亡预警已核实' },
-  { time: '2024-06-20 11:20', operator: '小王', action: '完成任务', content: '张三家庭走访已完成' },
+  { time: '2024-06-20 11:20', operator: '小王', action: '走访核实', content: '张三家庭走访已完成' },
   { time: '2024-06-19 16:00', operator: '小李', action: '更新信息', content: '更新赵六家庭人口信息' },
   { time: '2024-06-19 10:30', operator: '小张', action: '添加标签', content: '为王五添加高龄津贴标签' },
-  { time: '2024-06-18 15:00', operator: '管理员', action: '派发任务', content: '派发钱七残疾人年审任务' }
+  { time: '2024-06-18 15:00', operator: '管理员', action: '年审提醒', content: '钱七残疾人年审提醒已处理' }
 ])
 
 const getTagType = (type) => ({

@@ -268,11 +268,11 @@
           </div>
         </div>
         <div class="detail-section">
-          <h4 class="section-title">任务统计</h4>
+          <h4 class="section-title">服务统计</h4>
           <div class="task-stats">
             <div class="task-stat-item">
               <span class="task-stat-value">{{ selectedWorker.totalTasks }}</span>
-              <span class="task-stat-label">总任务</span>
+              <span class="task-stat-label">服务次数</span>
             </div>
             <div class="task-stat-item">
               <span class="task-stat-value success">{{ selectedWorker.completedTasks }}</span>
@@ -280,7 +280,7 @@
             </div>
             <div class="task-stat-item">
               <span class="task-stat-value warning">{{ selectedWorker.pendingTasks }}</span>
-              <span class="task-stat-label">待处理</span>
+              <span class="task-stat-label">进行中</span>
             </div>
           </div>
         </div>

@@ -33,30 +33,17 @@
             <span>居民信息管理</span>
           </template>
           <el-menu-item index="/resident">居民列表</el-menu-item>
+          <el-menu-item index="/resident/history">历史居民</el-menu-item>
+          <el-menu-item index="/import">数据导入</el-menu-item>
         </el-sub-menu>
-        
-        <el-menu-item index="/import">
-          <template #icon>
-            <el-icon><Upload /></el-icon>
-          </template>
-          <span>数据导入</span>
-        </el-menu-item>
         
         <el-sub-menu index="warning">
           <template #title>
-            <el-icon><Warning /></el-icon>
+            <el-icon><Bell /></el-icon>
             <span>预警管理</span>
           </template>
           <el-menu-item index="/warning">预警列表</el-menu-item>
           <el-menu-item index="/warning/config">规则配置</el-menu-item>
-        </el-sub-menu>
-        
-        <el-sub-menu index="task">
-          <template #title>
-            <el-icon><Clock /></el-icon>
-            <span>任务管理</span>
-          </template>
-          <el-menu-item index="/task">任务列表</el-menu-item>
         </el-sub-menu>
         
         <el-menu-item index="/report">
@@ -102,11 +89,64 @@
         </div>
         
         <div class="header-right">
-          <el-badge :value="3" class="notification-badge">
-            <el-button circle size="small" class="icon-btn" aria-label="通知（3条未读）">
-              <el-icon :size="18"><Bell /></el-icon>
-            </el-button>
-          </el-badge>
+          <el-dropdown trigger="click" @command="handleMessageCommand">
+            <div class="message-item warning-item">
+              <el-icon :size="16" class="msg-icon"><Warning /></el-icon>
+              <span class="msg-text">预警</span>
+              <el-badge :value="pendingWarningCount" :hidden="pendingWarningCount === 0" class="msg-badge" />
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu class="msg-dropdown">
+                <div class="dropdown-header">
+                  <span>预警消息</span>
+                  <span class="header-count">共 {{ pendingWarningCount }} 条未处理</span>
+                </div>
+                <el-dropdown-item v-for="w in recentWarnings" :key="w.id" :command="'warning:' + w.id">
+                  <div class="msg-dropdown-item">
+                    <div class="msg-item-title">{{ w.residentName }} - {{ w.warningType }}</div>
+                    <div class="msg-item-desc">{{ w.content }}</div>
+                    <div class="msg-item-time">{{ w.createTime }}</div>
+                  </div>
+                </el-dropdown-item>
+                <el-dropdown-item command="viewAllWarnings" class="view-all">
+                  查看全部预警
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          
+          <el-dropdown trigger="click" @command="handleMessageCommand">
+            <div class="message-item notify-item">
+              <el-icon :size="16" class="msg-icon"><Bell /></el-icon>
+              <span class="msg-text">通知</span>
+              <el-badge :value="notifications.length" :hidden="notifications.length === 0" class="msg-badge" />
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu class="msg-dropdown">
+                <div class="dropdown-header">
+                  <span>通知公告</span>
+                  <span class="header-count">街道下发工作任务</span>
+                </div>
+                <el-dropdown-item v-for="n in notifications" :key="n.id" :command="'notify:' + n.id">
+                  <div class="msg-dropdown-item">
+                    <div class="msg-item-title" :class="{ important: n.important }">
+                      <el-tag v-if="n.important" size="small" type="danger">重要</el-tag>
+                      {{ n.title }}
+                    </div>
+                    <div class="msg-item-desc">{{ n.content }}</div>
+                    <div class="msg-item-footer">
+                      <span class="msg-item-from">{{ n.from }}</span>
+                      <span class="msg-item-time">{{ n.createTime }}</span>
+                    </div>
+                  </div>
+                </el-dropdown-item>
+                <el-dropdown-item command="viewAllNotifies" class="view-all">
+                  查看全部通知
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+          
           <div class="user-info">
             <el-avatar :size="32" class="user-avatar" aria-hidden="true">
               {{ userInfo.username?.charAt(0) || 'A' }}
@@ -143,9 +183,10 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import {
-  DataBoard, User, Upload, Warning, Clock, PieChart,
+  DataBoard, User, Upload, Warning, PieChart,
   Menu, Expand, Bell, ArrowDown, UserFilled, Star 
 } from '@element-plus/icons-vue'
+import { warnings } from '../data/mock'
 
 
 const router = useRouter()
@@ -155,32 +196,66 @@ const sidebarCollapsed = ref(false)
 
 const userInfo = ref(JSON.parse(sessionStorage.getItem('user') || '{"username":"admin"}'))
 
+const pendingWarningCount = computed(() => warnings.filter(w => w.status === '待处理').length)
+const recentWarnings = computed(() => warnings.filter(w => w.status === '待处理').slice(0, 3))
+
+const notifications = ref([
+  {
+    id: 'n1',
+    title: '关于开展2024年度低保年审工作的通知',
+    content: '请各社区于7月30日前完成辖区内低保对象年审资料收集工作',
+    from: '六角亭街道办事处',
+    important: true,
+    createTime: '2024-06-20 09:00'
+  },
+  {
+    id: 'n2',
+    title: '残疾人两项补贴发放提醒',
+    content: '本月残疾人两项补贴将于6月25日发放，请及时核对发放名单',
+    from: '街道民政办',
+    important: false,
+    createTime: '2024-06-19 14:30'
+  },
+  {
+    id: 'n3',
+    title: '高龄津贴资格认证通知',
+    content: '请通知辖区内80岁以上老人完成本年度高龄津贴资格认证',
+    from: '街道民政办',
+    important: false,
+    createTime: '2024-06-18 10:15'
+  }
+])
+
 const activeMenu = computed(() => route.path)
 
 const titleMap = {
   '/dashboard': '仪表盘',
   '/resident': '居民列表',
+  '/resident/history': '历史居民',
   '/resident/detail': '居民详情',
   '/import': '数据导入',
   '/warning': '预警列表',
   '/warning/config': '规则配置',
-  '/task': '任务列表',
-  '/task/detail': '任务详情',
   '/report': '统计报表',
-  // '/grid-worker': '网格员列表',
-  // '/grid-worker/assessment': '考核管理',
   '/ai-match': '政策匹配'
 }
 
 const currentTitle = computed(() => {
   const path = route.path
   if (path.startsWith('/resident/detail')) return '居民详情'
-  if (path.startsWith('/task/detail')) return '任务详情'
   return titleMap[path] || ''
 })
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
+}
+
+const handleMessageCommand = (command) => {
+  if (command === 'viewAllWarnings' || command.startsWith('warning:')) {
+    router.push('/warning')
+  } else if (command === 'viewAllNotifies' || command.startsWith('notify:')) {
+    router.push('/warning')
+  }
 }
 
 const handleCommand = (command) => {
@@ -398,5 +473,114 @@ const handleCommand = (command) => {
   overflow-y: auto;
   overflow-x: hidden;
   background: #f3f4f6;
+}
+
+.message-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.message-item:hover {
+  background: #f1f5f9;
+}
+
+.warning-item .msg-icon {
+  color: #f59e0b;
+}
+
+.notify-item .msg-icon {
+  color: #3b82f6;
+}
+
+.msg-text {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.msg-badge {
+  margin-left: 2px;
+}
+
+:deep(.msg-dropdown) {
+  min-width: 340px;
+  max-width: 380px;
+  padding: 0;
+}
+
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.header-count {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.msg-dropdown-item {
+  padding: 4px 0;
+}
+
+.msg-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.msg-item-title.important {
+  color: #b91c1c;
+}
+
+.msg-item-desc {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-item-time {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.msg-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.msg-item-from {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.view-all {
+  text-align: center;
+  color: #3b82f6;
+  font-size: 13px;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 8px;
+  margin-top: 4px;
 }
 </style>

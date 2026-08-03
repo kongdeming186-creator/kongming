@@ -23,6 +23,11 @@ const routes = [
         component: () => import('../views/backend/ResidentList.vue')
       },
       {
+        path: '/resident/history',
+        name: 'HistoryResidentList',
+        component: () => import('../views/backend/HistoryResidentList.vue')
+      },
+      {
         path: '/resident/detail/:id',
         name: 'ResidentDetail',
         component: () => import('../views/backend/ResidentDetail.vue')
@@ -41,16 +46,6 @@ const routes = [
         path: '/warning/config',
         name: 'WarningConfig',
         component: () => import('../views/backend/WarningConfig.vue')
-      },
-      {
-        path: '/task',
-        name: 'TaskList',
-        component: () => import('../views/backend/TaskList.vue')
-      },
-      {
-        path: '/task/detail/:id',
-        name: 'TaskDetail',
-        component: () => import('../views/backend/TaskDetail.vue')
       },
       {
         path: '/report',
@@ -84,21 +79,6 @@ const routes = [
         path: '/mobile/login',
         name: 'MobileLogin',
         component: () => import('../views/mobile/MobileLogin.vue')
-      },
-      {
-        path: '/mobile/tasks',
-        name: 'MobileTasks',
-        component: () => import('../views/mobile/MobileTasks.vue')
-      },
-      {
-        path: '/mobile/task/detail/:id',
-        name: 'MobileTaskDetail',
-        component: () => import('../views/mobile/MobileTaskDetail.vue')
-      },
-      {
-        path: '/mobile/task/process/:id',
-        name: 'MobileTaskProcess',
-        component: () => import('../views/mobile/MobileTaskProcess.vue')
       },
       {
         path: '/mobile/resident/:id',

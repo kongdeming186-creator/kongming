@@ -52,7 +52,7 @@ const rules = {
 const handleLogin = () => {
   if (form.username === 'admin' && form.password === 'admin') {
     sessionStorage.setItem('user', JSON.stringify({ username: form.username }))
-    router.push('/mobile/tasks')
+    router.push('/mobile/checkin')
   } else {
     ElMessage.error('用户名或密码错误')
   }

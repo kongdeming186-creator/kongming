@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>六角亭智慧街道民政系统 - 项目立项评审</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #e8e8ec;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    overflow: hidden;
+  }
+  #canvas {
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 1280px; height: 720px;
+    background: #ffffff;
+    box-shadow: 0 10px 60px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
+    transform-origin: center center;
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    opacity: 0; visibility: hidden;
+    transition: opacity .5s cubic-bezier(.2,.7,.2,1), visibility .5s;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  .slide.active {
+    opacity: 1; visibility: visible;
+  }
+  .chrome-top {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 48px;
+    font-size: 12px; color: #6b7280;
+    z-index: 10;
+  }
+  .chrome-top .brand { color: #0A58CA; font-weight: 600; letter-spacing: 1px; }
+  .chrome-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 48px;
+    font-size: 12px; color: #9ca3af;
+    border-top: 1px solid #e5e7eb;
+    z-index: 10;
+  }
+  .slide-content {
+    padding: 56px 72px;
+    display: grid;
+    align-content: start;
+    gap: 24px;
+  }
+
+  /* ============ Slide 1: Cover ============ */
+  .s-cover {
+    background: linear-gradient(135deg, #0A58CA 0%, #0d47a1 50%, #083370 100%);
+    color: #fff;
+  }
+  .s-cover .slide-content {
+    padding: 0;
+    align-content: center;
+    justify-items: center;
+    text-align: center;
+    gap: 32px;
+  }
+  .cover-kicker {
+    font-size: 18px; letter-spacing: 8px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 300;
+  }
+  .cover-title {
+    font-size: 56px; font-weight: 700;
+    letter-spacing: 4px;
+    line-height: 1.2;
+  }
+  .cover-subtitle {
+    font-size: 22px;
+    color: rgba(255,255,255,0.85);
+    font-weight: 300;
+    letter-spacing: 2px;
+  }
+  .cover-meta {
+    margin-top: 48px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    line-height: 2;
+  }
+  .cover-deco {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #3b82f6);
+  }
+
+  /* ============ Slide 2: Agenda ============ */
+  .s-agenda .slide-content {
+    grid-template-columns: 280px 1fr;
+    gap: 64px;
+    align-content: center;
+  }
+  .agenda-side {
+    display: flex; flex-direction: column; gap: 16px;
+    border-right: 3px solid #0A58CA;
+    padding-right: 32px;
+  }
+  .agenda-side .zh {
+    font-size: 64px; font-weight: 800; color: #0A58CA;
+    letter-spacing: 8px;
+    line-height: 1;
+  }
+  .agenda-side .en {
+    font-size: 24px; color: #9ca3af;
+    letter-spacing: 4px; font-weight: 300;
+  }
+  .agenda-list {
+    display: flex; flex-direction: column; gap: 28px;
+    justify-content: center;
+  }
+  .agenda-item {
+    display: flex; align-items: center; gap: 24px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid #0A58CA;
+  }
+  .agenda-item:last-child { border-bottom: none; }
+  .agenda-num {
+    font-size: 36px; font-weight: 800; color: #0A58CA;
+    min-width: 60px;
+  }
+  .agenda-text { font-size: 28px; font-weight: 600; color: #1f2937; }
+
+  /* ============ Section Title Slide ============ */
+  .s-section {
+    background: linear-gradient(135deg, #0A58CA 0%, #0d47a1 100%);
+    color: #fff;
+  }
+  .s-section .slide-content {
+    align-content: center;
+    justify-items: start;
+    gap: 16px;
+  }
+  .section-num {
+    font-size: 20px; letter-spacing: 4px;
+    color: rgba(255,255,255,0.6);
+  }
+  .section-title {
+    font-size: 64px; font-weight: 700;
+    letter-spacing: 4px;
+  }
+  .section-rule {
+    width: 120px; height: 4px;
+    background: #60a5fa;
+    border-radius: 2px;
+  }
+
+  /* ============ Content Slides ============ */
+  .page-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 8px;
+  }
+  .page-header .num {
+    font-size: 48px; font-weight: 800; color: #0A58CA;
+    line-height: 1;
+  }
+  .page-header .title-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .page-header .title {
+    font-size: 28px; font-weight: 700; color: #1f2937;
+  }
+  .page-header .subtitle {
+    font-size: 13px; color: #9ca3af; letter-spacing: 1px;
+  }
+  .page-rule {
+    height: 3px; width: 80px;
+    background: #0A58CA;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+
+  /* 双列布局 */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .info-card {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 24px;
+    border-left: 4px solid #0A58CA;
+  }
+  .info-card h4 {
+    font-size: 16px; color: #0A58CA; margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .info-card p, .info-card li {
+    font-size: 13px; color: #4b5563; line-height: 1.8;
+  }
+  .info-card ul { padding-left: 18px; }
+
+  /* 模块网格 */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .module-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .module-card:hover {
+    border-color: #0A58CA;
+    box-shadow: 0 4px 12px rgba(10,88,202,0.1);
+  }
+  .module-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 12px;
+    background: linear-gradient(135deg, #0A58CA, #3b82f6);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 22px; font-weight: 700;
+  }
+  .module-card h5 {
+    font-size: 15px; color: #1f2937; margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .module-card p {
+    font-size: 12px; color: #9ca3af;
+  }
+
+  /* 时间线 */
+  .timeline {
+    display: flex; justify-content: space-between;
+    margin-top: 16px;
+  }
+  .timeline-item {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  .timeline-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 18px; left: 50%;
+    width: 100%; height: 2px;
+    background: #e5e7eb;
+    z-index: 0;
+  }
+  .timeline-dot {
+    width: 36px; height: 36px;
+    background: #0A58CA;
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 14px; font-weight: 700;
+    position: relative; z-index: 1;
+  }
+  .timeline-item h5 {
+    font-size: 14px; color: #1f2937; margin-bottom: 4px; font-weight: 600;
+  }
+  .timeline-item p {
+    font-size: 11px; color: #9ca3af;
+  }
+
+  /* 预算表格 */
+  .budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .budget-table th {
+    background: #0A58CA;
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .budget-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+  }
+  .budget-table tr:hover td { background: #f8fafc; }
+  .budget-table .total td {
+    background: #eff6ff;
+    font-weight: 700;
+    color: #0A58CA;
+    font-size: 14px;
+  }
+
+  /* 风险矩阵 */
+  .risk-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .risk-item {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .risk-level {
+    width: 8px; height: 100%;
+    min-height: 48px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .risk-level.high { background: #ef4444; }
+  .risk-level.mid { background: #f59e0b; }
+  .risk-level.low { background: #10b981; }
+  .risk-content h5 {
+    font-size: 14px; color: #1f2937; margin-bottom: 6px; font-weight: 600;
+  }
+  .risk-content p {
+    font-size: 12px; color: #6b7280; line-height: 1.6;
+  }
+
+  /* 评审页 */
+  .review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .review-card {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 28px;
+  }
+  .review-card h3 {
+    font-size: 22px; color: #0A58CA;
+    margin-bottom: 16px; font-weight: 700;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .review-card h3::before {
+    content: '';
+    width: 6px; height: 24px;
+    background: #0A58CA;
+    border-radius: 3px;
+  }
+  .review-item {
+    padding: 12px 0;
+    border-bottom: 1px dashed #e5e7eb;
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-item .label {
+    font-size: 13px; color: #9ca3af; margin-bottom: 4px;
+  }
+  .review-item .value {
+    font-size: 14px; color: #1f2937; font-weight: 500;
+    line-height: 1.6;
+  }
+
+  /* Closing */
+  .s-closing {
+    background: linear-gradient(135deg, #0A58CA 0%, #0d47a1 50%, #083370 100%);
+    color: #fff;
+  }
+  .s-closing .slide-content {
+    align-content: center;
+    justify-items: center;
+    text-align: center;
+    gap: 24px;
+  }
+  .closing-title {
+    font-size: 72px; font-weight: 700;
+    letter-spacing: 16px;
+  }
+  .closing-sub {
+    font-size: 18px; color: rgba(255,255,255,0.7);
+    letter-spacing: 4px;
+  }
+
+  /* 导航点 */
+  .nav-dots {
+    position: absolute;
+    bottom: 60px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 8px;
+    z-index: 20;
+  }
+  .nav-dots .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #d1d5db;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-dots .dot.active {
+    background: #0A58CA;
+    width: 24px;
+    border-radius: 4px;
+  }
+
+  /* 动画 */
+  .slide.active .anim-item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .anim-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .anim-item.delay-1 { transition-delay: 0.1s; }
+  .anim-item.delay-2 { transition-delay: 0.2s; }
+  .anim-item.delay-3 { transition-delay: 0.3s; }
+  .anim-item.delay-4 { transition-delay: 0.4s; }
+  .anim-item.delay-5 { transition-delay: 0.5s; }
+  .anim-item.delay-6 { transition-delay: 0.6s; }
+</style>
+</head>
+<body>
+<div id="canvas">
+
+  <!-- ========== Slide 1: Cover ========== -->
+  <section class="slide s-cover active" data-index="0">
+    <div class="slide-content">
+      <div class="cover-kicker anim-item">PROJECT PROPOSAL</div>
+      <h1 class="cover-title anim-item delay-1">六角亭智慧街道<br/>民政综合管理系统</h1>
+      <div class="cover-subtitle anim-item delay-2">项目立项评审报告</div>
+      <div class="cover-meta anim-item delay-3">
+        申报部门：六角亭街道办事处<br/>
+        项目类型：政务信息化建设<br/>
+        2024年7月
+      </div>
+    </div>
+    <div class="cover-deco"></div>
+  </section>
+
+  <!-- ========== Slide 2: Agenda ========== -->
+  <section class="slide s-agenda" data-index="1">
+    <div class="chrome-top">
+      <span class="brand">六角亭智慧街道 · 项目立项</span>
+      <span>2024</span>
+    </div>
+    <div class="slide-content">
+      <div class="agenda-side anim-item">
+        <div class="zh">目录</div>
+        <div class="en">CONTENTS</div>
+      </div>
+      <div class="agenda-list">
+        <div class="agenda-item anim-item delay-1">
+          <div class="agenda-num">一</div>
+          <div class="agenda-text">项目提案</div>
+        </div>
+        <div class="agenda-item anim-item delay-2">
+          <div class="agenda-num">二</div>
+          <div class="agenda-text">评审会意见</div>
+        </div>
+        <div class="agenda-item anim-item delay-3">
+          <div class="agenda-num">三</div>
+          <div class="agenda-text">决策事项</div>
+        </div>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>02 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 3: Section Title - 项目提案 ========== -->
+  <section class="slide s-section" data-index="2">
+    <div class="slide-content">
+      <div class="section-num anim-item">PART 01</div>
+      <h2 class="section-title anim-item delay-1">项目提案</h2>
+      <div class="section-rule anim-item delay-2"></div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>03 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 4: 项目背景与现状 ========== -->
+  <section class="slide" data-index="3">
+    <div class="chrome-top"><span class="brand">六角亭智慧街道 · 项目立项</span><span>一、项目提案</span></div>
+    <div class="slide-content">
+      <div class="page-header anim-item">
+        <div class="num">01</div>
+        <div class="title-wrap">
+          <div class="title">项目背景与现状分析</div>
+          <div class="subtitle">PROJECT BACKGROUND & CURRENT SITUATION</div>
+        </div>
+      </div>
+      <div class="page-rule anim-item delay-1"></div>
+      <div class="two-col">
+        <div class="info-card anim-item delay-2">
+          <h4>项目背景</h4>
+          <ul>
+            <li>民政业务数据分散在低保、残疾、公租房等多个系统中，数据不互通</li>
+            <li>人工核实居民资格效率低，错保漏保风险高，缺乏智能预警手段</li>
+            <li>网格员走访、信息采集依赖纸质记录，信息更新不及时</li>
+            <li>街道管理层缺乏统一的数据视图，决策支撑不足</li>
+            <li>上级民政部门对基层治理数字化转型提出明确要求</li>
+          </ul>
+        </div>
+        <div class="info-card anim-item delay-3">
+          <h4>现状问题与对策</h4>
+          <ul>
+            <li><b>信息孤岛：</b>各业务系统独立 → 建设统一居民信息库，一窗式展示</li>
+            <li><b>人工效率低：</b>资格核查依赖人工 → 引入AI智能匹配和自动比对</li>
+            <li><b>预警滞后：</b>问题发现靠举报 → 建立多维度预警规则引擎</li>
+            <li><b>走访困难：</b>网格员管理难 → 配套移动端，支持走访打卡和记录</li>
+            <li><b>数据难用：</b>统计报表靠汇总 → 提供多维度统计报表和可视化</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>04 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 5: 目标范围与方案 ========== -->
+  <section class="slide" data-index="4">
+    <div class="chrome-top"><span class="brand">六角亭智慧街道 · 项目立项</span><span>一、项目提案</span></div>
+    <div class="slide-content">
+      <div class="page-header anim-item">
+        <div class="num">02</div>
+        <div class="title-wrap">
+          <div class="title">项目目标、边界与核心方案</div>
+          <div class="subtitle">OBJECTIVES, SCOPE & CORE SOLUTION</div>
+        </div>
+      </div>
+      <div class="page-rule anim-item delay-1"></div>
+      <div class="two-col" style="gap: 24px;">
+        <div class="info-card anim-item delay-2" style="border-left-color: #10b981;">
+          <h4 style="color: #10b981;">项目目标</h4>
+          <ul>
+            <li>建成街道级统一居民信息库，实现全量数据汇聚</li>
+            <li>实现低保、残疾、公租房等10类保障标签的统一管理</li>
+            <li>建立智能预警体系，预警响应时效提升50%以上</li>
+            <li>网格员移动端全覆盖，走访记录电子化</li>
+            <li>AI政策匹配覆盖率达90%，减少人工遗漏</li>
+          </ul>
+        </div>
+        <div class="info-card anim-item delay-3" style="border-left-color: #f59e0b;">
+          <h4 style="color: #f59e0b;">项目边界</h4>
+          <ul>
+            <li><b>覆盖范围：</b>六角亭街道全部社区、小区、网格</li>
+            <li><b>服务对象：</b>街道民政办、社区工作者、网格员、居民</li>
+            <li><b>系统边界：</b>对接上级民政系统数据，不替代原有业务系统</li>
+            <li><b>暂不涉及：</b>资金发放审批、财务结算等需政务专网的业务</li>
+            <li><b>网格员管理模块：</b>已暂缓，后续根据需求再建设</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>05 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 6: 核心功能模块 ========== -->
+  <section class="slide" data-index="5">
+    <div class="chrome-top"><span class="brand">六角亭智慧街道 · 项目立项</span><span>一、项目提案</span></div>
+    <div class="slide-content">
+      <div class="page-header anim-item">
+        <div class="num">03</div>
+        <div class="title-wrap">
+          <div class="title">核心功能模块</div>
+          <div class="subtitle">CORE FUNCTION MODULES</div>
+        </div>
+      </div>
+      <div class="page-rule anim-item delay-1"></div>
+      <div class="module-grid">
+        <div class="module-card anim-item delay-2">
+          <div class="module-icon">居</div>
+          <h5>居民信息管理</h5>
+          <p>全量居民底册、基础信息、保障标签、历史档案</p>
+        </div>
+        <div class="module-card anim-item delay-2">
+          <div class="module-icon">警</div>
+          <h5>智能预警管理</h5>
+          <p>到龄/到期/财产/死亡等多维度规则预警与处理</p>
+        </div>
+        <div class="module-card anim-item delay-3">
+          <div class="module-icon">AI</div>
+          <h5>AI政策匹配</h5>
+          <p>基于居民条件智能推荐可享受政策，减少遗漏</p>
+        </div>
+        <div class="module-card anim-item delay-3">
+          <div class="module-icon">报</div>
+          <h5>统计报表</h5>
+          <p>多维度数据统计、可视化图表、一键导出</p>
+        </div>
+        <div class="module-card anim-item delay-4">
+          <div class="module-icon">导</div>
+          <h5>数据导入</h5>
+          <p>居民基础信息、政策待遇标签批量模板导入</p>
+        </div>
+        <div class="module-card anim-item delay-4">
+          <div class="module-icon">移</div>
+          <h5>网格员移动端</h5>
+          <p>居民查询、走访打卡、走访记录、信息采集</p>
+        </div>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>06 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 7: 实施计划与预算 ========== -->
+  <section class="slide" data-index="6">
+    <div class="chrome-top"><span class="brand">六角亭智慧街道 · 项目立项</span><span>一、项目提案</span></div>
+    <div class="slide-content">
+      <div class="page-header anim-item">
+        <div class="num">04</div>
+        <div class="title-wrap">
+          <div class="title">实施计划与投资预算</div>
+          <div class="subtitle">IMPLEMENTATION PLAN & BUDGET</div>
+        </div>
+      </div>
+      <div class="page-rule anim-item delay-1"></div>
+      <div style="display: grid; grid-template-rows: auto 1fr; gap: 24px;">
+        <div class="timeline anim-item delay-2">
+          <div class="timeline-item">
+            <div class="timeline-dot">M1</div>
+            <h5>需求调研</h5>
+            <p>业务梳理、需求确认<br/>方案设计</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">M2</div>
+            <h5>系统开发</h5>
+            <p>后台管理端<br/>核心功能开发</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">M3</div>
+            <h5>移动端开发</h5>
+            <p>网格员移动端<br/>接口联调</p>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot">M4</div>
+            <h5>测试上线</h5>
+            <p>测试、培训<br/>试运行、验收</p>
+          </div>
+        </div>
+        <table class="budget-table anim-item delay-3">
+          <thead>
+            <tr><th>序号</th><th>费用类别</th><th>内容说明</th><th style="text-align:right;">预算（万元）</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>需求调研与设计</td><td>业务梳理、原型设计、方案输出</td><td style="text-align:right;">8.0</td></tr>
+            <tr><td>2</td><td>后台管理系统开发</td><td>居民、预警、报表、AI匹配等模块</td><td style="text-align:right;">28.0</td></tr>
+            <tr><td>3</td><td>网格员移动端开发</td><td>移动H5、走访打卡、居民查询</td><td style="text-align:right;">12.0</td></tr>
+            <tr><td>4</td><td>系统部署与集成</td><td>云资源、部署配置、接口对接</td><td style="text-align:right;">6.0</td></tr>
+            <tr><td>5</td><td>培训与运维</td><td>操作培训、1年运维支持</td><td style="text-align:right;">6.0</td></tr>
+            <tr class="total"><td colspan="3" style="text-align:right;">合计</td><td style="text-align:right;">60.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>07 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 8: 风险与控制 ========== -->
+  <section class="slide" data-index="7">
+    <div class="chrome-top"><span class="brand">六角亭智慧街道 · 项目立项</span><span>一、项目提案</span></div>
+    <div class="slide-content">
+      <div class="page-header anim-item">
+        <div class="num">05</div>
+        <div class="title-wrap">
+          <div class="title">风险分析与控制措施</div>
+          <div class="subtitle">RISK ANALYSIS & CONTROL MEASURES</div>
+        </div>
+      </div>
+      <div class="page-rule anim-item delay-1"></div>
+      <div class="risk-list">
+        <div class="risk-item anim-item delay-2">
+          <div class="risk-level high"></div>
+          <div class="risk-content">
+            <h5>数据迁移风险</h5>
+            <p>历史数据多系统分散，格式不统一，迁移可能出现数据丢失或错误。<br/><b>控制措施：</b>制定详细数据映射方案，三轮数据核对，保留原始数据可追溯。</p>
+          </div>
+        </div>
+        <div class="risk-item anim-item delay-2">
+          <div class="risk-level high"></div>
+          <div class="risk-content">
+            <h5>需求变更风险</h5>
+            <p>民政业务政策调整频繁，需求可能在开发过程中发生变化。<br/><b>控制措施：</b>采用敏捷迭代，每2周一个版本交付，建立需求变更评审机制。</p>
+          </div>
+        </div>
+        <div class="risk-item anim-item delay-3">
+          <div class="risk-level mid"></div>
+          <div class="risk-content">
+            <h5>用户接受度风险</h5>
+            <p>社区工作者和网格员年龄跨度大，对新系统接受程度不一。<br/><b>控制措施：</b>界面简洁易用，提供图文操作手册，分批次开展面对面培训。</p>
+          </div>
+        </div>
+        <div class="risk-item anim-item delay-3">
+          <div class="risk-level mid"></div>
+          <div class="risk-content">
+            <h5>数据安全风险</h5>
+            <p>居民信息包含身份证、收入等敏感数据，存在泄露风险。<br/><b>控制措施：</b>数据加密存储，操作留痕审计，严格权限分级，符合等保要求。</p>
+          </div>
+        </div>
+        <div class="risk-item anim-item delay-4">
+          <div class="risk-level low"></div>
+          <div class="risk-content">
+            <h5>进度延期风险</h5>
+            <p>4个月周期内功能较多，可能出现开发延期。<br/><b>控制措施：</b>关键路径管理，预留2周缓冲期，核心功能优先交付。</p>
+          </div>
+        </div>
+        <div class="risk-item anim-item delay-4">
+          <div class="risk-level low"></div>
+          <div class="risk-content">
+            <h5>预算超支风险</h5>
+            <p>需求变更可能导致开发成本上升。<br/><b>控制措施：</b>严格变更管理，超出预算范围的需求需走追加流程。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>08 / 09</span></div>
+  </section>
+
+  <!-- ========== Slide 9: 评审意见与决策 ========== -->
+  <section class="slide" data-index="8">
+    <div class="chrome-top"><span class="brand">六角亭智慧街道 · 项目立项</span><span>二、评审会意见 / 三、决策事项</span></div>
+    <div class="slide-content">
+      <div class="page-header anim-item">
+        <div class="num">06</div>
+        <div class="title-wrap">
+          <div class="title">评审会意见 & 决策事项</div>
+          <div class="subtitle">REVIEW OPINIONS & DECISIONS</div>
+        </div>
+      </div>
+      <div class="page-rule anim-item delay-1"></div>
+      <div class="review-grid">
+        <div class="review-card anim-item delay-2">
+          <h3>评审会意见</h3>
+          <div class="review-item">
+            <div class="label">业务部门意见</div>
+            <div class="value">民政办确认需求覆盖全面，预警规则和标签体系符合街道实际业务场景，建议加快推进。</div>
+          </div>
+          <div class="review-item">
+            <div class="label">技术部门意见</div>
+            <div class="value">技术方案可行，采用Vue3+Element Plus主流技术栈，云部署成本可控，建议补充数据备份方案。</div>
+          </div>
+          <div class="review-item">
+            <div class="label">财务部门意见</div>
+            <div class="value">60万预算在政务信息化项目合理区间内，建议按季度分期拨付，确保资金使用效率。</div>
+          </div>
+          <div class="review-item">
+            <div class="label">法务部门意见</div>
+            <div class="value">需在合同中明确数据安全和保密条款，居民个人信息保护需符合《个人信息保护法》要求。</div>
+          </div>
+        </div>
+        <div class="review-card anim-item delay-3">
+          <h3>决策事项</h3>
+          <div class="review-item">
+            <div class="label">决策一：项目立项</div>
+            <div class="value">同意"六角亭智慧街道民政综合管理系统"项目正式立项。</div>
+          </div>
+          <div class="review-item">
+            <div class="label">决策二：投资预算</div>
+            <div class="value">项目总投资预算控制在60万元以内，从街道政务信息化专项经费中列支。</div>
+          </div>
+          <div class="review-item">
+            <div class="label">决策三：建设模式</div>
+            <div class="value">采用"街道自建+云部署"模式，由民政办牵头，党政办配合，通过公开招标确定承建单位。</div>
+          </div>
+          <div class="review-item">
+            <div class="label">决策四：项目周期</div>
+            <div class="value">总工期4个月（M1需求调研 → M4上线验收），2024年Q3完成全部建设。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="chrome-bottom"><span>六角亭智慧街道民政系统</span><span>09 / 09</span></div>
+  </section>
+
+  <!-- 导航点 -->
+  <div class="nav-dots"></div>
+
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('canvas');
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  // 创建导航点
+  const dotsContainer = document.querySelector('.nav-dots');
+  for(let i = 0; i < total; i++){
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsContainer.appendChild(d);
+  }
+  const dots = dotsContainer.querySelectorAll('.dot');
+
+  function resize(){
+    const w = window.innerWidth, h = window.innerHeight;
+    const s = Math.min(w / 1280, h / 720);
+    canvas.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function goTo(idx){
+    if(idx < 0 || idx >= total || idx === current) return;
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+  }
+
+  // 键盘
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') goTo(current + 1);
+    if(e.key === 'ArrowLeft' || e.key === 'PageUp') goTo(current - 1);
+    if(e.key === 'Home') goTo(0);
+    if(e.key === 'End') goTo(total - 1);
+  });
+
+  // 滚轮
+  let wheelLock = false;
+  canvas.addEventListener('wheel', function(e){
+    if(wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 600);
+    if(e.deltaY > 0) goTo(current + 1);
+    else goTo(current - 1);
+  }, { passive: true });
+
+  // 触摸
+  let touchX = 0;
+  canvas.addEventListener('touchstart', function(e){
+    touchX = e.touches[0].clientX;
+  }, { passive: true });
+  canvas.addEventListener('touchend', function(e){
+    const dx = e.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 50){
+      if(dx < 0) goTo(current + 1);
+      else goTo(current - 1);
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
