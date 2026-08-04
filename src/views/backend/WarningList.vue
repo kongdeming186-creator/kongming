@@ -1,17 +1,29 @@
 <template>
   <div class="warning-list-page">
+    <!-- 顶部标题栏 -->
     <div class="page-header">
       <div class="page-title-wrapper">
         <h2 class="page-title">预警管理</h2>
-        <p class="page-subtitle">共 {{ warnings.length }} 条预警，待处理 {{ pendingCount }} 条</p>
+        <p class="page-subtitle">共 {{ totalCount }} 条预警，待处理 {{ pendingCount }} 条 · 涉及 {{ filteredGroupedWarnings.length }} 位居民</p>
       </div>
       <div class="header-actions">
+        <el-radio-group v-model="viewMode" size="default" @change="onViewModeChange">
+          <el-radio-button label="card">
+            <el-icon><Grid /></el-icon>
+            <span style="margin-left:4px">卡片视图</span>
+          </el-radio-button>
+          <el-radio-button label="list">
+            <el-icon><List /></el-icon>
+            <span style="margin-left:4px">列表视图</span>
+          </el-radio-button>
+        </el-radio-group>
         <el-button type="primary" @click="showAddWarningDialog = true">
           <el-icon><Plus /></el-icon>新增预警
         </el-button>
       </div>
     </div>
 
+    <!-- 统计卡片 -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-icon red"><el-icon><Warning /></el-icon></div>
@@ -43,7 +55,7 @@
       </div>
     </div>
 
-    <!-- 预警规则分类统计板块 -->
+    <!-- 预警分类统计 -->
     <div class="content-card rules-card">
       <div class="card-header">
         <div class="header-left">
@@ -95,75 +107,255 @@
       </div>
     </div>
 
+    <!-- 筛选栏 + 预警列表 -->
     <div class="content-card">
-      <div class="card-header">
-        <span class="card-title">预警列表</span>
-        <div class="search-bar">
-          <el-select v-model="filterType" placeholder="预警类型" clearable style="width: 120px">
+      <div class="card-header filter-header">
+      <div class="card-title">预警列表</div>
+        <div class="filter-bar">
+          <el-select v-model="filterCount" placeholder="预警数量" clearable style="width: 130px">
+            <el-option label="1条预警" value="1" />
+            <el-option label="2条预警" value="2" />
+            <el-option label="3条及以上" value="3+" />
+          </el-select>
+          <el-select v-model="filterType" placeholder="预警类型" clearable style="width: 140px">
             <el-option v-for="t in warningTypes" :key="t" :label="t" :value="t" />
           </el-select>
-          <el-select v-model="filterStatus" placeholder="处理状态" clearable style="width: 110px">
+          <el-select v-model="filterStatus" placeholder="处理状态" clearable style="width: 120px">
             <el-option label="待处理" value="待处理" />
-            <el-option label="审批中" value="审批中" />
             <el-option label="已处理" value="已处理" />
-            <el-option label="已忽略" value="已忽略" />
+            <el-option label="审批中" value="审批中" />
           </el-select>
           <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon>查询</el-button>
           <el-button @click="handleReset"><el-icon><Refresh /></el-icon>重置</el-button>
         </div>
       </div>
-      <el-table :data="filteredWarnings" border stripe
-        :header-cell-style="{ background: '#fafafa', color: '#666', fontWeight: 500 }">
-        <el-table-column type="index" label="序号" width="55" align="center" />
-        <el-table-column prop="residentName" label="姓名" width="80" />
-        <el-table-column prop="idCard" label="身份证号" width="170">
-          <template #default="scope">
-            <span v-if="scope.row.idCard">{{ scope.row.idCard.slice(0, 6) + '********' + scope.row.idCard.slice(-4) }}</span>
-            <span v-else class="no-data">--</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="warningType" label="预警类型" width="120">
-          <template #default="scope">
-            <el-tag :type="getWarningType(scope.row.warningType)" size="small">{{ scope.row.warningType }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="预警内容" min-width="200">
-          <template #default="scope">
-            <div class="warning-content">
-              <span class="content-text">{{ scope.row.content }}</span>
+
+      <!-- ============ 卡片视图 ============ -->
+      <div v-if="viewMode === 'card'" class="warning-cards-container">
+        <div v-if="filteredGroupedWarnings.length === 0" class="empty-state">
+          <el-empty description="暂无符合条件的预警" :image-size="80" />
+        </div>
+        <div
+          v-for="(group, gIdx) in filteredGroupedWarnings" :key="group.residentId"
+          class="resident-warning-card"
+          :class="{ 'multi-warning': group.warningCount > 1 }">
+          <!-- 卡片头部：居民信息 + 预警数量 -->
+          <div class="card-head">
+            <div class="resident-info">
+              <div class="avatar">{{ group.residentName }}</div>
+              <div class="sub-info">
+                <span class="id-card">{{ formatIdCard(group.idCard) }}</span>
+                <span class="community">{{ getResidentCommunity(group.residentId) }}</span>
+              </div>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="ruleSource" label="比对来源" width="140">
-          <template #default="scope">
-            <el-tooltip :content="getSourceDesc(scope.row.ruleSource)" placement="top">
-              <el-tag type="info" size="small" effect="plain">{{ scope.row.ruleSource }}</el-tag>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="预警时间" width="120" />
-        <el-table-column prop="status" label="状态" width="80" align="center">
-          <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.status)" size="small" effect="light">{{ scope.row.status }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="operator" label="处理人" width="80" />
-        <el-table-column prop="resolveTime" label="处理时间" width="120" />
-        <el-table-column label="操作" width="140" fixed="right" align="center">
-          <template #default="scope">
-            <div class="action-buttons">
-              <el-button v-if="scope.row.status === '待处理'" type="success" link size="small" @click="handleResolve(scope.row)">处理</el-button>
-              <el-button type="primary" link size="small" @click="viewDetail(scope.row)">详情</el-button>
+            <div class="warning-count-wrap" :class="getCountLevel(group.warningCount)">
+              <span class="count-num">{{ group.warningCount }}</span>
+              <span class="count-label">条预警</span>
             </div>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+
+          <!-- 享受的政策标签 -->
+          <div class="enjoyed-tags-section">
+            <div class="section-label">
+              <el-icon><DocumentChecked /></el-icon>
+              <span>享受政策</span>
+            </div>
+            <div class="enjoyed-tags-list">
+              <el-tag
+                v-for="(tag, idx) in group.residentTags"
+                :key="tag.id"
+                :type="getTagType(tag.tagType)"
+                size="default"
+                effect="light"
+                class="enjoyed-tag"
+              >
+                {{ tag.tagType }} · {{ tag.tagSubType }}
+              </el-tag>
+              <span v-if="group.residentTags.length === 0" class="no-tags-tip">暂无享受政策</span>
+            </div>
+          </div>
+
+          <!-- 通铺比对列表 -->
+          <div class="check-list-section">
+            <div class="section-label">
+              <el-icon><Connection /></el-icon>
+              <span>比对结果</span>
+              <span class="abnormal-count" v-if="group.checkItems.filter(c => c.status === 'abnormal').length > 0">
+                {{ group.checkItems.filter(c => c.status === 'abnormal').length }}项异常
+              </span>
+            </div>
+            <div class="check-list-grid">
+              <div
+                v-for="(item, idx) in group.checkItems"
+                :key="idx"
+                class="check-item"
+                :class="{ 'is-abnormal': item.status === 'abnormal' }"
+              >
+                <div class="check-item-head">
+                  <span class="check-item-name">{{ item.name }}</span>
+                  <el-icon v-if="item.status === 'abnormal'" class="abnormal-icon"><WarningFilled /></el-icon>
+                  <el-icon v-else class="normal-icon"><CircleCheck /></el-icon>
+                </div>
+                <div class="check-item-value">{{ item.value }}</div>
+                <div v-if="item.remark" class="check-item-remark">{{ item.remark }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 预警明细 -->
+          <div class="warning-details">
+            <div class="section-label small">
+              <el-icon><Bell /></el-icon>
+              <span>预警明细</span>
+            </div>
+            <div
+              v-for="(w, wIdx) in group.warnings"
+              :key="w.id"
+              class="warning-item"
+              :class="{ 'is-resolved': w.status === '已处理', 'is-approving': w.status === '审批中' }">
+              <div class="wi-left">
+                <div class="wi-status-dot" :class="getStatusDotClass(w.status)"></div>
+                <div class="wi-content">
+                  <div class="wi-header">
+                    <el-tag :type="getWarningTagType(w.warningType)" size="small" effect="dark">{{ w.warningType }}</el-tag>
+                    <span class="wi-time">{{ w.createTime }}</span>
+                    <el-tag v-if="w.status === '审批中'" type="warning" size="small" effect="plain">审批中</el-tag>
+                    <el-tag v-else-if="w.status === '已处理'" type="success" size="small" effect="plain">已处理</el-tag>
+                  </div>
+                  <div class="wi-body">{{ w.content }}</div>
+                  <div class="wi-source">
+                    <el-icon><Connection /></el-icon>
+                    <span>比对来源：{{ w.ruleSource }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="wi-actions">
+                <el-button v-if="w.status === '待处理'" type="primary" size="small" @click="openResolve(w)">
+                  <el-icon><Edit /></el-icon>处理
+                </el-button>
+                <el-button size="small" @click="viewDetail(w)">
+                  <el-icon><View /></el-icon>详情
+                </el-button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 卡片底部操作栏 -->
+          <div v-if="group.warnings.some(w => w.status === '待处理')" class="card-foot">
+            <span class="pending-tip">
+              <el-icon><InfoFilled /></el-icon>
+              该居民还有 {{ group.warnings.filter(w => w.status === '待处理').length }} 条预警待处理
+            </span>
+            <el-button
+              type="primary" size="small" @click="batchResolveGroup(group)">
+              <el-icon><DocumentChecked /></el-icon>
+              批量处理待处理预警
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 列表视图 ============ -->
+      <div v-else class="warning-list-rows">
+        <div v-if="filteredGroupedWarnings.length === 0" class="empty-state">
+          <el-empty description="暂无符合条件的预警" :image-size="80" />
+        </div>
+        <div
+          v-for="(group, gIdx) in filteredGroupedWarnings"
+          :key="group.residentId"
+          class="warning-list-row"
+          :class="{ 'has-abnormal': group.checkItems.some(c => c.status === 'abnormal') }"
+        >
+          <!-- 左侧：居民信息 -->
+          <div class="row-left">
+            <div class="row-avatar">{{ group.residentName.charAt(0) }}</div>
+            <div class="row-info">
+              <div class="row-name">
+                {{ group.residentName }}
+                <span v-if="group.warningCount > 1" class="row-warning-count">{{ group.warningCount }}条预警</span>
+              </div>
+              <div class="row-sub">
+                <span>{{ formatIdCard(group.idCard) }}</span>
+                <span class="sep">·</span>
+                <span>{{ getResidentCommunity(group.residentId) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 中间：享受政策 + 比对结果 -->
+          <div class="row-middle">
+            <!-- 享受政策 -->
+            <div class="row-section">
+              <span class="row-section-label">享受政策：</span>
+              <div class="row-tags">
+                <el-tag
+                  v-for="tag in group.residentTags.slice(0, 4)"
+                  :key="tag.id"
+                  :type="getTagType(tag.tagType)"
+                  size="small"
+                  effect="light"
+                  class="row-tag"
+                >
+                  {{ tag.tagType }}·{{ tag.tagSubType }}
+                </el-tag>
+                <span v-if="group.residentTags.length === 0" class="no-tags">无</span>
+                <span v-if="group.residentTags.length > 4" class="more-tags">+{{ group.residentTags.length - 4 }}</span>
+              </div>
+            </div>
+
+            <!-- 比对结果 -->
+            <div class="row-section">
+              <span class="row-section-label">比对结果：</span>
+              <div class="row-checks">
+                <div
+                  v-for="(item, idx) in group.checkItems"
+                  :key="idx"
+                  class="row-check-item"
+                  :class="{ 'is-abnormal': item.status === 'abnormal' }"
+                  :title="item.remark || item.name + ': ' + item.value"
+                >
+                  <span class="check-dot" :class="item.status === 'abnormal' ? 'dot-red' : 'dot-green'"></span>
+                  <span class="check-name">{{ item.name }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧：预警数 + 操作 -->
+          <div class="row-right">
+            <div class="row-warnings">
+              <div class="row-warn-count" :class="getCountLevel(group.warningCount)">
+                <span class="num">{{ group.warningCount }}</span>
+                <span class="lbl">条预警</span>
+              </div>
+              <div class="row-abnormal-tip" v-if="group.checkItems.filter(c => c.status === 'abnormal').length > 0">
+                <el-icon><WarningFilled /></el-icon>
+                <span>{{ group.checkItems.filter(c => c.status === 'abnormal').length }}项异常</span>
+              </div>
+            </div>
+            <div class="row-actions">
+              <el-button v-if="group.warnings.some(w => w.status === '待处理')" type="primary" size="small" @click="batchResolveGroup(group)">
+                <el-icon><Edit /></el-icon>批量处理
+              </el-button>
+              <el-button size="small" @click="viewDetail(getLatestWarning(group))">
+                <el-icon><View /></el-icon>详情
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="pagination-wrapper">
-        <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="filteredWarnings.length"
+        <el-pagination
+          v-model:current-page="currentPage" v-model:page-size="pageSize"
+          :total="filteredGroupedWarnings.length"
           :page-sizes="[10, 20, 50]" layout="total, sizes, prev, pager, next, jumper" background />
       </div>
     </div>
 
+    <!-- ============ 弹窗 ============ -->
+
+    <!-- 预警详情弹窗 -->
     <el-dialog title="预警详情" v-model="showDetailDialog" width="680px">
       <div v-if="selectedWarning" class="detail-content">
         <div class="detail-section">
@@ -172,7 +364,7 @@
             <div class="info-row">
               <span class="info-label">预警类型</span>
               <span class="info-value">
-                <el-tag :type="getWarningType(selectedWarning.warningType)">{{ selectedWarning.warningType }}</el-tag>
+                <el-tag :type="getWarningTagType(selectedWarning.warningType)">{{ selectedWarning.warningType }}</el-tag>
               </span>
             </div>
             <div class="info-row">
@@ -207,11 +399,6 @@
               <div class="tag-item-body">
                 <span v-if="tag.subsidyAmount" class="tag-info-row"><strong>补贴金额：</strong>{{ tag.subsidyAmount }}元/月</span>
                 <span class="tag-info-row"><strong>失效日期：</strong>{{ tag.expireDate || '目前在保' }}</span>
-                <span v-if="tag.disabilityType && tag.disabilityLevel" class="tag-info-row">
-                  <strong>残疾信息：</strong>{{ tag.disabilityType }} {{ tag.disabilityLevel }}
-                </span>
-                <span v-if="tag.houseAddress" class="tag-info-row"><strong>房屋地址：</strong>{{ tag.houseAddress }}</span>
-                <span v-if="tag.rent" class="tag-info-row"><strong>租金：</strong>{{ tag.rent }}元/月</span>
               </div>
             </div>
           </div>
@@ -234,16 +421,6 @@
               <span class="info-label">处理时间</span>
               <span class="info-value">{{ selectedWarning.resolveTime || '--' }}</span>
             </div>
-            <template v-if="selectedWarning.status === '审批中'">
-              <div class="info-row">
-                <span class="info-label">审批人</span>
-                <span class="info-value">{{ selectedWarning.approver || '--' }}</span>
-              </div>
-              <div v-if="selectedWarning.approveRemark" class="info-row">
-                <span class="info-label">审批意见</span>
-                <span class="info-value">{{ selectedWarning.approveRemark }}</span>
-              </div>
-            </template>
             <div v-if="selectedWarning.imageUrls && selectedWarning.imageUrls.length > 0" class="info-row">
               <span class="info-label">佐证图片</span>
               <div class="info-value image-preview-list">
@@ -261,8 +438,13 @@
           </div>
         </div>
       </div>
+      <template #footer>
+        <el-button @click="showDetailDialog = false">关闭</el-button>
+        <el-button v-if="selectedWarning && selectedWarning.status === '待处理'" type="primary" @click="openResolve(selectedWarning)">立即处理</el-button>
+      </template>
     </el-dialog>
 
+    <!-- 处理预警弹窗 -->
     <el-dialog title="处理预警" v-model="showResolveDialog" width="520px">
       <el-form :model="resolveForm" label-width="100px">
         <el-form-item label="处理结果" required>
@@ -289,9 +471,9 @@
             <el-icon><Plus /></el-icon>
             <template #tip>
               <div class="el-upload__tip">
-                只能上传jpg/png文件，单张不超过2MB，最多3张
-              </div>
-            </template>
+              只能上传jpg/png文件，单张不超过2MB，最多3张
+            </div>
+          </template>
           </el-upload>
         </el-form-item>
         <el-form-item label="审批人" required v-if="resolveForm.result === '信息有误'">
@@ -322,6 +504,7 @@
       </template>
     </el-dialog>
 
+    <!-- 新增预警弹窗 -->
     <el-dialog title="新增预警" v-model="showAddWarningDialog" width="500px">
       <el-form :model="addForm" label-width="100px">
         <el-form-item label="居民姓名">
@@ -351,16 +534,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Plus, Warning, Bell, CircleCheck, Clock, Money, User, Location, InfoFilled } from '@element-plus/icons-vue'
-import { warnings as mockWarnings, warningTypes, tags, residents } from '../../data/mock'
+import { ref, reactive, computed } from 'vue'
+import { ElMessage } from 'element-plus'
+import {
+  Search, Refresh, Plus, Warning, Bell, CircleCheck, Clock, Money, User, Location, InfoFilled, DocumentChecked, Grid, List, Connection, View, Edit, WarningFilled
+} from '@element-plus/icons-vue'
+import { warnings as mockWarnings, warningTypes, residents, tags as mockTags } from '../../data/mock'
 
 const warnings = ref([...mockWarnings])
 const currentPage = ref(1)
 const pageSize = ref(10)
 const filterType = ref('')
 const filterStatus = ref('')
+const filterCount = ref('')
+const viewMode = ref('card')
 const showDetailDialog = ref(false)
 const showResolveDialog = ref(false)
 const showAddWarningDialog = ref(false)
@@ -370,148 +557,341 @@ const timeRangeType = ref('month')
 const customDateRange = ref([])
 const dateFilterRange = ref(null)
 
-const ruleEnabled = reactive({
-  houseArea: true, car: true, company: true, fund: true,
-  death: true, migration: true, migrationAlert: true, duplicate4050: true, income: true
-})
-
 const totalCount = computed(() => warnings.value.length)
 const pendingCount = computed(() => warnings.value.filter(w => w.status === '待处理').length)
 const resolvedCount = computed(() => warnings.value.filter(w => w.status === '已处理').length)
 const todayCount = computed(() => warnings.value.filter(w => w.createTime.startsWith('2024-06-20')).length)
 
-const getWarningsInRange = (type) => {
-  let list = warnings.value.filter(w => type.includes(w.warningType) || w.warningType.includes(type))
-  if (dateFilterRange.value) {
-    list = list.filter(w => {
-      const wDate = new Date(w.createTime)
-      return wDate >= dateFilterRange.value[0] && wDate <= dateFilterRange.value[1]
-    })
-  }
-  return list.length
-}
-
 const propertyWarningCount = computed(() => {
   const types = ['不动产超标', '车辆登记', '工商注册', '公积金超标']
-  let list = warnings.value.filter(w => types.some(t => w.warningType.includes(t) || t.includes(w.warningType)))
-  if (dateFilterRange.value) {
-    list = list.filter(w => {
-      const wDate = new Date(w.createTime)
-      return wDate >= dateFilterRange.value[0] && wDate <= dateFilterRange.value[1]
-    })
-  }
-  return list.length
+  return warnings.value.filter(w => types.some(t => w.warningType.includes(t) || t.includes(w.warningType))).length
 })
 
 const survivalWarningCount = computed(() => {
-  let list = warnings.value.filter(w => w.warningType.includes('死亡') || w.warningType.includes('状态不一致'))
-  if (dateFilterRange.value) {
-    list = list.filter(w => {
-      const wDate = new Date(w.createTime)
-      return wDate >= dateFilterRange.value[0] && wDate <= dateFilterRange.value[1]
-    })
-  }
-  return list.length
+  return warnings.value.filter(w => w.warningType.includes('死亡') || w.warningType.includes('状态不一致')).length
 })
 
 const householdWarningCount = computed(() => {
-  let list = warnings.value.filter(w => w.warningType.includes('户籍'))
-  if (dateFilterRange.value) {
-    list = list.filter(w => {
-      const wDate = new Date(w.createTime)
-      return wDate >= dateFilterRange.value[0] && wDate <= dateFilterRange.value[1]
-    })
-  }
-  return list.length
+  return warnings.value.filter(w => w.warningType.includes('户籍')).length
+})
+
+// 当前选中预警对应的居民标签
+const warningResidentTags = computed(() => {
+  if (!selectedWarning.value) return []
+  return mockTags.filter(t => t.residentId === selectedWarning.value.residentId)
 })
 
 const onTimeRangeChange = () => {
   const now = new Date()
   if (timeRangeType.value === 'month') {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1)
-    dateFilterRange.value = [start, now]
+    dateFilterRange.value = [new Date(now.getFullYear(), now.getMonth(), 1), now]
   } else if (timeRangeType.value === 'quarter') {
     const q = Math.floor(now.getMonth() / 3)
-    const start = new Date(now.getFullYear(), q * 3, 1)
-    dateFilterRange.value = [start, now]
+    dateFilterRange.value = [new Date(now.getFullYear(), q * 3, 1), now]
   } else if (timeRangeType.value === 'year') {
-    const start = new Date(now.getFullYear(), 0, 1)
-    dateFilterRange.value = [start, now]
-  } else if (timeRangeType.value === 'custom' && customDateRange.value && customDateRange.value.length === 2) {
-    dateFilterRange.value = [new Date(customDateRange.value[0]), new Date(customDateRange.value[1])]
+    dateFilterRange.value = [new Date(now.getFullYear(), 0, 1), now]
   } else {
     dateFilterRange.value = null
   }
 }
 
-const filteredWarnings = computed(() => {
-  let result = warnings.value
-  if (filterType.value) result = result.filter(w => w.warningType === filterType.value)
-  if (filterStatus.value) result = result.filter(w => w.status === filterStatus.value)
+// 按居民聚合预警
+const groupedWarnings = computed(() => {
+  const map = new Map()
+  warnings.value.forEach(w => {
+    if (!map.has(w.residentId)) {
+      map.set(w.residentId, {
+        residentId: w.residentId,
+        residentName: w.residentName,
+        idCard: w.idCard || '',
+        warnings: [],
+        warningCount: 0,
+        residentTags: [],
+        checkItems: []
+      })
+    }
+    const group = map.get(w.residentId)
+    group.warnings.push(w)
+    group.warningCount++
+  })
+  // 填充居民标签和比对项
+  map.forEach((group, residentId) => {
+    group.residentTags = mockTags.filter(t => t.residentId === residentId && t.isEnjoy)
+    group.checkItems = buildCheckItems(group)
+  })
+  const arr = Array.from(map.values())
+  // 按预警数量降序、最新预警时间降序
+  arr.sort((a, b) => {
+    if (b.warningCount !== a.warningCount) return b.warningCount - a.warningCount
+    const aTime = new Date(getLatestWarning(a).createTime)
+    const bTime = new Date(getLatestWarning(b).createTime)
+    return bTime - aTime
+  })
+  return arr
+})
+
+// 构建比对项列表
+const buildCheckItems = (group) => {
+  const tags = group.residentTags
+  const hasLowIncome = tags.some(t => t.tagType === '低保' || t.tagType === '特困')
+  const hasDisability = tags.some(t => t.tagType === '残疾')
+  const hasElderly = tags.some(t => t.tagType === '老年')
+  const hasPublicRental = tags.some(t => t.tagType === '公租房')
+  const hasSocial = tags.some(t => t.tagType === '社保')
+
+  // 从低保标签中提取比对数据
+  const lowIncomeTag = tags.find(t => t.tagType === '低保' || t.tagType === '特困')
+  const items = []
+
+  // 户籍比对
+  items.push({
+    name: '户籍状态',
+    value: lowIncomeTag?.householdRegister || '武昌区',
+    status: 'normal',
+    remark: ''
+  })
+
+  // 生存状态比对
+  const hasSurvivalWarning = group.warnings.some(w => w.ruleSource === '生存状态校验')
+  items.push({
+    name: '生存状态',
+    value: hasSurvivalWarning ? '外部系统标记已去世' : '在世',
+    status: hasSurvivalWarning ? 'abnormal' : 'normal',
+    remark: hasSurvivalWarning ? '与系统在册状态不一致' : ''
+  })
+
+  // 收入比对
+  if (hasLowIncome || hasPublicRental) {
+    const perCapitaIncome = lowIncomeTag?.perCapitaIncome || 0
+    const incomeAbnormal = perCapitaIncome > 500
+    items.push({
+      name: '人均收入',
+      value: perCapitaIncome + '元/月',
+      status: incomeAbnormal ? 'abnormal' : 'normal',
+      remark: incomeAbnormal ? '超出低保标准500元/月' : ''
+    })
+  }
+
+  // 房产比对
+  if (hasLowIncome) {
+    const houseArea = lowIncomeTag?.houseArea || 0
+    const houseCheck = lowIncomeTag?.houseCheck
+    const houseAbnormal = houseCheck === '否' || houseArea > 50
+    items.push({
+      name: '房产情况',
+      value: houseArea > 0 ? houseArea + '㎡' : '无自购房产',
+      status: houseAbnormal ? 'abnormal' : 'normal',
+      remark: houseAbnormal ? '房产面积超出保障标准' : ''
+    })
+  }
+
+  // 车辆比对
+  if (hasLowIncome) {
+    const carPlate = lowIncomeTag?.carPlate || '无'
+    const carCheck = lowIncomeTag?.carCheck
+    const carAbnormal = carCheck === '否' || (carPlate && carPlate !== '无')
+    items.push({
+      name: '车辆登记',
+      value: carPlate,
+      status: carAbnormal ? 'abnormal' : 'normal',
+      remark: carAbnormal ? '名下登记有车辆' : ''
+    })
+  }
+
+  // 存款比对
+  if (hasLowIncome) {
+    const deposit = lowIncomeTag?.depositAmount || 0
+    const depositCheck = lowIncomeTag?.depositCheck
+    const depositAbnormal = depositCheck === '否' || deposit > 30000
+    items.push({
+      name: '存款金额',
+      value: deposit + '元',
+      status: depositAbnormal ? 'abnormal' : 'normal',
+      remark: depositAbnormal ? '存款超出保障标准' : ''
+    })
+  }
+
+  // 工商注册比对
+  if (hasLowIncome) {
+    const companyCheck = lowIncomeTag?.companyCheck
+    items.push({
+      name: '工商注册',
+      value: companyCheck === '是' ? '无注册企业' : '名下有企业',
+      status: companyCheck === '否' ? 'abnormal' : 'normal',
+      remark: companyCheck === '否' ? '存在经营性收入' : ''
+    })
+  }
+
+  // 服刑状态比对
+  if (hasLowIncome) {
+    const imprisoned = lowIncomeTag?.imprisoned
+    items.push({
+      name: '服刑状态',
+      value: imprisoned === '否' ? '无服刑记录' : '在服刑',
+      status: imprisoned !== '否' ? 'abnormal' : 'normal',
+      remark: imprisoned !== '否' ? '服刑期间应停发保障待遇' : ''
+    })
+  }
+
+  // 政策互斥比对
+  const hasMutexWarning = group.warnings.some(w => w.warningType === '政策互斥')
+  if (hasMutexWarning || (hasLowIncome && hasDisability)) {
+    items.push({
+      name: '政策互斥',
+      value: hasMutexWarning ? '存在互斥待遇' : '政策享受正常',
+      status: hasMutexWarning ? 'abnormal' : 'normal',
+      remark: hasMutexWarning ? '同时享受多类同性质保障待遇' : ''
+    })
+  }
+
+  return items
+}
+
+const filteredGroupedWarnings = computed(() => {
+  let result = groupedWarnings.value
+  if (filterType.value) {
+    result = result.filter(g => g.warnings.some(w => w.warningType === filterType.value))
+  }
+  if (filterStatus.value) {
+    result = result.filter(g => g.warnings.some(w => w.status === filterStatus.value))
+  }
+  if (filterCount.value) {
+    if (filterCount.value === '3+') {
+      result = result.filter(g => g.warningCount >= 3)
+    } else {
+      result = result.filter(g => g.warningCount === parseInt(filterCount.value))
+    }
+  }
   return result
 })
 
-const resolveForm = reactive({ result: '', remark: '', imageUrls: [], approver: '', approveRemark: '' })
-const addForm = reactive({ residentName: '', warningType: '', content: '', level: '普通' })
-const fileList = ref([])
+// ============ 辅助函数 ============
 
-const getWarningType = (type) => {
-  if (type.includes('死亡') || type.includes('不动产') || type.includes('车辆') || type.includes('重复') || type.includes('状态')) return 'danger'
-  if (type.includes('户籍') || type.includes('服刑') || type.includes('失联')) return 'warning'
+const formatIdCard = (idCard) => {
+  if (!idCard) return '--'
+  return idCard.slice(0, 6) + '********' + idCard.slice(-4)
+}
+
+const getResidentCommunity = (residentId) => {
+  const r = residents.find(x => x.id === residentId)
+  return r ? `${r.community} · ${r.grid}` : '六角社区'
+}
+
+const getLatestWarning = (group) => {
+  return group.warnings.sort((a, b) => new Date(b.createTime) - new Date(a.createTime))[0]
+}
+
+const getUniqueWarningTypes = (group) => {
+  return [...new Set(group.warnings.map(w => w.warningType))]
+}
+
+const countTypeInGroup = (group, type) => {
+  return group.warnings.filter(w => w.warningType === type).length
+}
+
+const getCountLevel = (count) => {
+  if (count >= 3) return 'level-high'
+  if (count === 2) return 'level-mid'
+  return 'level-low'
+}
+
+const getWarningTagType = (type) => {
+  if (type.includes('死亡') || type.includes('状态不一致') || type.includes('互斥')) return 'danger'
+  if (type.includes('到期') || type.includes('户籍')) return 'warning'
+  if (type.includes('符合') || type.includes('到龄')) return 'success'
   return 'info'
 }
-const getStatusType = (status) => ({ '待处理': 'danger', '审批中': 'warning', '已处理': 'success', '已忽略': 'info' }[status] || 'info')
+
+const getStatusDotClass = (status) => {
+  if (status === '待处理') return 'dot-pending'
+  if (status === '审批中') return 'dot-approving'
+  return 'dot-resolved'
+}
+
+const getStatusType = (status) => {
+  if (status === '待处理') return 'warning'
+  if (status === '审批中') return ''
+  if (status === '已处理') return 'success'
+  return 'info'
+}
 
 const getTagType = (type) => {
-  const map = {
-    '低保': 'danger', '残疾': 'warning', '公租房': 'info',
-    '老年': 'success', '计生': '', '社保': '', '重症': 'danger',
-    '涉军': 'danger', '支农返汉': 'info', '困境儿童': 'warning'
-  }
-  return map[type] || 'info'
+  const map = { '低保': '', '残疾': 'danger', '公租房': 'warning', '老年': 'success', '计生': 'info' }
+  return map[type] || ''
 }
 
 const getSourceDesc = (source) => {
-  const map = {
-    '生存状态校验': '民政死亡数据比对接口',
-    '到龄提醒校验': '系统内部规则校验',
-    '政策符合条件预警': '政策匹配引擎',
-    '政策到期校验': '系统标签有效期校验',
-    '政策互斥校验': '政策互斥规则引擎',
-    '手动录入': '工作人员手动登记'
-  }
-  return map[source] || '系统自动比对'
+  const map = { 'internal': '内部系统比对', 'external': '外部系统推送', 'manual': '人工录入' }
+  return map[source] || source
 }
 
-const isDeathWarning = computed(() => {
-  if (!selectedWarning.value) return false
-  return selectedWarning.value.warningType.includes('死亡') || selectedWarning.value.warningType.includes('状态不一致')
-})
+// ============ 操作函数 ============
 
-const warningResidentTags = computed(() => {
-  if (!selectedWarning.value) return []
-  const rid = selectedWarning.value.residentId
-  return tags.filter(t => t.residentId === rid)
-})
+const onViewModeChange = () => {
+  ElMessage.success(`已切换为${viewMode.value === 'card' ? '卡片视图' : '列表视图'}`)
+}
 
-const approvers = [
-  { value: '张三', label: '张三（街道民政办主任）' },
-  { value: '李四', label: '李四（社区书记）' },
-  { value: '王五', label: '王五（民政专干）' }
-]
+const handleSearch = () => {
+  currentPage.value = 1
+}
 
-const handleSearch = () => { currentPage.value = 1 }
-const handleReset = () => { filterType.value = ''; filterStatus.value = ''; currentPage.value = 1 }
-const viewDetail = (row) => { selectedWarning.value = row; showDetailDialog.value = true }
-const handleResolve = (row) => { 
-  selectedWarning.value = row
+const handleReset = () => {
+  filterType.value = ''
+  filterStatus.value = ''
+  filterCount.value = ''
+  currentPage.value = 1
+}
+
+const viewDetail = (w) => {
+  selectedWarning.value = w
+  showDetailDialog.value = true
+}
+
+// 处理单条预警
+const openResolve = (w) => {
+  selectedWarning.value = w
   resolveForm.result = ''
   resolveForm.remark = ''
-  resolveForm.imageUrls = []
   resolveForm.approver = ''
   resolveForm.approveRemark = ''
+  resolveForm.imageUrls = []
   fileList.value = []
-  showResolveDialog.value = true 
+  showResolveDialog.value = true
+}
+
+// 批量处理一组预警
+const batchResolveGroup = (group) => {
+  const pending = group.warnings.filter(w => w.status === '待处理')
+  if (pending.length === 0) {
+    ElMessage.warning('该居民没有待处理的预警')
+    return
+  }
+  openResolve(pending[0])
+}
+
+// ============ 弹窗数据 ============
+const resolveForm = reactive({
+  result: '',
+  remark: '',
+  imageUrl: '',
+  approver: '',
+  approveRemark: '',
+  imageUrls: []
+})
+const fileList = ref([])
+const approvers = [
+  { label: '街道民政办主任', value: 'director' },
+  { label: '社区书记', value: 'secretary' },
+  { label: '民政专干', value: 'specialist' }
+]
+
+const isDeathWarning = computed(() => {
+  return selectedWarning.value &&
+    (selectedWarning.value.warningType.includes('死亡') || selectedWarning.value.warningType.includes('状态不一致'))
+})
+
+const handleUploadSuccess = (response, file) => {
+  resolveForm.imageUrls.push(URL.createObjectURL(file.raw))
 }
 
 const beforeUpload = (file) => {
@@ -522,23 +902,14 @@ const beforeUpload = (file) => {
     return false
   }
   if (!isLt2M) {
-    ElMessage.error('单张图片大小不能超过2MB')
+    ElMessage.error('图片大小不能超过2MB')
     return false
   }
   return true
 }
 
-const handleUploadSuccess = (response, file) => {
-  const url = URL.createObjectURL(file.raw)
-  resolveForm.imageUrls.push(url)
-}
-
-const handleRemove = (file) => {
-  const url = URL.createObjectURL(file.raw)
-  const index = resolveForm.imageUrls.indexOf(url)
-  if (index > -1) {
-    resolveForm.imageUrls.splice(index, 1)
-  }
+const handleRemove = () => {
+  resolveForm.imageUrls = []
 }
 
 const handleExceed = () => {
@@ -558,62 +929,46 @@ const confirmResolve = () => {
     ElMessage.warning('请上传佐证图片')
     return
   }
-  if (resolveForm.result === '信息有误') {
-    if (!resolveForm.approver) {
-      ElMessage.warning('请选择审批人')
-      return
-    }
+  if (resolveForm.result === '信息有误' && !resolveForm.approver) {
+    ElMessage.warning('请选择审批人')
+    return
   }
-  if (selectedWarning.value) {
-    selectedWarning.value.imageUrls = [...resolveForm.imageUrls]
-    if (resolveForm.result === '信息有误') {
-      selectedWarning.value.status = '审批中'
-      selectedWarning.value.approver = resolveForm.approver
-      selectedWarning.value.approveRemark = resolveForm.approveRemark
-      ElMessage.success('已提交审批，请等待审批人处理')
-    } else {
-      selectedWarning.value.status = '已处理'
-      selectedWarning.value.operator = '管理员'
-      selectedWarning.value.resolveTime = new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().slice(0, 5)
-      
-      if (isDeathWarning.value) {
-        const rid = selectedWarning.value.residentId
-        const res = residents.find(r => r.id === rid)
-        if (res) {
-          res.survivalStatus = '已去世'
-          res.isHistorical = true
-        }
-        tags.filter(t => t.residentId === rid).forEach(t => {
-          t.isEnjoy = false
-        })
-        ElMessage.success('处理成功，该人员保障待遇已停止，已移入历史居民库')
-      } else {
-        ElMessage.success('处理成功')
-      }
-    }
+
+  const w = selectedWarning.value
+  w.operator = 'admin'
+  w.resolveTime = new Date().toLocaleString('zh-CN')
+  w.imageUrls = [...resolveForm.imageUrls]
+  if (resolveForm.result === '信息有误') {
+    w.status = '审批中'
+    w.approver = resolveForm.approver
+    w.approveRemark = resolveForm.approveRemark
+    ElMessage.success('已提交审批，请等待审批结果')
+  } else {
+    w.status = '已处理'
+    ElMessage.success('处理成功')
   }
   showResolveDialog.value = false
 }
 
-const confirmAdd = () => {
-  warnings.value.unshift({
-    id: String(Date.now()),
-    residentId: 'new',
-    residentName: addForm.residentName,
-    idCard: '',
-    warningType: addForm.warningType,
-    content: addForm.content,
-    level: addForm.level,
-    ruleSource: '手动录入',
-    status: '待处理',
-    createTime: new Date().toISOString().split('T')[0],
-    operator: ''
-  })
-  showAddWarningDialog.value = false
-  ElMessage.success('新增预警成功')
-}
+const addForm = reactive({
+  residentName: '',
+  warningType: '',
+  content: '',
+  level: '普通'
+})
 
-watch(timeRangeType, onTimeRangeChange, { immediate: true })
+const confirmAdd = () => {
+  if (!addForm.residentName) {
+    ElMessage.warning('请填写居民姓名')
+    return
+  }
+  if (!addForm.warningType) {
+    ElMessage.warning('请选择预警类型')
+    return
+  }
+  ElMessage.success('新增预警成功')
+  showAddWarningDialog.value = false
+}
 </script>
 
 <style scoped>
@@ -622,7 +977,7 @@ watch(timeRangeType, onTimeRangeChange, { immediate: true })
 .page-title-wrapper { flex: 1; }
 .page-title { font-size: 20px; font-weight: 600; color: #1f2937; margin: 0 0 4px 0; }
 .page-subtitle { font-size: 13px; color: #9ca3af; margin: 0; }
-.header-actions { display: flex; gap: 12px; }
+.header-actions { display: flex; gap: 12px; align-items: center; }
 
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
 .stat-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: #fff; border-radius: 10px; border: 1px solid #f3f4f6; }
@@ -637,6 +992,7 @@ watch(timeRangeType, onTimeRangeChange, { immediate: true })
 .content-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
 .rules-card { margin-bottom: 16px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+.filter-header { margin-bottom: 20px; }
 .header-left { display: flex; flex-direction: column; gap: 4px; }
 .card-title { font-size: 15px; font-weight: 600; color: #1f2937; }
 .card-desc { font-size: 12px; color: #9ca3af; }
@@ -653,13 +1009,492 @@ watch(timeRangeType, onTimeRangeChange, { immediate: true })
 .wc-count { font-size: 28px; font-weight: 700; line-height: 1.2; }
 .wc-label { font-size: 14px; opacity: 0.9; }
 
-.search-bar { display: flex; gap: 10px; align-items: center; }
-.warning-content { display: flex; align-items: center; gap: 8px; }
-.content-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.action-buttons { display: flex; justify-content: center; gap: 4px; }
-.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+.filter-bar { display: flex; gap: 10px; align-items: center; }
+.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 20px; }
 
-.no-data { color: #d1d5db; font-size: 12px; }
+/* ============ 卡片视图样式 ============ */
+.warning-cards-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.empty-state { grid-column: 1 / -1; padding: 40px 0; }
+
+.resident-warning-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.resident-warning-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  border-color: #d1d5db;
+}
+.resident-warning-card.multi-warning {
+  border-left: 3px solid #f56c6c;
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.resident-info .avatar {
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+.resident-info .sub-info {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+.resident-info .sub-info .id-card { color: #6b7280; }
+
+.warning-count-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 8px;
+  min-width: 64px;
+}
+.warning-count-wrap.level-low {
+  background: #fef3c7;
+}
+.warning-count-wrap.level-mid {
+  background: #fee2e2;
+}
+.warning-count-wrap.level-high {
+  background: #fecaca;
+}
+.warning-count-wrap .count-num {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: #b91c1c;
+}
+.warning-count-wrap.level-low .count-num { color: #92400e; }
+.warning-count-wrap .count-label {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* ============ 享受政策标签 ============ */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+.section-label.small {
+  font-size: 12px;
+  margin-bottom: 8px;
+  color: #6b7280;
+}
+.section-label .abnormal-count {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.enjoyed-tags-section {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+.enjoyed-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.enjoyed-tag {
+  font-size: 12px;
+}
+.no-tags-tip {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* ============ 通铺比对列表 ============ */
+.check-list-section {
+  padding-bottom: 12px;
+  border-bottom: 1px dashed #e5e7eb;
+}
+.check-list-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.check-item {
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #f3f4f6;
+  transition: all 0.15s;
+}
+.check-item.is-abnormal {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.check-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.check-item-name {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+.check-item.is-abnormal .check-item-name {
+  color: #b91c1c;
+}
+.abnormal-icon {
+  color: #dc2626;
+  font-size: 14px;
+}
+.normal-icon {
+  color: #10b981;
+  font-size: 14px;
+}
+.check-item-value {
+  font-size: 13px;
+  color: #1f2937;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.check-item.is-abnormal .check-item-value {
+  color: #dc2626;
+}
+.check-item-remark {
+  font-size: 11px;
+  color: #dc2626;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.warning-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.warning-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
+  transition: all 0.15s;
+}
+.warning-item:hover {
+  background: #f5f5f5;
+}
+.warning-item.is-resolved {
+  opacity: 0.65;
+}
+.warning-item.is-approving {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.wi-left {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.wi-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.wi-status-dot.dot-pending { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+.wi-status-dot.dot-approving { background: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+.wi-status-dot.dot-resolved { background: #10b981; }
+
+.wi-content { flex: 1; min-width: 0; }
+.wi-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.wi-time {
+  font-size: 11px;
+  color: #9ca3af;
+}
+.wi-body {
+  font-size: 12px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+.wi-source {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+.wi-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+.pending-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #b45309;
+  background: #fffbeb;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* ============ 列表视图样式 ============ */
+.warning-list-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.warning-list-row {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+.warning-list-row:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: #d1d5db;
+}
+.warning-list-row.has-abnormal {
+  border-left: 3px solid #f56c6c;
+}
+
+.row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+.row-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.row-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.row-warning-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  background: #f56c6c;
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+.row-sub {
+  font-size: 12px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.row-sub .sep {
+  color: #d1d5db;
+}
+
+.row-middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.row-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.row-section-label {
+  font-size: 12px;
+  color: #6b7280;
+  flex-shrink: 0;
+  padding-top: 2px;
+  min-width: 60px;
+}
+.row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.row-tag {
+  font-size: 11px;
+}
+.no-tags {
+  font-size: 12px;
+  color: #9ca3af;
+}
+.more-tags {
+  font-size: 11px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.row-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.row-check-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #6b7280;
+  padding: 2px 0;
+  cursor: default;
+}
+.row-check-item.is-abnormal {
+  color: #dc2626;
+}
+.check-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.check-dot.dot-green {
+  background: #10b981;
+}
+.check-dot.dot-red {
+  background: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+}
+.check-name {
+  white-space: nowrap;
+}
+
+.row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 180px;
+}
+.row-warnings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.row-warn-count {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+.row-warn-count .num {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.row-warn-count .lbl {
+  font-size: 11px;
+  color: #6b7280;
+}
+.row-warn-count.level-low {
+  background: #fef3c7;
+}
+.row-warn-count.level-low .num {
+  color: #92400e;
+}
+.row-warn-count.level-mid {
+  background: #fee2e2;
+}
+.row-warn-count.level-mid .num {
+  color: #b91c1c;
+}
+.row-warn-count.level-high {
+  background: #fecaca;
+}
+.row-warn-count.level-high .num {
+  color: #b91c1c;
+}
+.row-abnormal-tip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
 
 .detail-content { padding: 8px 0; }
 .detail-section { margin-bottom: 20px; }
@@ -687,3 +1522,4 @@ watch(timeRangeType, onTimeRangeChange, { immediate: true })
 .confirm-tip { background: #fef2f2; color: #b91c1c; }
 .confirm-tip .el-icon { margin-top: 1px; color: #ef4444; }
 </style>
+ 

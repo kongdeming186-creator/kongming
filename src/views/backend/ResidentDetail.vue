@@ -166,7 +166,7 @@
       </div>
     </div>
     
-    <div class="content-card section-card">
+    <div class="content-card section-card" :class="{ 'collapsed': !activeTagType }">
       <div class="section-header">
         <div class="section-title-wrapper">
           <h3 class="section-title">保障信息</h3>
@@ -899,6 +899,15 @@ const handleAddTag = () => {
 
 .section-card {
   margin-bottom: 20px;
+}
+
+.section-card.collapsed .section-header {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.section-card.collapsed .benefit-info-container {
+  gap: 0;
 }
 
 .section-header {
