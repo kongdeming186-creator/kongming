@@ -356,91 +356,99 @@
     <!-- ============ 弹窗 ============ -->
 
     <!-- 预警详情弹窗 -->
-    <el-dialog title="预警详情" v-model="showDetailDialog" width="680px">
-      <div v-if="selectedWarning" class="detail-content">
-        <div class="detail-section">
-          <h4 class="section-title">预警信息</h4>
-          <div class="detail-info">
-            <div class="info-row">
-              <span class="info-label">预警类型</span>
-              <span class="info-value">
-                <el-tag :type="getWarningTagType(selectedWarning.warningType)">{{ selectedWarning.warningType }}</el-tag>
-              </span>
+    <el-dialog title="居民预警详情" v-model="showDetailDialog" width="720px">
+      <div v-if="currentResident" class="detail-content">
+        <!-- 居民信息 -->
+        <div class="resident-info-card">
+          <div class="resident-avatar">{{ currentResident.name.charAt(0) }}</div>
+          <div class="resident-detail">
+            <div class="resident-name">
+              {{ currentResident.name }}
+              <el-tag type="info" size="small" effect="plain">{{ currentResident.idCard ? formatIdCard(currentResident.idCard) : '无身份证信息' }}</el-tag>
             </div>
-            <div class="info-row">
-              <span class="info-label">涉及居民</span>
-              <span class="info-value">{{ selectedWarning.residentName }}（{{ selectedWarning.idCard || '无身份证信息' }}）</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">预警内容</span>
-              <span class="info-value highlight">{{ selectedWarning.content }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">比对来源</span>
-              <span class="info-value">{{ selectedWarning.ruleSource }}（{{ getSourceDesc(selectedWarning.ruleSource) }}）</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">预警时间</span>
-              <span class="info-value">{{ selectedWarning.createTime }}</span>
+            <div class="resident-meta">
+              <span><el-icon><Location /></el-icon> {{ getResidentCommunity(currentResident.id) }}</span>
+              <span class="sep">·</span>
+              <span><el-icon><Bell /></el-icon> 共 {{ residentWarnings.length }} 条预警，待处理 {{ residentWarnings.filter(w => w.status === '待处理').length }} 条</span>
             </div>
           </div>
         </div>
-        <div class="detail-section">
-          <h4 class="section-title">所属标签</h4>
-          <div v-if="warningResidentTags.length > 0" class="resident-tags-list">
-            <div v-for="tag in warningResidentTags" :key="tag.id" class="resident-tag-item">
-              <div class="tag-item-header">
-                <el-tag :type="getTagType(tag.tagType)" size="small" effect="light">{{ tag.tagType }}</el-tag>
-                <span class="tag-sub-name">{{ tag.tagSubType }}</span>
+
+        <!-- 标签及预警列表 -->
+        <div class="tags-with-warnings">
+          <div v-for="tag in warningResidentTags" :key="tag.id" class="tag-warnings-block"
+               :class="{ 'has-pending': getTagWarnings(tag).some(w => w.status === '待处理') }">
+            <!-- 标签头部 -->
+            <div class="tag-header">
+              <div class="tag-info">
+                <el-tag :type="getTagType(tag.tagType)" size="default" effect="light">{{ tag.tagType }}</el-tag>
+                <span class="tag-sub">{{ tag.tagSubType }}</span>
                 <el-tag :type="tag.isEnjoy ? 'success' : 'info'" size="small" effect="plain">
                   {{ tag.isEnjoy ? '享受中' : '已停发' }}
                 </el-tag>
               </div>
-              <div class="tag-item-body">
-                <span v-if="tag.subsidyAmount" class="tag-info-row"><strong>补贴金额：</strong>{{ tag.subsidyAmount }}元/月</span>
-                <span class="tag-info-row"><strong>失效日期：</strong>{{ tag.expireDate || '目前在保' }}</span>
+              <div class="tag-stats">
+                <span v-if="getTagWarnings(tag).length > 0" class="warn-count">
+                  <el-icon><WarningFilled /></el-icon>
+                  {{ getTagWarnings(tag).length }} 条预警
+                </span>
+                <span v-if="getTagWarnings(tag).filter(w => w.status === '待处理').length > 0" class="pending-count">
+                  {{ getTagWarnings(tag).filter(w => w.status === '待处理').length }} 条待处理
+                </span>
               </div>
             </div>
-          </div>
-          <div v-else class="empty-tags">
-            <el-empty description="该居民暂无保障标签信息" :image-size="80" />
+
+            <!-- 标签信息 -->
+            <div class="tag-meta">
+              <span v-if="tag.subsidyAmount"><strong>补贴：</strong>{{ tag.subsidyAmount }}元/月</span>
+              <span><strong>有效期：</strong>{{ tag.expireDate || '目前在保' }}</span>
+              <span v-if="tag.effectiveDate"><strong>生效日期：</strong>{{ tag.effectiveDate }}</span>
+            </div>
+
+            <!-- 该标签下的预警列表 -->
+            <div v-if="getTagWarnings(tag).length > 0" class="tag-warning-list">
+              <div v-for="w in getTagWarnings(tag)" :key="w.id" class="tag-warning-item"
+                   :class="{ 'is-pending': w.status === '待处理' }">
+                <div class="tw-left">
+                  <div class="tw-status-dot" :class="getStatusDotClass(w.status)"></div>
+                  <div class="tw-content">
+                    <div class="tw-header">
+                      <el-tag :type="getWarningTagType(w.warningType)" size="small" effect="dark">{{ w.warningType }}</el-tag>
+                      <span class="tw-time">{{ w.createTime }}</span>
+                      <el-tag v-if="w.status === '审批中'" type="warning" size="small" effect="plain">审批中</el-tag>
+                      <el-tag v-else-if="w.status === '已处理'" type="success" size="small" effect="plain">已处理</el-tag>
+                    </div>
+                    <div class="tw-body">{{ w.content }}</div>
+                    <div class="tw-source">
+                      <el-icon><Connection /></el-icon>
+                      <span>比对来源：{{ w.ruleSource }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="tw-actions">
+                  <el-button v-if="w.status === '待处理'" type="primary" size="small" @click="openResolve(w)">
+                    <el-icon><Edit /></el-icon>核实处理
+                  </el-button>
+                  <el-button size="small" @click="viewDetail(w)">
+                    <el-icon><View /></el-icon>详情
+                  </el-button>
+                </div>
+              </div>
+            </div>
+            <div v-else class="no-warning-tip">
+              <el-icon><CircleCheck /></el-icon>
+              <span>该标签暂无预警信息</span>
+            </div>
           </div>
         </div>
-        <div class="detail-section">
-          <h4 class="section-title">处理记录</h4>
-          <div class="detail-info">
-            <div class="info-row">
-              <span class="info-label">当前状态</span>
-              <span class="info-value"><el-tag :type="getStatusType(selectedWarning.status)">{{ selectedWarning.status }}</el-tag></span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">处理人</span>
-              <span class="info-value">{{ selectedWarning.operator || '--' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">处理时间</span>
-              <span class="info-value">{{ selectedWarning.resolveTime || '--' }}</span>
-            </div>
-            <div v-if="selectedWarning.imageUrls && selectedWarning.imageUrls.length > 0" class="info-row">
-              <span class="info-label">佐证图片</span>
-              <div class="info-value image-preview-list">
-                <el-image
-                  v-for="(url, idx) in selectedWarning.imageUrls"
-                  :key="idx"
-                  :src="url"
-                  :preview-src-list="selectedWarning.imageUrls"
-                  :initial-index="idx"
-                  fit="cover"
-                  style="width: 60px; height: 60px; border-radius: 4px; margin-right: 8px;"
-                />
-              </div>
-            </div>
-          </div>
+
+        <!-- 无标签提示 -->
+        <div v-if="warningResidentTags.length === 0" class="empty-tags">
+          <el-empty description="该居民暂无保障标签信息" :image-size="80" />
         </div>
       </div>
       <template #footer>
         <el-button @click="showDetailDialog = false">关闭</el-button>
-        <el-button v-if="selectedWarning && selectedWarning.status === '待处理'" type="primary" @click="openResolve(selectedWarning)">立即处理</el-button>
       </template>
     </el-dialog>
 
@@ -575,11 +583,55 @@ const householdWarningCount = computed(() => {
   return warnings.value.filter(w => w.warningType.includes('户籍')).length
 })
 
+// 当前居民信息
+const currentResident = computed(() => {
+  if (!selectedWarning.value) return null
+  return residents.find(r => r.id === selectedWarning.value.residentId)
+})
+
 // 当前选中预警对应的居民标签
 const warningResidentTags = computed(() => {
   if (!selectedWarning.value) return []
   return mockTags.filter(t => t.residentId === selectedWarning.value.residentId)
 })
+
+// 当前居民的所有预警
+const residentWarnings = computed(() => {
+  if (!selectedWarning.value) return []
+  return warnings.value.filter(w => w.residentId === selectedWarning.value.residentId)
+})
+
+// 判断标签是否有关联的待处理预警
+const getTagWarnings = (tag) => {
+  if (!selectedWarning.value) return []
+  const tagName = tag.tagType + tag.tagSubType
+  return residentWarnings.value.filter(w => {
+    // 根据预警类型和标签类型关联
+    if (w.status !== '待处理') return false
+    const wContent = w.warningType + w.content + w.ruleSource
+    return wContent.includes(tag.tagType) || wContent.includes(tag.tagSubType) ||
+           (tag.tagType === '低保' && w.warningType === '状态不一致') ||
+           (tag.tagType === '低保' && w.warningType === '政策互斥') ||
+           (tag.tagType === '残疾' && w.warningType === '政策互斥') ||
+           (tag.tagType === '特困' && w.warningType === '政策互斥')
+  })
+}
+
+// 处理标签关联的预警
+const resolveTagWarning = (tag) => {
+  const tagWarnings = getTagWarnings(tag)
+  if (tagWarnings.length > 0) {
+    openResolve(tagWarnings[0])
+  } else {
+    // 如果没有直接关联的预警，处理该居民的第一条待处理预警
+    const pending = residentWarnings.value.filter(w => w.status === '待处理')
+    if (pending.length > 0) {
+      openResolve(pending[0])
+    } else {
+      ElMessage.info('该标签没有待处理的预警')
+    }
+  }
+}
 
 const onTimeRangeChange = () => {
   const now = new Date()
@@ -1497,22 +1549,153 @@ const confirmAdd = () => {
 }
 
 .detail-content { padding: 8px 0; }
-.detail-section { margin-bottom: 20px; }
-.detail-section:last-child { margin-bottom: 0; }
-.section-title { font-size: 14px; font-weight: 600; color: #374151; margin: 0 0 12px; padding-left: 8px; border-left: 3px solid #409eff; }
-.detail-info { display: flex; flex-direction: column; gap: 10px; }
-.info-row { display: flex; align-items: center; gap: 12px; }
-.info-label { font-size: 13px; color: #6b7280; min-width: 70px; }
-.info-value { font-size: 13px; color: #1f2937; font-weight: 500; }
-.info-value.highlight { color: #f56c6c; font-weight: 600; }
 
-.resident-tags-list { display: flex; flex-direction: column; gap: 10px; }
-.resident-tag-item { background: #f9fafb; border-radius: 8px; padding: 12px; border: 1px solid #f3f4f6; }
-.tag-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.tag-sub-name { font-size: 14px; font-weight: 600; color: #1f2937; flex: 1; }
-.tag-item-body { display: flex; flex-wrap: wrap; gap: 6px 16px; }
-.tag-info-row { font-size: 12px; color: #4b5563; }
-.tag-info-row strong { color: #6b7280; font-weight: 500; margin-right: 4px; }
+/* 居民信息卡片 */
+.resident-info-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  border: 1px solid #e0e7ff;
+}
+.resident-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.resident-detail { flex: 1; min-width: 0; }
+.resident-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.resident-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+.resident-meta > span { display: flex; align-items: center; gap: 4px; }
+.resident-meta .sep { color: #d1d5db; }
+
+/* 标签及预警列表 */
+.tags-with-warnings { display: flex; flex-direction: column; gap: 14px; }
+.tag-warnings-block {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.15s;
+}
+.tag-warnings-block.has-pending {
+  border-color: #fecaca;
+  background: #fffafa;
+}
+.tag-warnings-block.has-pending .tag-header {
+  background: linear-gradient(90deg, #fef2f2 0%, #fff 100%);
+}
+.tag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fafafa;
+}
+.tag-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tag-sub { font-size: 14px; font-weight: 600; color: #1f2937; }
+.tag-stats { display: flex; align-items: center; gap: 12px; font-size: 12px; }
+.warn-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #dc2626;
+  font-weight: 500;
+}
+.pending-count {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+.tag-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #6b7280;
+  border-bottom: 1px dashed #f3f4f6;
+}
+.tag-meta strong { color: #4b5563; font-weight: 500; margin-right: 4px; }
+
+/* 标签下的预警列表 */
+.tag-warning-list { padding: 8px 16px 12px; display: flex; flex-direction: column; gap: 10px; }
+.tag-warning-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
+}
+.tag-warning-item.is-pending {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+.tw-left { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+.tw-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.tw-status-dot.status-pending { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15); }
+.tw-status-dot.status-resolved { background: #10b981; }
+.tw-status-dot.status-approving { background: #8b5cf6; }
+.tw-content { flex: 1; min-width: 0; }
+.tw-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.tw-time { font-size: 12px; color: #9ca3af; }
+.tw-body { font-size: 13px; color: #374151; line-height: 1.5; margin-bottom: 6px; }
+.tw-source { font-size: 11px; color: #9ca3af; display: flex; align-items: center; gap: 4px; }
+.tw-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.no-warning-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  font-size: 12px;
+  color: #10b981;
+}
 
 .empty-tags { text-align: center; padding: 20px; }
 
