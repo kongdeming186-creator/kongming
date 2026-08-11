@@ -3,7 +3,7 @@
     <div class="page-header">
       <div class="page-title-wrapper">
         <h2 class="page-title">预警规则配置</h2>
-        <p class="page-subtitle">配置预警触发规则和互斥规则，实现自动化监控</p>
+        <p class="page-subtitle">配置预警触发规则，实现自动化监控</p>
       </div>
       <div class="header-actions">
         <el-button type="primary" @click="showAddRuleDialog = true">
@@ -16,18 +16,13 @@
     <!-- 规则统计 -->
     <div class="config-stats">
       <div class="stat-item">
-        <span class="stat-num">{{ enabledRuleCount }}</span>
-        <span class="stat-label">已启用规则</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat-item">
         <span class="stat-num">{{ rules.length }}</span>
         <span class="stat-label">规则总数</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
-        <span class="stat-num">{{ mutexRules.length }}</span>
-        <span class="stat-label">互斥规则</span>
+        <span class="stat-num">{{ enabledRuleCount }}</span>
+        <span class="stat-label">已启用规则</span>
       </div>
     </div>
     
@@ -43,10 +38,21 @@
           :data="rules" 
           border 
           stripe
-          :header-cell-style="{ background: '#fafafa', color: '#666', fontWeight: 500 }"
+          :header-cell-style="{ background: '#f8fafc', color: '#475569', fontWeight: 500 }"
         >
-          <el-table-column prop="name" label="规则名称" width="180" />
-          <el-table-column prop="description" label="规则描述" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="category" label="规则类别" width="120" align="center">
+            <template #default="scope">
+              <el-tag 
+                size="small" 
+                :type="getCategoryTagType(scope.row.category)"
+                effect="light"
+              >
+                {{ scope.row.category }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="name" label="规则名称" width="160" />
+          <el-table-column prop="description" label="规则描述" min-width="180" show-overflow-tooltip />
           <el-table-column prop="enabled" label="状态" width="80" align="center">
             <template #default="scope">
               <el-switch 
@@ -143,6 +149,14 @@
         <el-form-item label="规则名称" prop="name">
           <el-input v-model="ruleForm.name" />
         </el-form-item>
+        <el-form-item label="规则类别" prop="category">
+          <el-select v-model="ruleForm.category" placeholder="请选择规则类别">
+            <el-option label="政策不符" value="政策不符" />
+            <el-option label="到期取消" value="到期取消" />
+            <el-option label="政策互斥" value="政策互斥" />
+            <el-option label="状态变化" value="状态变化" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="规则描述" prop="description">
           <el-input v-model="ruleForm.description" type="textarea" :rows="3" />
         </el-form-item>
@@ -209,6 +223,16 @@ const showAddMutexDialog = ref(false)
 
 const enabledRuleCount = computed(() => rules.value.filter(r => r.enabled).length)
 
+const getCategoryTagType = (category) => {
+  const map = {
+    '政策不符': 'danger',
+    '到期取消': 'warning',
+    '政策互斥': 'info',
+    '状态变化': ''
+  }
+  return map[category] || 'info'
+}
+
 const toggleMutexRule = (rule) => {
   ElMessage.success(`互斥规则已${rule.enabled ? '启用' : '停用'}`)
 }
@@ -219,6 +243,7 @@ const editMutexRule = (rule) => {
 
 const ruleForm = reactive({
   name: '',
+  category: '',
   description: '',
   triggerCondition: '',
   advanceDays: '',
@@ -253,6 +278,7 @@ const toggleRule = (row) => {
 
 const editRule = (row) => {
   ruleForm.name = row.name
+  ruleForm.category = row.category || ''
   ruleForm.description = row.description
   ruleForm.triggerCondition = row.triggerCondition
   ruleForm.advanceDays = row.advanceDays

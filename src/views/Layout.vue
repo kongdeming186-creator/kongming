@@ -8,7 +8,7 @@
             <path d="M14 16H20V22H14V16ZM14 26H28V30H14V26Z" fill="white"/>
           </svg>
         </div>
-        <span v-if="!sidebarCollapsed" class="logo-text">六角亭民政</span>
+        <span v-if="!sidebarCollapsed" class="logo-text">智汇亭</span>
       </div>
       
       <el-menu 
@@ -40,9 +40,9 @@
         <el-sub-menu index="warning">
           <template #title>
             <el-icon><Bell /></el-icon>
-            <span>预警管理</span>
+            <span>核查管理</span>
           </template>
-          <el-menu-item index="/warning">预警列表</el-menu-item>
+          <el-menu-item index="/warning">核查列表</el-menu-item>
           <el-menu-item index="/warning/config">规则配置</el-menu-item>
         </el-sub-menu>
         
@@ -92,13 +92,13 @@
           <el-dropdown trigger="click" @command="handleMessageCommand">
             <div class="message-item warning-item">
               <el-icon :size="16" class="msg-icon"><Warning /></el-icon>
-              <span class="msg-text">预警</span>
+              <span class="msg-text">待核查</span>
               <el-badge :value="pendingWarningCount" :hidden="pendingWarningCount === 0" class="msg-badge" />
             </div>
             <template #dropdown>
               <el-dropdown-menu class="msg-dropdown">
                 <div class="dropdown-header">
-                  <span>预警消息</span>
+                  <span>待核查消息</span>
                   <span class="header-count">共 {{ pendingWarningCount }} 条未处理</span>
                 </div>
                 <el-dropdown-item v-for="w in recentWarnings" :key="w.id" :command="'warning:' + w.id">
@@ -109,7 +109,7 @@
                   </div>
                 </el-dropdown-item>
                 <el-dropdown-item command="viewAllWarnings" class="view-all">
-                  查看全部预警
+                  查看全部待核查
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -234,7 +234,7 @@ const titleMap = {
   '/resident/history': '历史居民',
   '/resident/detail': '居民详情',
   '/import': '数据导入',
-  '/warning': '预警列表',
+  '/warning': '核查列表',
   '/warning/config': '规则配置',
   '/report': '统计报表',
   '/ai-match': '政策匹配'
@@ -279,11 +279,12 @@ const handleCommand = (command) => {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  background: #f5f7fa;
 }
 
 .sidebar {
   width: 220px;
-  background: #0f172a;
+  background: #1e3a8a;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -300,7 +301,7 @@ const handleCommand = (command) => {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   height: 64px;
   flex-shrink: 0;
 }
@@ -338,28 +339,29 @@ const handleCommand = (command) => {
 
 :deep(.el-menu-item),
 :deep(.el-sub-menu__title) {
-  height: 48px;
-  line-height: 48px;
-  margin: 2px 8px;
-  border-radius: 6px;
+  height: 44px;
+  line-height: 44px;
+  margin: 4px 8px;
+  border-radius: 4px;
 }
 
 :deep(.el-menu-item:hover),
 :deep(.el-sub-menu__title:hover) {
-  background-color: rgba(255, 255, 255, 0.06) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 :deep(.el-menu-item.is-active) {
-  background-color: #1890FF !important;
+  background-color: #1e40af !important;
   color: #fff !important;
+  font-weight: 500;
 }
 
 :deep(.el-sub-menu .el-menu-item) {
   min-width: auto;
   padding-left: 48px !important;
   margin: 2px 8px;
-  height: 40px;
-  line-height: 40px;
+  height: 38px;
+  line-height: 38px;
   font-size: 13px;
 }
 
@@ -369,12 +371,13 @@ const handleCommand = (command) => {
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  background: #f5f7fa;
 }
 
 .top-header {
-  height: 64px;
+  height: 60px;
   background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -397,13 +400,13 @@ const handleCommand = (command) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: all 0.2s;
 }
 
 .menu-toggle:hover {
   background: #f1f5f9;
-  color: #334155;
+  color: #1e40af;
 }
 
 .breadcrumb {
@@ -417,14 +420,14 @@ const handleCommand = (command) => {
 }
 
 .icon-btn {
-  background: #f8fafc !important;
+  background: #f1f5f9 !important;
   border: none !important;
   color: #64748b !important;
 }
 
 .icon-btn:hover {
-  background: #f1f5f9 !important;
-  color: #334155 !important;
+  background: #e2e8f0 !important;
+  color: #1e40af !important;
 }
 
 .notification-badge {
@@ -436,11 +439,11 @@ const handleCommand = (command) => {
   align-items: center;
   gap: 10px;
   padding-left: 16px;
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid #e2e8f0;
 }
 
 .user-avatar {
-  background: linear-gradient(135deg, #1890FF, #0ea5e9);
+  background: #1e40af;
   font-weight: 600;
   font-size: 14px;
 }
@@ -454,17 +457,17 @@ const handleCommand = (command) => {
 .user-name {
   font-size: 14px;
   font-weight: 500;
-  color: #1e293b;
+  color: #1f2937;
 }
 
 .user-role {
   font-size: 12px;
-  color: #94a3b8;
+  color: #64748b;
   margin-top: 2px;
 }
 
 .dropdown-btn {
-  color: #94a3b8 !important;
+  color: #64748b !important;
   padding: 0 4px !important;
 }
 
@@ -472,7 +475,7 @@ const handleCommand = (command) => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #f3f4f6;
+  background: #f5f7fa;
 }
 
 .message-item {
@@ -480,7 +483,7 @@ const handleCommand = (command) => {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   position: relative;
@@ -491,11 +494,11 @@ const handleCommand = (command) => {
 }
 
 .warning-item .msg-icon {
-  color: #f59e0b;
+  color: #b91c1c;
 }
 
 .notify-item .msg-icon {
-  color: #3b82f6;
+  color: #1e40af;
 }
 
 .msg-text {
@@ -519,7 +522,7 @@ const handleCommand = (command) => {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f1f5f9;
   font-size: 14px;
   font-weight: 600;
   color: #1f2937;
@@ -527,7 +530,7 @@ const handleCommand = (command) => {
 
 .header-count {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
   font-weight: 400;
 }
 
@@ -551,7 +554,7 @@ const handleCommand = (command) => {
 
 .msg-item-desc {
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
   margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -560,7 +563,7 @@ const handleCommand = (command) => {
 
 .msg-item-time {
   font-size: 11px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .msg-item-footer {
@@ -572,14 +575,14 @@ const handleCommand = (command) => {
 
 .msg-item-from {
   font-size: 11px;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .view-all {
   text-align: center;
-  color: #3b82f6;
+  color: #1e40af;
   font-size: 13px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid #f1f5f9;
   padding-top: 8px;
   margin-top: 4px;
 }

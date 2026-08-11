@@ -1,20 +1,24 @@
-$primary-color: #1890FF;
-$success-color: #52C41A;
-$warning-color: #FAAD14;
-$danger-color: #FF4D4F;
-$info-color: #13C2C2;
+// 政务风主题变量 - 沉稳大气，限制颜色数量（主蓝+红+灰）
+$primary-color: #1e40af; // 政务深蓝 - 主色调
+$primary-color-light: #3b82f6;
+$primary-color-dark: #1e3a8a;
+
+$success-color: #1e40af; // 成功/正常 - 复用主蓝（单一主色体系）
+$warning-color: #d97706; // 预留警示橙（若需）
+$danger-color: #b91c1c;  // 错误/异常 - 红色
+$info-color: #64748b;   // 信息/中性 - 灰蓝
 
 $text-primary: #1f2937;
-$text-secondary: #4b5563;
-$text-placeholder: #9ca3af;
-$text-disabled: #d1d5db;
+$text-secondary: #475569;
+$text-placeholder: #94a3b8;
+$text-disabled: #cbd5e1;
 
 $bg-primary: #ffffff;
-$bg-secondary: #f3f4f6;
-$bg-tertiary: #f9fafb;
+$bg-secondary: #f5f7fa;
+$bg-tertiary: #f8fafc;
 
-$border-color: #e5e7eb;
-$border-light: #f3f4f6;
+$border-color: #e2e8f0;
+$border-light: #f1f5f9;
 
 $font-size-xs: 12px;
 $font-size-sm: 13px;
@@ -30,19 +34,19 @@ $spacing-lg: 16px;
 $spacing-xl: 20px;
 $spacing-2xl: 24px;
 
-$radius-sm: 4px;
-$radius-md: 6px;
-$radius-lg: 8px;
-$radius-xl: 12px;
+$radius-sm: 2px;  // 小圆角 - 方正感
+$radius-md: 4px;
+$radius-lg: 6px;
+$radius-xl: 8px;
 
-$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-$shadow-md: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+$shadow-md: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 4px 10px -2px rgba(0, 0, 0, 0.08);
 
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans SC', sans-serif;
   font-size: $font-size-md;
   color: $text-primary;
   background-color: $bg-secondary;
@@ -88,10 +92,10 @@ body {
 
 .content-card {
   background-color: $bg-primary;
-  border-radius: $radius-lg;
+  border-radius: $radius-md;
   padding: $spacing-xl;
   box-shadow: $shadow-sm;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid $border-color;
 }
 
 .flex-between {
@@ -174,11 +178,11 @@ body {
   th.el-table__cell {
     font-weight: 500;
     color: $text-secondary;
-    background: #fafafa !important;
+    background: #f8fafc !important;
   }
   
   .el-table__row:hover > td {
-    background-color: #f8fafc !important;
+    background-color: #f1f5f9 !important;
   }
 }
 
@@ -191,7 +195,7 @@ body {
 }
 
 .el-dialog {
-  border-radius: $radius-lg;
+  border-radius: $radius-md;
   
   .el-dialog__header {
     padding: $spacing-xl $spacing-xl $spacing-md;
@@ -215,7 +219,7 @@ body {
 }
 
 .el-card {
-  border-radius: $radius-lg;
+  border-radius: $radius-md;
   border: 1px solid $border-color;
   
   .el-card__body {
@@ -235,7 +239,7 @@ body {
 .el-textarea__inner,
 .el-select__wrapper,
 .el-date-editor {
-  border-radius: $radius-md;
+  border-radius: $radius-sm;
 }
 
 ::-webkit-scrollbar {
@@ -248,10 +252,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #94a3b8;
 }

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
@@ -8,8 +8,8 @@
             <path d="M16 20H24V28H16V20ZM16 32H32V36H16V32Z" fill="white"/>
           </svg>
         </div>
-        <h1>六角亭街道民政系统</h1>
-        <p>网格化治理综合平台</p>
+        <h1>智汇亭</h1>
+        <p>民生服务综合管理平台</p>
       </div>
       
       <el-form ref="loginForm" :model="form" :rules="rules" label-width="0">
@@ -64,7 +64,7 @@
       </el-form>
       
       <div class="login-footer">
-        <span>© 2024 六角亭街道办事处</span>
+        <span>© 2024 智汇亭</span>
         <button type="button" class="mobile-link" @click="goMobile">移动端入口 →</button>
       </div>
     </div>
@@ -124,7 +124,7 @@ const goMobile = () => {
 <style scoped>
 .login-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1890FF 0%, #096DD9 100%);
+  background: #1e40af;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -135,9 +135,9 @@ const goMobile = () => {
   width: 100%;
   max-width: 420px;
   background: white;
-  border-radius: 16px;
+  border-radius: 4px;
   padding: 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .login-header {
@@ -152,15 +152,15 @@ const goMobile = () => {
 }
 
 .login-header h1 {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: #1f2937;
   margin: 0 0 8px;
 }
 
 .login-header p {
-  font-size: 14px;
-  color: #999;
+  font-size: 18px;
+  color: #94a3b8;
   margin: 0;
 }
 
@@ -172,23 +172,23 @@ const goMobile = () => {
 .captcha-img {
   flex-shrink: 0;
   width: 100px;
-  height: 40px;
-  background: #f5f5f5;
+  height: 48px;
+  background: #f1f5f9;
   border-radius: 4px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 18px;
   font-weight: bold;
-  color: #666;
+  color: #64748b;
   cursor: pointer;
   letter-spacing: 4px;
 }
 
 .login-btn {
   width: 100%;
-  height: 44px;
-  font-size: 16px;
+  height: 48px;
+  font-size: 18px;
 }
 
 .login-footer {
@@ -197,20 +197,20 @@ const goMobile = () => {
   align-items: center;
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
-  font-size: 12px;
-  color: #999;
+  border-top: 1px solid #e2e8f0;
+  font-size: 18px;
+  color: #94a3b8;
 }
 
 .mobile-link {
-  color: #1890FF;
+  color: #1e40af;
   cursor: pointer;
+  font-size: 18px;
 }
 
 .forgot-link {
-  float: right;
-  font-size: 12px;
-  color: #999;
+  font-size: 18px;
+  color: #94a3b8;
   background: none;
   border: none;
   cursor: pointer;
@@ -218,18 +218,7 @@ const goMobile = () => {
 }
 
 .forgot-link:hover {
-  color: #1890FF;
-}
-
-.mobile-link {
-  color: #1890FF;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-}
-
-.mobile-link:hover {
-  text-decoration: underline;
+  color: #1e40af;
 }
 </style>
+

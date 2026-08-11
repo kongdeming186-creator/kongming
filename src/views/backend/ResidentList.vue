@@ -36,18 +36,11 @@
           <span class="stat-label">保障人口</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card stat-card--clickable" @click="goToWarningList">
         <div class="stat-icon orange"><el-icon><Warning /></el-icon></div>
         <div class="stat-info">
           <span class="stat-value">{{ residentsWithWarning.length }}</span>
-          <span class="stat-label">有预警</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon purple"><el-icon><PriceTag /></el-icon></div>
-        <div class="stat-info">
-          <span class="stat-value">{{ tagTotalCount }}</span>
-          <span class="stat-label">标签总数</span>
+          <span class="stat-label">待核查</span>
         </div>
       </div>
     </div>
@@ -71,27 +64,41 @@
             </el-select>
           </div>
           <div class="search-item">
-            <el-select v-model="searchForm.survivalStatus" placeholder="生存状态" style="width: 110px" clearable>
-              <el-option v-for="s in survivalStatus" :key="s" :label="s" :value="s" />
+            <el-select v-model="searchForm.gender" placeholder="性别" style="width: 90px" clearable>
+              <el-option label="男" value="男" />
+              <el-option label="女" value="女" />
             </el-select>
+          </div>
+          <div class="search-item">
+            <el-input v-model="searchForm.minAge" placeholder="最小年龄" style="width: 90px" clearable type="number" />
+          </div>
+          <div class="search-item">
+            <el-input v-model="searchForm.maxAge" placeholder="最大年龄" style="width: 90px" clearable type="number" />
           </div>
           <div class="search-item">
             <el-select v-model="searchForm.personType" placeholder="人员类别" style="width: 120px" clearable>
               <el-option v-for="p in personTypes" :key="p" :label="p" :value="p" />
             </el-select>
           </div>
-          <div class="search-item search-actions">
-            <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon>查询</el-button>
-            <el-button @click="handleReset"><el-icon><Refresh /></el-icon>重置</el-button>
-            <el-button text @click="showAdvanced = !showAdvanced">{{ showAdvanced ? '收起' : '更多' }}</el-button>
+          <div class="search-item">
+            <el-input v-model="searchForm.estate" placeholder="小区" style="width: 120px" clearable />
+          </div>
+          <div class="search-item">
+            <el-select v-model="searchForm.survivalStatus" placeholder="生存状态" style="width: 110px" clearable>
+              <el-option v-for="s in survivalStatus" :key="s" :label="s" :value="s" />
+            </el-select>
           </div>
         </div>
-        <div v-if="showAdvanced" class="search-row advanced">
+        <div class="search-row advanced">
           <div class="search-item tag-filter-item">
             <span class="filter-label">保障类型(多选)：</span>
             <el-checkbox-group v-model="searchForm.selectedTagTypes">
               <el-checkbox v-for="t in guaranteeTagTypes" :key="t" :label="t" size="default">{{ t }}</el-checkbox>
             </el-checkbox-group>
+          </div>
+          <div class="search-item search-actions">
+            <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon>查询</el-button>
+            <el-button @click="handleReset"><el-icon><Refresh /></el-icon>重置</el-button>
           </div>
         </div>
       </div>
@@ -117,19 +124,20 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="survivalStatus" label="生存状态" width="80" align="center">
+          <el-table-column label="特殊人群" width="300">
             <template #default="scope">
-              <el-tag :type="getSurvivalType(scope.row.survivalStatus)" size="small" effect="light">
-                {{ scope.row.survivalStatus }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column label="预警" width="70" align="center">
-            <template #default="scope">
-              <el-tag v-if="getResidentWarnings(scope.row.id).length > 0" type="danger" size="small" effect="light">
-                {{ getResidentWarnings(scope.row.id).length }}条
-              </el-tag>
-              <span v-else class="no-warning">--</span>
+              <div v-if="getResidentSpecialGroups(scope.row.id).length > 0" class="special-tags">
+                <el-tag
+                  v-for="s in getResidentSpecialGroups(scope.row.id)"
+                  :key="s"
+                  size="small"
+                  effect="plain"
+                  class="special-tag"
+                  :type="getSpecialTagType(s)">
+                  {{ s }}
+                </el-tag>
+              </div>
+              <span v-else class="no-tag">--</span>
             </template>
           </el-table-column>
           <el-table-column label="保障信息" min-width="200">
@@ -149,7 +157,7 @@
               <span v-else class="no-tag">暂无</span>
             </template>
           </el-table-column>
-          <el-table-column prop="createTime" label="创建时间" width="100" />
+          <el-table-column prop="updateTime" label="最后一次更新时间" width="170" />
           <el-table-column label="操作" width="160" fixed="right" align="center">
             <template #default="scope">
               <div class="action-buttons">
@@ -286,8 +294,12 @@ const searchForm = reactive({
   keyword: '',
   community: '',
   grid: '',
-  survivalStatus: '',
+  gender: '',
   personType: '',
+  estate: '',
+  minAge: '',
+  maxAge: '',
+  survivalStatus: '',
   selectedTagTypes: []
 })
 
@@ -303,7 +315,6 @@ const addRules = {
 }
 
 const totalCount = computed(() => residents.value.length)
-const tagTotalCount = computed(() => tags.length)
 
 const guaranteeCount = computed(() => {
   const idCardSet = new Set()
@@ -329,8 +340,12 @@ const filteredResidents = computed(() => {
   }
   if (searchForm.community) result = result.filter(r => r.community === searchForm.community)
   if (searchForm.grid) result = result.filter(r => r.grid === searchForm.grid)
-  if (searchForm.survivalStatus) result = result.filter(r => r.survivalStatus === searchForm.survivalStatus)
+  if (searchForm.gender) result = result.filter(r => r.gender === searchForm.gender)
   if (searchForm.personType) result = result.filter(r => r.personType === searchForm.personType)
+  if (searchForm.estate) result = result.filter(r => r.estate?.includes(searchForm.estate))
+  if (searchForm.minAge) result = result.filter(r => r.age >= Number(searchForm.minAge))
+  if (searchForm.maxAge) result = result.filter(r => r.age <= Number(searchForm.maxAge))
+  if (searchForm.survivalStatus) result = result.filter(r => r.survivalStatus === searchForm.survivalStatus)
   if (searchForm.selectedTagTypes && searchForm.selectedTagTypes.length > 0) {
     result = result.filter(r => {
       const residentTagTypes = new Set(tags.filter(t => t.residentId === r.id).map(t => t.tagType))
@@ -352,6 +367,17 @@ const getResidentLevel1Tags = (residentId) => {
   return Array.from(tagTypes)
 }
 const getResidentWarnings = (residentId) => warnings.filter(w => w.residentId === residentId)
+const getResidentSpecialGroups = (residentId) => {
+  const r = residents.value.find(x => x.id === residentId)
+  return r?.specialGroups || []
+}
+const getSpecialTagType = (name) => ({
+  '高龄': 'warning',
+  '涉毒': 'danger',
+  '孤儿': 'warning',
+  '独居': 'info',
+  '精障': 'danger'
+}[name] || 'info')
 
 const maskIdCard = (idCard) => idCard ? idCard.slice(0, 6) + '********' + idCard.slice(-4) : ''
 const getSurvivalType = (status) => ({ '在世': 'success', '已去世': 'danger', '待核实': 'warning' }[status] || 'info')
@@ -362,6 +388,7 @@ const getTagType = (type) => ({
 
 const goToDetail = (id) => router.push(`/resident/detail/${id}`)
 const goToHistoryResident = () => router.push('/resident/history')
+const goToWarningList = () => router.push('/warning')
 const editResident = (row) => ElMessage.info(`编辑居民: ${row.name}`)
 const refreshResident = (row) => ElMessage.info(`刷新居民数据: ${row.name}`)
 const deleteResident = (id) => {
@@ -375,12 +402,13 @@ const handleReset = () => {
   Object.keys(searchForm).forEach(k => searchForm[k] = k === 'selectedTagTypes' ? [] : '')
   currentPage.value = 1
 }
+const tagTotalCount = computed(() => tags.length)
 const handleSizeChange = (size) => { pageSize.value = size }
 const handleCurrentChange = (page) => { currentPage.value = page }
 const handleAdd = () => {
   addFormRef.value?.validate((valid) => {
     if (valid) {
-      residents.value.unshift({ id: String(Date.now()), ...addForm, personType: '常住', politicalStatus: '群众', education: '', maritalStatus: '', householdAddress: '', residenceAddress: '', survivalStatus: '在世', disabilityLevel: '', workUnit: '', retirementType: '', criminalRecord: '无', familyCount: 1, createTime: new Date().toISOString().split('T')[0] })
+      residents.value.unshift({ id: String(Date.now()), ...addForm, personType: '户在人在', politicalStatus: '群众', education: '', maritalStatus: '', householdAddress: '', residenceAddress: '', survivalStatus: '在世', disabilityLevel: '', workUnit: '', retirementType: '', criminalRecord: '无', familyCount: 1, createTime: new Date().toISOString().split('T')[0] })
       showAddDialog.value = false
       ElMessage.success('新增成功')
       addFormRef.value?.resetFields()
@@ -401,47 +429,52 @@ const scrollToGuarantee = (tagType) => {
 .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .page-title-wrapper { flex: 1; }
 .page-title { font-size: 20px; font-weight: 600; color: #1f2937; margin: 0 0 4px 0; }
-.page-subtitle { font-size: 13px; color: #9ca3af; margin: 0; }
+.page-subtitle { font-size: 13px; color: #94a3b8; margin: 0; }
 .header-actions { display: flex; gap: 12px; }
 
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 16px; }
-.stat-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: #fff; border-radius: 10px; border: 1px solid #f3f4f6; }
-.stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
-.stat-icon.blue { background: linear-gradient(135deg, #1890FF, #0ea5e9); }
-.stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-.stat-value { font-size: 22px; font-weight: 700; color: #1f2937; display: block; }
-.stat-label { font-size: 12px; color: #6b7280; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.stat-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: #fff; border-radius: 4px; border: 1px solid #e2e8f0; }
+.stat-card--clickable { cursor: pointer; transition: all 0.2s; }
+.stat-card--clickable:hover { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); border-color: #1e40af; }
+.stat-icon { width: 44px; height: 44px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; }
+.stat-icon.blue { background: #1e40af; }
+.stat-icon.green { background: #1e3a8a; }
+.stat-icon.orange { background: #d97706; }
+.stat-icon.purple { background: #1e40af; }
+.stat-value { font-size: 22px; font-weight: 700; color: #1e293b; display: block; }
+.stat-label { font-size: 12px; color: #64748b; }
 
-.content-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+.content-card { background: #fff; border-radius: 4px; padding: 20px; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04); border: 1px solid #e2e8f0; }
 .search-bar { margin-bottom: 20px; }
 .search-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.search-row.advanced { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e5e7eb; }
+.search-row.advanced { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; }
 .search-item { flex-shrink: 0; }
 .search-actions { margin-left: auto; display: flex; gap: 8px; }
 .tag-filter-item { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%; }
-.filter-label { font-size: 13px; color: #6b7280; font-weight: 500; flex-shrink: 0; }
+.filter-label { font-size: 13px; color: #64748b; font-weight: 500; flex-shrink: 0; }
 
 .table-wrapper { overflow-x: auto; }
 .guarantee-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .guarantee-tag { cursor: pointer; transition: all 0.2s; }
-.guarantee-tag:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-.no-tag { font-size: 12px; color: #d1d5db; }
-.no-warning { font-size: 12px; color: #d1d5db; }
+.guarantee-tag:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.no-tag { font-size: 12px; color: #cbd5e1; }
+.no-warning { font-size: 12px; color: #cbd5e1; }
 .family-tag { cursor: pointer; }
 .family-tag:hover { opacity: 0.85; }
 .action-buttons { display: flex; justify-content: center; gap: 4px; }
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
 
+.special-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.special-tag { transition: all 0.2s; }
+
 .import-content { text-align: center; }
 .import-tip { display: flex; align-items: center; justify-content: center; gap: 8px; color: #d97706; font-size: 14px; }
-.upload-area { border: 2px dashed #e5e7eb; border-radius: 8px; padding: 40px 20px; margin-top: 16px; cursor: pointer; transition: border-color 0.3s, background 0.3s; }
-.upload-area:hover { border-color: #3b82f6; background: #eff6ff; }
+.upload-area { border: 2px dashed #e2e8f0; border-radius: 4px; padding: 40px 20px; margin-top: 16px; cursor: pointer; transition: border-color 0.3s, background 0.3s; }
+.upload-area:hover { border-color: #1e40af; background: #eff6ff; }
 .upload-text { margin: 12px 0 4px 0; color: #374151; font-size: 14px; }
-.upload-tip { margin: 0; color: #9ca3af; font-size: 12px; }
+.upload-tip { margin: 0; color: #94a3b8; font-size: 12px; }
 
 .family-dialog-content { padding: 8px 0; }
-.family-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #f3f4f6; }
-.family-empty { text-align: center; padding: 30px; color: #9ca3af; font-size: 13px; }
+.family-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+.family-empty { text-align: center; padding: 30px; color: #94a3b8; font-size: 13px; }
 </style>

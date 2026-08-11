@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="detail-page-header">
       <div class="header-left">
@@ -8,7 +8,7 @@
         </button>
       </div>
       <div class="header-actions">
-        <el-button @click="handleVerifyAll">批量核实</el-button>
+        <el-button @click="handleVerifyAll">批量刷新</el-button>
         <el-button type="primary" @click="handleEditResident">
           <el-icon><Edit /></el-icon>
           编辑信息
@@ -18,18 +18,9 @@
 
     <div class="resident-overview-card">
       <div class="overview-left">
-        <el-avatar :size="64" class="resident-avatar">
-          {{ resident.name?.charAt(0) || '居' }}
-        </el-avatar>
         <div class="overview-info">
           <div class="resident-name-row">
             <h2 class="resident-name">{{ resident.name }}</h2>
-            <el-tag :type="getSurvivalType(resident.survivalStatus)" size="small" effect="light">
-              {{ resident.survivalStatus }}
-            </el-tag>
-            <el-tag type="primary" size="small" effect="light" v-if="residentTags.length > 0">
-              {{ residentTags.length }} 个标签
-            </el-tag>
           </div>
           <div class="resident-meta">
             <span class="meta-item">
@@ -47,33 +38,6 @@
               {{ resident.community }} · {{ resident.estate }}
             </span>
           </div>
-        </div>
-      </div>
-      <div class="overview-right">
-        <div class="tag-quick-nav">
-          <div class="quick-nav-label">关联标签</div>
-          <div class="quick-nav-tags">
-            <el-tag
-              v-for="tag in residentTags"
-              :key="tag.id"
-              :type="getTagType(tag.tagType)"
-              effect="light"
-              size="small"
-              class="quick-nav-tag"
-              @click="scrollToTagCard(tag.id)">
-              {{ tag.tagSubType }}
-            </el-tag>
-          </div>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value warning">{{ pendingVerifyCount }}</span>
-          <span class="stat-label">待核实</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-value success">{{ enjoyingCount }}</span>
-          <span class="stat-label">享受中</span>
         </div>
       </div>
     </div>
@@ -109,7 +73,7 @@
         </div>
         <div class="info-item">
           <span class="info-label">联系方式</span>
-          <span class="info-value">{{ resident.contact }}</span>
+          <span class="info-value">{{ resident.contact }}<span v-if="resident.emergencyPhone" class="sub-info">&nbsp;/ 紧急：{{ resident.emergencyContact }} {{ resident.emergencyPhone }}</span></span>
         </div>
         <div class="info-item">
           <span class="info-label">政治面貌</span>
@@ -155,6 +119,10 @@
           <span class="info-label">工作单位</span>
           <span class="info-value">{{ resident.workUnit || '无' }}</span>
         </div>
+        <div class="info-item">
+          <span class="info-label">重症疾病</span>
+          <span class="info-value">{{ resident.severeDisease || '无' }}</span>
+        </div>
         <div class="info-item full-width">
           <span class="info-label">户籍地址</span>
           <span class="info-value">{{ resident.householdAddress }}</span>
@@ -173,7 +141,6 @@
           <span class="section-desc">该居民关联的所有保障标签及核实详情</span>
         </div>
         <div class="header-actions">
-          <span class="tag-count-badge">共 {{ residentTags.length }} 个标签</span>
           <el-button type="primary" size="default" @click="showAddTagDialog = true">
             <el-icon><Plus /></el-icon>
             添加标签
@@ -233,76 +200,7 @@
                   <span class="benefit-value highlight">{{ tag.subsidyAmount }}元/月</span>
                 </div>
                 
-                <template v-if="tag.tagType === '低保'">
-                  <div class="benefit-subsection">
-                    <div class="benefit-subtitle">财产信息</div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">户籍</span>
-                      <span class="benefit-value">{{ tag.householdRegister || '武昌区' }}</span>
-                    </div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">人均收入</span>
-                      <span class="benefit-value" :class="{ 'warning-highlight': tag.perCapitaIncome > 500 }">
-                        {{ tag.perCapitaIncome || 0 }}元/月
-                        <span v-if="tag.perCapitaIncome > 500" class="warning-text">（超标准预警）</span>
-                      </span>
-                    </div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">存款金额</span>
-                      <span class="benefit-value">{{ tag.depositAmount || 0 }}元</span>
-                    </div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">车辆信息</span>
-                      <span class="benefit-value">{{ tag.carPlate || '无' }}</span>
-                    </div>
-                    <div class="benefit-row">
-                      <span class="benefit-label">房产面积</span>
-                      <span class="benefit-value">{{ tag.houseArea || 0 }}㎡</span>
-                    </div>
-                  </div>
-                  <div class="benefit-subsection">
-                    <div class="benefit-subtitle">重点比对</div>
-                    <div class="benefit-row" v-if="tag.carCheck">
-                      <span class="benefit-label">车辆比对</span>
-                      <span class="benefit-value">
-                        <el-tag :type="tag.carCheck === '是' ? 'success' : 'danger'" size="small">
-                          {{ tag.carCheck }}
-                        </el-tag>
-                        <span v-if="tag.carCheck === '否' && tag.carCheckReason" class="check-reason">{{ tag.carCheckReason }}</span>
-                      </span>
-                    </div>
-                    <div class="benefit-row" v-if="tag.houseCheck">
-                      <span class="benefit-label">房产比对</span>
-                      <span class="benefit-value">
-                        <el-tag :type="tag.houseCheck === '是' ? 'success' : 'danger'" size="small">
-                          {{ tag.houseCheck }}
-                        </el-tag>
-                        <span v-if="tag.houseCheck === '否' && tag.houseCheckReason" class="check-reason">{{ tag.houseCheckReason }}</span>
-                      </span>
-                    </div>
-                    <div class="benefit-row" v-if="tag.depositCheck">
-                      <span class="benefit-label">存款比对</span>
-                      <span class="benefit-value">
-                        <el-tag :type="tag.depositCheck === '是' ? 'success' : 'danger'" size="small">
-                          {{ tag.depositCheck }}
-                        </el-tag>
-                        <span v-if="tag.depositCheck === '否' && tag.depositCheckReason" class="check-reason">{{ tag.depositCheckReason }}</span>
-                      </span>
-                    </div>
-                    <div class="benefit-row" v-if="tag.imprisoned">
-                      <span class="benefit-label">服刑状态</span>
-                      <span class="benefit-value">
-                        <el-tag :type="tag.imprisoned === '否' ? 'success' : 'danger'" size="small">
-                          {{ tag.imprisoned === '否' ? '无服刑' : '有服刑' }}
-                        </el-tag>
-                      </span>
-                    </div>
-                    <div class="benefit-row" v-if="tag.householdMigration">
-                      <span class="benefit-label">户籍迁移</span>
-                      <span class="benefit-value">{{ tag.householdMigration }}</span>
-                    </div>
-                  </div>
-                </template>
+                <template v-if="tag.tagType === '低保'"></template>
                 
                 <template v-else-if="tag.tagType === '残疾'">
                   <div class="benefit-row" v-if="tag.mutexNote">
@@ -436,9 +334,6 @@
                   <span class="info-text">{{ tag.operator || '网格员' }} | {{ tag.createTime }}</span>
                 </div>
                 <div class="footer-actions">
-                  <el-button size="small" type="primary" @click="handleVerify(tag)">
-                    <el-icon><Check /></el-icon>核实
-                  </el-button>
                   <el-button size="small" @click="editTag(tag)">
                     <el-icon><Edit /></el-icon>编辑
                   </el-button>
@@ -456,6 +351,32 @@
       </div>
     </div>
     
+    <!-- 比对信息 -->
+    <div class="content-card section-card">
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <h3 class="section-title">比对信息</h3>
+          <span class="section-desc">多源数据全量核查结果，用于发现潜在问题线索</span>
+        </div>
+      </div>
+      <el-table :data="comparisonTableData" stripe style="width: 100%" size="small" :header-cell-style="{ background: '#f5f7fa', color: '#606266', fontWeight: 600 }">
+        <el-table-column prop="name" label="核查项" width="110">
+          <template #default="scope">
+            <span style="font-weight: 500;">{{ scope.row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="value" label="数据内容" min-width="280">
+          <template #default="scope">
+            <span>{{ scope.row.value }}</span>
+            <span v-if="scope.row.extra" class="text-muted">{{ scope.row.extra }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="updateTime" label="最后一次更新时间" width="170">
+        </el-table-column>
+      </el-table>
+    </div>
+
+    <!-- 操作记录 -->
     <div class="content-card section-card">
       <div class="section-header">
         <div class="section-title-wrapper">
@@ -463,7 +384,7 @@
           <span class="section-desc">该居民信息的操作历史</span>
         </div>
       </div>
-      <el-table :data="operationHistory" stripe :header-cell-style="{ background: '#fafafa', color: '#666', fontWeight: 500 }">
+      <el-table :data="operationHistory" stripe size="small" :header-cell-style="{ background: '#fafafa', color: '#666', fontWeight: 500 }">
         <el-table-column prop="time" label="操作时间" width="180" />
         <el-table-column prop="operator" label="操作人" width="100" />
         <el-table-column prop="action" label="操作类型" width="120">
@@ -535,7 +456,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Edit, Plus, Check, Delete, User, Place, ArrowDown } from '@element-plus/icons-vue'
+import { Edit, Plus, Check, Refresh, Delete, User, Place, ArrowDown } from '@element-plus/icons-vue'
 import { residents, tags, tagTypes, tagSubTypes } from '../../data/mock'
 
 const router = useRouter()
@@ -550,9 +471,83 @@ const activeTagType = ref('')
 
 const residentTags = computed(() => tags.filter(t => t.residentId === residentId))
 
+// 比对信息表格
+const comparisonTableData = computed(() => {
+  const ci = resident.value?.comparisonInfo || {}
+  const rows = [
+    {
+      name: '户籍',
+      value: ci.householdRegister || resident.value?.community || '—',
+      extra: ci.householdAbnormal ? '户籍已迁出' : '',
+      status: ci.householdAbnormal ? 'abnormal' : 'normal',
+      updateTime: ci.householdUpdateTime || '2024-06-20 10:30'
+    },
+    {
+      name: '生存状态',
+      value: resident.value?.survivalStatus || '—',
+      extra: resident.value?.survivalStatus === '已去世' ? '与公安部门比对' : '',
+      status: resident.value?.survivalStatus === '已去世' ? 'abnormal' : 'normal',
+      updateTime: ci.survivalUpdateTime || '2024-06-20 10:30'
+    },
+    {
+      name: '婚姻状态',
+      value: resident.value?.maritalStatus || '—',
+      extra: '',
+      status: 'normal',
+      updateTime: ci.marriageUpdateTime || '2024-06-20 10:30'
+    },
+    {
+      name: '社保信息',
+      value: ci.socialSecurity || '正常缴费',
+      extra: ci.socialSecurityBase ? `缴费基数 ${ci.socialSecurityBase} 元` : '',
+      status: ci.socialSecurityAbnormal ? 'abnormal' : 'normal',
+      updateTime: ci.socialSecurityUpdateTime || '2024-06-15 09:00'
+    },
+    {
+      name: '纳税信息',
+      value: ci.taxInfo || '无个税缴纳记录',
+      extra: ci.taxAmount ? `纳税 ${ci.taxAmount} 元/年` : '',
+      status: ci.taxCheck === '否' ? 'abnormal' : 'normal',
+      updateTime: ci.taxUpdateTime || '2024-06-01 00:00'
+    },
+    {
+      name: '房产情况',
+      value: ci.houseArea ? `房产面积 ${ci.houseArea}㎡` : '无自购房产',
+      extra: ci.houseStatus || '',
+      status: ci.houseCheck === '否' ? 'abnormal' : 'normal',
+      updateTime: ci.houseUpdateTime || '2024-05-10 14:20'
+    },
+    {
+      name: '车辆信息',
+      value: ci.carPlate || (ci.carInfo || '无'),
+      extra: ci.carModel || '',
+      status: ci.carCheck === '否' ? 'abnormal' : 'normal',
+      updateTime: ci.carUpdateTime || '2024-06-20 10:30'
+    },
+    {
+      name: '工商注册',
+      value: ci.companyStatus || '名下无工商登记',
+      extra: '',
+      status: ci.companyCheck === '否' ? 'abnormal' : 'normal',
+      updateTime: ci.companyUpdateTime || '2024-06-18 16:00'
+    },
+    {
+      name: '服刑状态',
+      value: ci.imprisoned === '否' ? '无服刑记录' : '在服刑',
+      extra: '',
+      status: ci.imprisoned !== '否' ? 'abnormal' : 'normal',
+      updateTime: ci.imprisonedUpdateTime || '2024-06-20 10:30'
+    }
+  ]
+  return rows
+})
+
+const allowedTagTypes = ['低保', '残疾', '公租房']
+
 const groupedTags = computed(() => {
   const groups = {}
   residentTags.value.forEach(tag => {
+    if (!allowedTagTypes.includes(tag.tagType)) return
     if (!groups[tag.tagType]) {
       groups[tag.tagType] = []
     }
@@ -719,55 +714,60 @@ const handleAddTag = () => {
 </script>
 
 <style scoped>
+/* 全局紧凑样式 */
+.content-card {
+  padding: 8px 12px !important;
+}
+
 .detail-page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .back-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   cursor: pointer;
-  color: #6b7280;
-  font-size: 14px;
+  color: #64748b;
+  font-size: 12px;
   background: none;
   border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
   transition: all 0.2s;
 }
 
 .back-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: #f1f5f9;
+  color: #334155;
 }
 
 .back-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .resident-overview-card {
-  background: linear-gradient(135deg, #1890FF 0%, #0ea5e9 100%);
-  border-radius: 12px;
-  padding: 24px 28px;
-  margin-bottom: 20px;
+  background: #1e40af;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: #fff;
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.2);
-  min-height: 120px;
+  box-shadow: 0 1px 3px rgba(30, 64, 175, 0.15);
+  min-height: 56px;
   box-sizing: border-box;
 }
 
 .overview-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   flex: 1;
   min-width: 0;
 }
@@ -775,7 +775,7 @@ const handleAddTag = () => {
 .resident-avatar {
   background: rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.4);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -783,7 +783,7 @@ const handleAddTag = () => {
 .overview-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
   min-width: 0;
   flex: 1;
 }
@@ -791,31 +791,31 @@ const handleAddTag = () => {
 .resident-name-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .resident-name {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0;
   color: #fff;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 .resident-meta {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.92);
   flex-wrap: wrap;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   white-space: nowrap;
 }
 
@@ -831,26 +831,26 @@ const handleAddTag = () => {
 .overview-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 16px;
   flex-shrink: 0;
 }
 
 .tag-quick-nav {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 360px;
+  gap: 4px;
+  max-width: 320px;
 }
 
 .quick-nav-label {
-  font-size: 12px;
+  font-size: 11px;
   color: rgba(255, 255, 255, 0.8);
 }
 
 .quick-nav-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .quick-nav-tag {
@@ -865,7 +865,7 @@ const handleAddTag = () => {
 
 .stat-divider {
   width: 1px;
-  height: 36px;
+  height: 28px;
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -873,23 +873,23 @@ const handleAddTag = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 56px;
+  gap: 2px;
+  min-width: 48px;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
-  line-height: 1.2;
+  line-height: 1.1;
 }
 
 .stat-value.warning {
-  color: #fde047;
+  color: #fef08a;
 }
 
 .stat-value.success {
-  color: #86efac;
+  color: #bfdbfe;
 }
 
 .stat-label {
@@ -898,12 +898,12 @@ const handleAddTag = () => {
 }
 
 .section-card {
-  margin-bottom: 20px;
+  margin-bottom: 6px;
 }
 
 .section-card.collapsed .section-header {
-  padding-bottom: 10px;
-  margin-bottom: 10px;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
 }
 
 .section-card.collapsed .benefit-info-container {
@@ -914,69 +914,55 @@ const handleAddTag = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 16px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 4px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .section-title-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 1px;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
   color: #1f2937;
   margin: 0;
   position: relative;
-  padding-left: 12px;
-}
-
-.section-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  background: linear-gradient(180deg, #1890FF, #0ea5e9);
-  border-radius: 2px;
 }
 
 .section-desc {
-  font-size: 12px;
-  color: #9ca3af;
-  padding-left: 12px;
+  font-size: 11px;
+  color: #94a3b8;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .tag-count-badge {
-  font-size: 13px;
-  color: #6b7280;
-  background: #f3f4f6;
-  padding: 4px 10px;
-  border-radius: 12px;
+  font-size: 12px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 3px 9px;
+  border-radius: 4px;
 }
 
 .basic-info-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
 }
 
 .info-item {
-  padding: 10px 14px;
-  background: #f9fafb;
-  border-radius: 6px;
-  border: 1px solid #f3f4f6;
+  padding: 3px 8px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
 }
 
 .info-item.full-width {
@@ -984,19 +970,29 @@ const handleAddTag = () => {
 }
 
 .info-label {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 11px;
+  color: #64748b;
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 1px;
   font-weight: 500;
 }
 
 .info-value {
-  font-size: 14px;
-  color: #111827;
+  font-size: 12px;
+  color: #1e293b;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.2;
 }
+
+.sub-info {
+  color: #64748b;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.text-danger { color: #b91c1c; }
+.text-bold { font-weight: 600; }
+.text-muted { color: #94a3b8; margin-left: 6px; font-size: 12px; }
 
 .family-count-tag {
   cursor: pointer;
@@ -1009,46 +1005,46 @@ const handleAddTag = () => {
 .benefit-info-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 5px;
 }
 
 .benefit-tag-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 4px 0;
+  gap: 4px;
+  padding: 1px 0;
 }
 
 .benefit-tab-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 18px;
+  gap: 3px;
+  padding: 2px 8px;
   background: #fff;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .benefit-tab-item:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
+  border-color: #1e40af;
+  color: #1e40af;
 }
 
 .benefit-tab-item.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #1e40af;
+  border-color: #1e40af;
 }
 
 .tab-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: #334155;
 }
 
 .benefit-tab-item:hover .tab-label {
-  color: #3b82f6;
+  color: #1e40af;
 }
 
 .benefit-tab-item.active .tab-label {
@@ -1057,7 +1053,7 @@ const handleAddTag = () => {
 
 .tab-count {
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .benefit-tab-item.active .tab-count {
@@ -1066,7 +1062,7 @@ const handleAddTag = () => {
 
 .tab-arrow {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
   transition: transform 0.2s ease;
 }
 
@@ -1089,51 +1085,51 @@ const handleAddTag = () => {
 
 .group-base-info {
   background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 12px 16px;
-  margin-bottom: 12px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  padding: 7px 12px;
+  margin-bottom: 7px;
 }
 
 .group-info-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #2563eb;
-  padding-left: 8px;
-  border-left: 3px solid #3b82f6;
-  margin-bottom: 8px;
+  color: #1e40af;
+  padding-left: 7px;
+  border-left: 3px solid #1e40af;
+  margin-bottom: 4px;
 }
 
 .group-info-compact {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .benefit-block-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 5px;
 }
 
 .benefit-block {
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 14px 18px;
+  background: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  padding: 5px 10px;
 }
 
 .benefit-block-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .benefit-block-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #1f2937;
 }
@@ -1141,38 +1137,38 @@ const handleAddTag = () => {
 .benefit-block-body {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px 24px;
+  gap: 3px 16px;
 }
 
 .benefit-block-body .benefit-subsection {
   grid-column: 1 / -1;
-  margin-top: 8px;
-  padding-top: 10px;
+  margin-top: 4px;
+  padding-top: 5px;
 }
 
 .benefit-block-body .benefit-subsection + .benefit-subsection {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .benefit-block-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 6px;
+  padding-top: 5px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .benefit-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
+  padding: 2px 0;
 }
 
 .benefit-label {
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
   min-width: 80px;
 }
 
@@ -1185,7 +1181,7 @@ const handleAddTag = () => {
 }
 
 .benefit-value.highlight {
-  color: #ef4444;
+  color: #b91c1c;
   font-weight: 600;
 }
 
@@ -1203,20 +1199,20 @@ const handleAddTag = () => {
 .benefit-subsection {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px dashed #e5e7eb;
+  border-top: 1px dashed #e2e8f0;
 }
 
 .benefit-subtitle {
   font-size: 12px;
   font-weight: 600;
-  color: #1890FF;
+  color: #1e40af;
   margin-bottom: 8px;
   padding-left: 6px;
-  border-left: 2px solid #1890FF;
+  border-left: 2px solid #1e40af;
 }
 
 .benefit-row.warning {
-  background: #fffbe6;
+  background: #fffbeb;
   padding: 8px;
   border-radius: 4px;
   margin: 4px 0;
@@ -1225,8 +1221,65 @@ const handleAddTag = () => {
 .check-reason {
   margin-left: 6px;
   font-size: 11px;
-  color: #ef4444;
+  color: #b91c1c;
   font-weight: 500;
+}
+
+.comparison-container {
+  padding: 8px 0;
+}
+
+.comparison-subsection {
+  margin-bottom: 24px;
+}
+
+.comparison-subtitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid #1e40af;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 24px;
+  padding: 0 16px;
+}
+
+.comparison-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.comparison-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.comparison-value {
+  font-size: 14px;
+  color: #303133;
+  font-weight: 500;
+}
+
+.comparison-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px;
+}
+
+.comparison-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 4px;
 }
 
 .benefit-card-footer {
@@ -1234,13 +1287,13 @@ const handleAddTag = () => {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  background: #f9fafb;
-  border-top: 1px solid #f3f4f6;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
 }
 
 .footer-info {
   font-size: 11px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .info-text {
@@ -1252,8 +1305,16 @@ const handleAddTag = () => {
   gap: 6px;
 }
 
+/* 压缩 el-table 行高 */
+:deep(.el-table--small .el-table__cell) {
+  padding: 4px 0;
+}
+:deep(.el-table .cell) {
+  line-height: 1.4;
+}
+
 .empty-tags {
-  padding: 40px 20px;
+  padding: 30px 20px;
 }
 
 .family-members-content {
@@ -1266,7 +1327,7 @@ const handleAddTag = () => {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .family-title {
@@ -1278,7 +1339,24 @@ const handleAddTag = () => {
 .family-empty {
   text-align: center;
   padding: 40px 20px;
-  color: #9ca3af;
+  color: #94a3b8;
   font-size: 13px;
+}
+
+/* 全局紧凑表格样式 */
+:deep(.el-table) {
+  --el-table-header-bg-color: #f8fafc;
+}
+:deep(.el-table .el-table__header th) {
+  padding: 6px 0;
+}
+:deep(.el-table .el-table__body td) {
+  padding: 5px 0;
+}
+:deep(.el-table--small .el-table__header th) {
+  padding: 4px 0;
+}
+:deep(.el-table--small .el-table__body td) {
+  padding: 3px 0;
 }
 </style>

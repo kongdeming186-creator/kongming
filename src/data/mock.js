@@ -9,7 +9,7 @@ export const residents = [
     community: '六角社区',
     estate: '阳光小区',
     grid: '第一网格',
-    personType: '常住',
+    personType: '户在人在',
     politicalStatus: '群众',
     education: '大专',
     maritalStatus: '已婚',
@@ -22,12 +22,45 @@ export const residents = [
     retirementType: '',
     criminalRecord: '无',
     familyCount: 3,
+    specialGroups: [],
+    emergencyContact: '张丽',
+    emergencyPhone: '13900139001',
+    severeDisease: '无',
+    diseaseDesc: '',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 1200,
+      pensionIncome: 0,
+      pensionType: '',
+      depositAmount: 5000,
+      carInfo: '名下登记有小型轿车',
+      carPlate: '鄂A-12345',
+      carModel: '大众朗逸',
+      carCheck: '否',
+      carCheckReason: '名下登记有私家车（鄂A-12345）',
+      houseArea: 89,
+      houseStatus: '自住房1套',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已缴费',
+      socialSecurityBase: 4500,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
     familyMembers: [
       { name: '张三', relation: '户主', idCard: '420101199001011234', gender: '男', age: 35, status: '在世' },
       { name: '张丽', relation: '配偶', idCard: '420101199205156789', gender: '女', age: 33, status: '在世' },
       { name: '张小明', relation: '子女', idCard: '420101201508152345', gender: '男', age: 10, status: '在世' }
     ],
-    createTime: '2024-01-15'
+    createTime: '2024-01-15',
+    updateTime: '2024-06-20 10:30'
   },
   {
     id: '2',
@@ -39,7 +72,7 @@ export const residents = [
     community: '六角社区',
     estate: '幸福花园',
     grid: '第二网格',
-    personType: '常住',
+    personType: '户在人在',
     politicalStatus: '党员',
     education: '高中',
     maritalStatus: '离异',
@@ -52,10 +85,42 @@ export const residents = [
     retirementType: '',
     criminalRecord: '无',
     familyCount: 1,
+    specialGroups: ['独居'],
+    emergencyContact: '李明',
+    emergencyPhone: '13900139002',
+    severeDisease: '糖尿病',
+    diseaseDesc: '2型糖尿病，需长期服药',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 800,
+      pensionIncome: 1200,
+      pensionType: '居民养老',
+      depositAmount: 12000,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      carCheck: '是',
+      houseArea: 75,
+      houseStatus: '自住房1套',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已缴费',
+      socialSecurityBase: 3200,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
     familyMembers: [
       { name: '李四', relation: '户主', idCard: '420101198505152345', gender: '男', age: 40, status: '在世' }
     ],
-    createTime: '2024-02-20'
+    createTime: '2024-02-20',
+    updateTime: '2024-06-20 10:30'
   },
   {
     id: '3',
@@ -80,11 +145,43 @@ export const residents = [
     retirementType: '企业退休',
     criminalRecord: '无',
     familyCount: 2,
+    specialGroups: ['高龄', '独居'],
+    emergencyContact: '王强',
+    emergencyPhone: '13700137003',
+    severeDisease: '高血压',
+    diseaseDesc: '高血压III级，需长期服药',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 600,
+      pensionIncome: 2800,
+      pensionType: '企业养老金',
+      depositAmount: 8000,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      carCheck: '是',
+      houseArea: 65,
+      houseStatus: '自住房1套',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已缴费',
+      socialSecurityBase: 3800,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
     familyMembers: [
       { name: '王五', relation: '户主', idCard: '420101195008203456', gender: '男', age: 75, status: '在世' },
       { name: '王强', relation: '子女', idCard: '420101197805152341', gender: '男', age: 48, status: '在世' }
     ],
-    createTime: '2024-03-10'
+    createTime: '2024-03-10',
+    updateTime: '2024-06-20 10:30'
   },
   {
     id: '4',
@@ -109,13 +206,45 @@ export const residents = [
     retirementType: '',
     criminalRecord: '无',
     familyCount: 4,
+    specialGroups: ['孤儿'],
+    emergencyContact: '赵芳',
+    emergencyPhone: '13600136004',
+    severeDisease: '无',
+    diseaseDesc: '',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 0,
+      pensionIncome: 0,
+      pensionType: '',
+      depositAmount: 0,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      houseArea: 0,
+      houseStatus: '',
+      carCheck: '是',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '断缴',
+      socialSecurityBase: 0,
+      socialSecurityAbnormal: true,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '是',
+      householdMigration: '无'
+    },
     familyMembers: [
       { name: '赵六', relation: '户主', idCard: '420101201003104567', gender: '女', age: 15, status: '在世' },
       { name: '赵大伟', relation: '父亲', idCard: '420101198001011111', gender: '男', age: 45, status: '服刑' },
       { name: '赵芳', relation: '母亲', idCard: '420101198202022222', gender: '女', age: 43, status: '失踪' },
       { name: '赵奶奶', relation: '祖母', idCard: '420101195501013333', gender: '女', age: 72, status: '在世' }
     ],
-    createTime: '2024-04-05'
+    createTime: '2024-04-05',
+    updateTime: '2024-06-20 10:30'
   },
   {
     id: '5',
@@ -139,7 +268,40 @@ export const residents = [
     workUnit: '',
     retirementType: '',
     criminalRecord: '无',
-    createTime: '2024-05-18'
+    emergencyContact: '钱建国',
+    emergencyPhone: '13500135005',
+    severeDisease: '乳腺癌',
+    diseaseDesc: '乳腺癌术后化疗中',
+    familyCount: 2,
+    specialGroups: ['精障'],
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 900,
+      pensionIncome: 0,
+      pensionType: '',
+      depositAmount: 3000,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      houseArea: 60,
+      houseStatus: '自住房1套',
+      carCheck: '是',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已缴费',
+      socialSecurityBase: 5200,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
+    createTime: '2024-05-18',
+    updateTime: '2024-06-20 10:30'
   },
   {
     id: '6',
@@ -151,7 +313,7 @@ export const residents = [
     community: '六角社区',
     estate: '阳光小区',
     grid: '第一网格',
-    personType: '常住',
+    personType: '户在人在',
     politicalStatus: '党员',
     education: '小学',
     maritalStatus: '丧偶',
@@ -163,10 +325,42 @@ export const residents = [
     workUnit: '',
     retirementType: '',
     criminalRecord: '无',
-    familyCount: 0,
+    familyCount: 1,
+    specialGroups: ['高龄', '独居'],
+    emergencyContact: '陈丽华',
+    emergencyPhone: '13800138000',
+    severeDisease: '无',
+    diseaseDesc: '',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 0,
+      pensionIncome: 3500,
+      pensionType: '企业养老金',
+      depositAmount: 0,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      houseArea: 0,
+      houseStatus: '已售出',
+      carCheck: '是',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已停缴',
+      socialSecurityBase: 0,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
     familyMembers: [],
     outDate: '2024-06-15',
-    createTime: '2023-08-10'
+    createTime: '2023-08-10',
+    updateTime: '2024-06-15 09:00'
   },
   {
     id: '7',
@@ -190,9 +384,42 @@ export const residents = [
     workUnit: '',
     retirementType: '',
     criminalRecord: '无',
+    familyCount: 2,
+    specialGroups: ['高龄'],
+    emergencyContact: '刘志强',
+    emergencyPhone: '13700137000',
+    severeDisease: '心脏病',
+    diseaseDesc: '冠心病，需定期复查',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 500,
+      pensionIncome: 900,
+      pensionType: '居民养老',
+      depositAmount: 2000,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      houseArea: 55,
+      houseStatus: '自住房1套',
+      carCheck: '是',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已缴费',
+      socialSecurityBase: 2500,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
     isHistorical: true,
     outDate: '2024-04-20',
-    createTime: '2023-05-12'
+    createTime: '2023-05-12',
+    updateTime: '2024-04-20 10:00'
   },
   {
     id: '8',
@@ -204,7 +431,7 @@ export const residents = [
     community: '六角社区',
     estate: '和平里',
     grid: '第三网格',
-    personType: '常住',
+    personType: '户在人在',
     politicalStatus: '群众',
     education: '高中',
     maritalStatus: '已婚',
@@ -216,9 +443,42 @@ export const residents = [
     workUnit: '',
     retirementType: '',
     criminalRecord: '无',
+    familyCount: 3,
+    specialGroups: ['涉毒'],
+    emergencyContact: '王丽',
+    emergencyPhone: '13800138000',
+    severeDisease: '痛风',
+    diseaseDesc: '痛风，需饮食控制',
+    comparisonInfo: {
+      householdRegister: '武昌区',
+      perCapitaIncome: 700,
+      pensionIncome: 0,
+      pensionType: '',
+      depositAmount: 6000,
+      carInfo: '无',
+      carPlate: '',
+      carModel: '',
+      houseArea: 70,
+      houseStatus: '自住房1套',
+      carCheck: '是',
+      houseCheck: '是',
+      depositCheck: '是',
+      socialSecurity: '已缴费',
+      socialSecurityBase: 4200,
+      socialSecurityAbnormal: false,
+      companyStatus: '名下无工商登记',
+      companyCheck: '是',
+      companyCheckReason: '',
+      taxInfo: '无个税缴纳记录',
+      taxAmount: 0,
+      taxCheck: '是',
+      imprisoned: '否',
+      householdMigration: '无'
+    },
     isHistorical: true,
     outDate: '2024-03-08',
-    createTime: '2023-11-20'
+    createTime: '2023-11-20',
+    updateTime: '2024-03-08 15:20'
   }
 ]
 
@@ -1131,6 +1391,17 @@ export const warnings = [
     status: '待处理',
     createTime: '2024-06-16 11:00',
     ruleSource: '政策互斥校验'
+  },
+  {
+    id: 'w6',
+    warningType: '状态异常',
+    residentId: '1',
+    residentName: '张三',
+    content: '系统内生存状态与公安部门数据不一致，请核实',
+    level: '紧急',
+    status: '待处理',
+    createTime: '2024-06-20 09:00',
+    ruleSource: '生存状态校验'
   }
 ]
 
@@ -1328,7 +1599,8 @@ export const warningRules = [
     description: '独生子女保健费停发提醒',
     enabled: true,
     advanceDays: 30,
-    triggerCondition: '年龄>=13岁11个月'
+    triggerCondition: '年龄>=13岁11个月',
+    category: '到期取消'
   },
   {
     id: 'r2',
@@ -1336,7 +1608,8 @@ export const warningRules = [
     description: '老年证办理提醒',
     enabled: true,
     advanceDays: 30,
-    triggerCondition: '年龄>=64岁11个月'
+    triggerCondition: '年龄>=64岁11个月',
+    category: '到期取消'
   },
   {
     id: 'r3',
@@ -1344,7 +1617,8 @@ export const warningRules = [
     description: '高龄津贴申请提醒',
     enabled: true,
     advanceDays: 30,
-    triggerCondition: '年龄>=79岁11个月'
+    triggerCondition: '年龄>=79岁11个月',
+    category: '到期取消'
   },
   {
     id: 'r4',
@@ -1352,7 +1626,8 @@ export const warningRules = [
     description: '残疾人补贴、4050灵活就业补贴等年审到期提醒',
     enabled: true,
     advanceDays: 15,
-    triggerCondition: '标签有效期到期前N天'
+    triggerCondition: '标签有效期到期前N天',
+    category: '到期取消'
   },
   {
     id: 'r5',
@@ -1360,21 +1635,24 @@ export const warningRules = [
     description: '定期比对公安/民政系统死亡数据',
     enabled: true,
     frequency: '每天',
-    triggerCondition: '系统状态与外部系统不一致'
+    triggerCondition: '系统状态与外部系统不一致',
+    category: '状态变化'
   },
   {
     id: 'r6',
     name: '政策互斥校验',
     description: '检查同一居民是否同时存在互斥政策标签',
     enabled: true,
-    triggerCondition: '存在互斥标签组合'
+    triggerCondition: '存在互斥标签组合',
+    category: '政策互斥'
   },
   {
     id: 'r7',
     name: '政策符合条件查询',
     description: '筛选符合条件但未享受待遇的人员',
     enabled: true,
-    triggerCondition: '符合政策条件且未享受对应待遇'
+    triggerCondition: '符合政策条件且未享受对应待遇',
+    category: '政策不符'
   }
 ]
 
@@ -1813,7 +2091,7 @@ export const taskTypes = ['核实', '走访', '年审', '采集', '整改']
 
 export const communities = ['六角社区', '幸福社区', '阳光社区', '常青社区']
 export const grids = ['第一网格', '第二网格', '第三网格', '第四网格']
-export const personTypes = ['常住', '空挂', '流动']
+export const personTypes = ['户在人在', '空挂', '流动']
 export const survivalStatus = ['在世', '已去世', '待核实']
 export const tagTypes = ['低保', '残疾', '公租房', '老年', '计生', '社保', '重症', '涉军', '支农返汉', '困境儿童']
 export const tagSubTypes = {

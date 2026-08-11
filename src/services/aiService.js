@@ -243,7 +243,7 @@ export const queryData = async (query) => {
   return {
     type: 'data',
     title: '系统数据概览',
-    answer: `【六角亭街道民政系统数据概览】\n\n• 居民总数：${residents.length}人\n• 标签总数：${tags.length}个\n• 预警总数：${warnings.length}条（待处理${warnings.filter(w => w.status === '待处理').length}条）\n• 任务总数：${tasks.length}个（待处理${tasks.filter(t => t.status === '待处理').length}个）`,
+    answer: `【智汇亭数据概览】\n\n• 居民总数：${residents.length}人\n• 标签总数：${tags.length}个\n• 预警总数：${warnings.length}条（待处理${warnings.filter(w => w.status === '待处理').length}条）\n• 任务总数：${tasks.length}个（待处理${tasks.filter(t => t.status === '待处理').length}个）`,
     suggestions: ['查看居民列表', '查看预警列表', '查看任务列表']
   }
 }

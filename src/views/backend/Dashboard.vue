@@ -3,7 +3,7 @@
     <div class="page-header">
       <div class="page-title-wrapper">
         <h2 class="page-title">数据概览</h2>
-        <p class="page-subtitle">欢迎使用六角亭街道民政系统</p>
+        <p class="page-subtitle">欢迎使用智汇亭</p>
       </div>
       <div class="header-info">
         <span class="update-time">数据更新时间：{{ currentTime }}</span>
@@ -209,7 +209,7 @@ const initLineChart = () => {
     tooltip: { 
       trigger: 'axis',
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e5e7eb',
+      borderColor: '#e2e8f0',
       borderWidth: 1,
       textStyle: { color: '#374151' }
     },
@@ -217,16 +217,16 @@ const initLineChart = () => {
     xAxis: {
       type: 'category',
       data: ['6/18', '6/19', '6/20', '6/21', '6/22', '6/23', '6/24'],
-      axisLine: { lineStyle: { color: '#e5e7eb' } },
-      axisLabel: { color: '#6b7280', fontSize: 12 },
+      axisLine: { lineStyle: { color: '#e2e8f0' } },
+      axisLabel: { color: '#64748b', fontSize: 12 },
       axisTick: { show: false }
     },
     yAxis: { 
       type: 'value',
       axisLine: { show: false },
       axisTick: { show: false },
-      axisLabel: { color: '#6b7280', fontSize: 12 },
-      splitLine: { lineStyle: { color: '#f3f4f6' } }
+      axisLabel: { color: '#64748b', fontSize: 12 },
+      splitLine: { lineStyle: { color: '#f1f5f9' } }
     },
     series: [{
       name: '预警数量',
@@ -237,12 +237,12 @@ const initLineChart = () => {
       symbolSize: 6,
       areaStyle: {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(24, 144, 255, 0.25)' },
-          { offset: 1, color: 'rgba(24, 144, 255, 0.02)' }
+          { offset: 0, color: 'rgba(30, 64, 175, 0.15)' },
+          { offset: 1, color: 'rgba(30, 64, 175, 0.02)' }
         ])
       },
-      lineStyle: { color: '#1890FF', width: 2.5 },
-      itemStyle: { color: '#1890FF', borderWidth: 2, borderColor: '#fff' }
+      lineStyle: { color: '#1e40af', width: 2.5 },
+      itemStyle: { color: '#1e40af', borderWidth: 2, borderColor: '#fff' }
     }]
   })
 }
@@ -261,7 +261,7 @@ const initPieChart = () => {
     tooltip: { 
       trigger: 'item',
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e5e7eb',
+      borderColor: '#e2e8f0',
       borderWidth: 1,
       textStyle: { color: '#374151' }
     },
@@ -271,7 +271,7 @@ const initPieChart = () => {
       top: 'center',
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: '#6b7280', fontSize: 12 }
+      textStyle: { color: '#64748b', fontSize: 12 }
     },
     series: [{
       type: 'pie',
@@ -279,7 +279,7 @@ const initPieChart = () => {
       center: ['35%', '50%'],
       avoidLabelOverlap: false,
       itemStyle: {
-        borderRadius: 4,
+        borderRadius: 2,
         borderColor: '#fff',
         borderWidth: 2
       },
@@ -289,7 +289,7 @@ const initPieChart = () => {
       },
       labelLine: { show: false },
       data: pieData,
-      color: ['#1890FF', '#52C41A', '#FAAD14', '#FF4D4F', '#722ED1', '#13C2C2']
+      color: ['#1e40af', '#1e3a8a', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe']
     }]
   })
 }
@@ -325,13 +325,13 @@ onMounted(() => {
 
 .page-subtitle {
   font-size: 13px;
-  color: #9ca3af;
+  color: #94a3b8;
   margin: 0;
 }
 
 .update-time {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .stats-grid {
@@ -343,14 +343,14 @@ onMounted(() => {
 
 .stat-card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 4px;
   padding: 20px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -360,8 +360,7 @@ onMounted(() => {
 }
 
 .stat-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  transform: translateY(-3px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .stat-left {
@@ -370,17 +369,17 @@ onMounted(() => {
 }
 
 .stat-value {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
-  color: #111827;
+  color: #1e293b;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
   margin-bottom: 4px;
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #6b7280;
+  font-size: 13px;
+  color: #64748b;
   font-weight: 500;
 }
 
@@ -389,59 +388,35 @@ onMounted(() => {
   align-items: center;
   gap: 3px;
   font-size: 12px;
-  margin-top: 10px;
+  margin-top: 8px;
   font-weight: 500;
 }
 
 .stat-trend.up {
-  color: #10b981;
+  color: #1e40af;
 }
 
 .stat-trend.down {
-  color: #ef4444;
+  color: #b91c1c;
 }
 
 .stat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.icon-blue {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
-}
-
-.icon-orange {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
-}
-
-.icon-green {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
-}
-
-.icon-purple {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
-}
-
-.icon-cyan {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
-  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
-}
-
-.icon-teal {
-  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-  box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4);
-}
+.icon-blue { background: #1e40af; }
+.icon-orange { background: #d97706; }
+.icon-green { background: #1e3a8a; }
+.icon-purple { background: #1e40af; }
+.icon-cyan { background: #1e3a8a; }
+.icon-teal { background: #1e40af; }
 
 .chart-row {
   display: grid;
@@ -452,10 +427,10 @@ onMounted(() => {
 
 .content-card {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 4px;
   padding: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
 }
 
 .card-header {
@@ -478,7 +453,7 @@ onMounted(() => {
 
 .card-subtitle {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .view-all {
@@ -486,13 +461,13 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: #1890FF;
+  color: #1e40af;
   text-decoration: none;
   transition: all 0.2s;
 }
 
 .view-all:hover {
-  color: #096dd9;
+  color: #1e3a8a;
 }
 
 .chart-card {
@@ -520,12 +495,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
-  background: #f9fafb;
-  border-radius: 8px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 4px;
   cursor: pointer;
   transition: background 0.2s;
-  border: none;
+  border: 1px solid #f1f5f9;
   width: 100%;
   text-align: left;
   font-size: inherit;
@@ -534,12 +509,13 @@ onMounted(() => {
 
 .task-item:hover {
   background: #eff6ff;
+  border-color: #bfdbfe;
 }
 
 .task-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -547,13 +523,8 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.avatar-danger {
-  background: linear-gradient(135deg, #fecaca, #ef4444);
-}
-
-.avatar-warning {
-  background: linear-gradient(135deg, #fde68a, #f59e0b);
-}
+.avatar-danger { background: #b91c1c; }
+.avatar-warning { background: #d97706; }
 
 .task-content {
   flex: 1;
@@ -564,7 +535,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .task-title {
@@ -580,7 +551,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .meta-item {
@@ -590,44 +561,46 @@ onMounted(() => {
 }
 
 .task-arrow {
-  color: #d1d5db;
+  color: #cbd5e1;
   flex-shrink: 0;
 }
 
 .task-item:hover .task-arrow {
-  color: #1890FF;
+  color: #1e40af;
 }
 
 .empty-list {
   text-align: center;
   padding: 40px 20px;
-  color: #d1d5db;
+  color: #94a3b8;
   font-size: 13px;
 }
 
 .warning-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .warning-item {
   display: flex;
   gap: 12px;
-  padding: 14px;
-  background: #f9fafb;
-  border-radius: 8px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 4px;
   transition: all 0.2s;
+  border: 1px solid #f1f5f9;
 }
 
 .warning-item:hover {
-  background: #fef3c720;
+  background: #eff6ff;
+  border-color: #bfdbfe;
 }
 
 .warning-icon {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -637,12 +610,12 @@ onMounted(() => {
 
 .icon-danger {
   background: #fef2f2;
-  color: #ef4444;
+  color: #b91c1c;
 }
 
 .icon-warning {
   background: #fffbeb;
-  color: #f59e0b;
+  color: #d97706;
 }
 
 .warning-content {
@@ -654,18 +627,18 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .warning-time {
   font-size: 12px;
-  color: #9ca3af;
+  color: #94a3b8;
 }
 
 .warning-text {
   font-size: 13px;
   color: #374151;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   line-height: 1.5;
 }
 
@@ -674,20 +647,15 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
 }
 
 .warning-level {
   font-weight: 500;
 }
 
-.warning-level.danger {
-  color: #ef4444;
-}
-
-.warning-level.warning {
-  color: #f59e0b;
-}
+.warning-level.danger { color: #b91c1c; }
+.warning-level.warning { color: #d97706; }
 
 .bottom-row.full-width {
   grid-template-columns: 1fr;
