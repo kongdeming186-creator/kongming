@@ -2106,3 +2106,433 @@ export const tagSubTypes = {
   '支农返汉': ['支农返汉'],
   '困境儿童': ['孤儿生活补助', '事实无人抚养儿童生活补助', '孤儿助学', '事无儿童助学']
 }
+
+// 人员走访任务
+export const visitTasks = [
+  {
+    id: 'vt1',
+    name: '2026高龄老人走访任务',
+    content: '2026高龄老人走访',
+    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区,长宜社区,百泽社区,东风社区,荣荟社区,天顺北社区,天顺南社区,新墩社区,永利社区,园博南社区,长丰社区,长源社区,正康社区,紫润南社区,团结社区,长宁社区,长顺社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 17:11:52',
+    executePeriod: '已循环执行3季',
+    enabled: true,
+    taskTarget: '高龄老人',
+    taskTag: '高龄',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026高龄老人走访', phaseTime: '2026年第一季度', unfinishedPeople: '天顺北社区-第001网格,天顺北社区-第006网格,天顺北社区-第004网格,天顺北社区-第007网格,天顺北社区-第002网格,天顺北社区-第005网格,天顺北社区-第003网格,园博北社区-第001网格,长丰社区-第002网格,长丰社区-第009网格,长丰社区-第003网格' },
+      { taskName: '2026高龄老人走访', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第001网格,紫润北社区-第002网格,紫润北社区-第003网格' },
+      { taskName: '2026高龄老人走访', phaseTime: '2026年第三季度', unfinishedPeople: '长丰社区-第005网格,长丰社区-第006网格,天勤社区-第001网格,天勤社区-第002网格' }
+    ]
+  },
+  {
+    id: 'vt2',
+    name: '2026残疾人员走访任务',
+    content: '2026残疾人员走访',
+    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区,长宜社区,百泽社区,东风社区,荣荟社区,天顺北社区,天顺南社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 17:06:29',
+    executePeriod: '已循环执行3季',
+    enabled: true,
+    taskTarget: '残疾人',
+    taskTag: '残疾',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026残疾人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '东风社区-第001网格,东风社区-第002网格,荣荟社区-第003网格' },
+      { taskName: '2026残疾人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '百泽社区-第001网格,百泽社区-第002网格' },
+      { taskName: '2026残疾人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '丰竹园社区-第001网格,丰竹园社区-第002网格,丰竹园社区-第003网格' }
+    ]
+  },
+  {
+    id: 'vt3',
+    name: '2026刑满释放人员走访任务',
+    content: '2026刑满释放人员走访',
+    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区,长宜社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 17:06:07',
+    executePeriod: '已循环执行3季',
+    enabled: true,
+    taskTarget: '刑满释放人员',
+    taskTag: '刑释',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '长宜社区-第001网格,长宜社区-第002网格' },
+      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '园博北社区-第001网格' },
+      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第001网格' }
+    ]
+  },
+  {
+    id: 'vt4',
+    name: '2026在矫人员走访任务',
+    content: '2026在矫人员走访',
+    communities: '紫润北社区,天勤社区,丰竹园社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 17:05:36',
+    executePeriod: '已循环执行3季',
+    enabled: true,
+    taskTarget: '在矫人员',
+    taskTag: '在矫',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026在矫人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '丰竹园社区-第001网格' },
+      { taskName: '2026在矫人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '天勤社区-第001网格' },
+      { taskName: '2026在矫人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第001网格,紫润北社区-第002网格' }
+    ]
+  },
+  {
+    id: 'vt5',
+    name: '2026涉毒人员走访任务',
+    content: '2026涉毒人员走访',
+    communities: '紫润北社区,天勤社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 17:05:12',
+    executePeriod: '已循环执行3季',
+    enabled: true,
+    taskTarget: '涉毒人员',
+    taskTag: '涉毒',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026涉毒人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '天勤社区-第001网格' },
+      { taskName: '2026涉毒人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第001网格' },
+      { taskName: '2026涉毒人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第002网格' }
+    ]
+  },
+  {
+    id: 'vt6',
+    name: '2026精神病人走访任务',
+    content: '2026精神病人走访',
+    communities: '紫润北社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 17:04:47',
+    executePeriod: '已循环执行3季',
+    enabled: true,
+    taskTarget: '精神病人',
+    taskTag: '精障',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026精神病人走访', phaseTime: '2026年第一季度', unfinishedPeople: '紫润北社区-第003网格' },
+      { taskName: '2026精神病人走访', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第003网格,紫润北社区-第004网格' },
+      { taskName: '2026精神病人走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第001网格' }
+    ]
+  },
+  {
+    id: 'vt7',
+    name: '2026低保走访任务',
+    content: '2026低保走访',
+    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区',
+    cycleFrequency: '半年',
+    startTime: '2026-03-04 17:04:14',
+    executePeriod: '已循环执行2季',
+    enabled: true,
+    taskTarget: '低保人员',
+    taskTag: '低保',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '2026低保走访', phaseTime: '2026年上半年', unfinishedPeople: '园博北社区-第001网格,园博北社区-第002网格' },
+      { taskName: '2026低保走访', phaseTime: '2026年下半年', unfinishedPeople: '丰竹园社区-第001网格,天勤社区-第001网格,紫润北社区-第001网格' }
+    ]
+  },
+  {
+    id: 'vt8',
+    name: '低保人员走访',
+    content: '低保人员走访',
+    communities: '紫润北社区,天勤社区',
+    cycleFrequency: '半年',
+    startTime: '2026-03-04 15:07:34',
+    executePeriod: '已循环执行1季',
+    enabled: false,
+    taskTarget: '低保人员',
+    taskTag: '低保',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '低保人员走访', phaseTime: '2026年上半年', unfinishedPeople: '天勤社区-第001网格,紫润北社区-第001网格,紫润北社区-第002网格,紫润北社区-第003网格' }
+    ]
+  },
+  {
+    id: 'vt9',
+    name: '精神病人走访任务',
+    content: '精神病人走访任务',
+    communities: '紫润北社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 15:08:16',
+    executePeriod: '已循环执行1季',
+    enabled: false,
+    taskTarget: '精神病人',
+    taskTag: '精障',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '精神病人走访任务', phaseTime: '2026年第一季度', unfinishedPeople: '紫润北社区-第003网格,紫润北社区-第004网格' }
+    ]
+  },
+  {
+    id: 'vt10',
+    name: '涉毒人员走访',
+    content: '涉毒人员走访',
+    communities: '紫润北社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-04 15:08:44',
+    executePeriod: '已循环执行1季',
+    enabled: false,
+    taskTarget: '涉毒人员',
+    taskTag: '涉毒',
+    creator: '周文婧',
+    executionRecords: [
+      { taskName: '涉毒人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '紫润北社区-第001网格,紫润北社区-第002网格' }
+    ]
+  },
+  {
+    id: 'vt11',
+    name: '特困人员走访',
+    content: '特困人员走访',
+    communities: '紫润北社区,天勤社区',
+    cycleFrequency: '月',
+    startTime: '2026-03-04 14:00:00',
+    executePeriod: '已循环执行6季',
+    enabled: true,
+    taskTarget: '特困人员',
+    taskTag: '特困',
+    creator: '李芳',
+    executionRecords: [
+      { taskName: '特困人员走访', phaseTime: '2026年3月', unfinishedPeople: '天勤社区-第001网格' },
+      { taskName: '特困人员走访', phaseTime: '2026年4月', unfinishedPeople: '紫润北社区-第001网格' }
+    ]
+  },
+  {
+    id: 'vt12',
+    name: '孤儿走访任务',
+    content: '孤儿走访',
+    communities: '百泽社区,东风社区',
+    cycleFrequency: '月',
+    startTime: '2026-02-15 10:30:00',
+    executePeriod: '已循环执行4季',
+    enabled: true,
+    taskTarget: '孤儿',
+    taskTag: '孤儿',
+    creator: '李芳',
+    executionRecords: [
+      { taskName: '孤儿走访', phaseTime: '2026年5月', unfinishedPeople: '百泽社区-第001网格' },
+      { taskName: '孤儿走访', phaseTime: '2026年6月', unfinishedPeople: '东风社区-第001网格' }
+    ]
+  }
+]
+
+// 人员核查任务
+export const checkTasks = [
+  {
+    id: 'ct1',
+    name: '2026低保年审核查',
+    content: '低保资格年度核查',
+    communities: '紫润北社区,天勤社区,丰竹园社区',
+    cycleFrequency: '半年',
+    startTime: '2026-01-10 09:00:00',
+    executePeriod: '已循环执行1季',
+    enabled: true,
+    taskTarget: '低保人员',
+    taskTag: '低保',
+    creator: '周文婧',
+    checkItems: ['户籍核对', '生存状态', '收入核对', '房产核对', '车辆核对', '工商注册', '纳税信息'],
+    executionRecords: [
+      { taskName: '2026低保年审核查', phaseTime: '2026年上半年', unfinishedPeople: '丰竹园社区-第001网格,天勤社区-第001网格' }
+    ]
+  },
+  {
+    id: 'ct2',
+    name: '2026特困供养核查',
+    content: '特困供养资格核查',
+    communities: '紫润北社区,天勤社区',
+    cycleFrequency: '季',
+    startTime: '2026-02-01 10:00:00',
+    executePeriod: '已循环执行2季',
+    enabled: true,
+    taskTarget: '特困人员',
+    taskTag: '特困',
+    creator: '周文婧',
+    checkItems: ['户籍核对', '生存状态', '收入核对', '房产核对', '存款核对'],
+    executionRecords: [
+      { taskName: '2026特困供养核查', phaseTime: '2026年第一季度', unfinishedPeople: '天勤社区-第002网格' },
+      { taskName: '2026特困供养核查', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第001网格' }
+    ]
+  },
+  {
+    id: 'ct3',
+    name: '2026残疾人两项补贴核查',
+    content: '残疾人两项补贴资格核查',
+    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区',
+    cycleFrequency: '季',
+    startTime: '2026-03-01 14:00:00',
+    executePeriod: '已循环执行1季',
+    enabled: true,
+    taskTarget: '残疾人',
+    taskTag: '残疾',
+    creator: '李芳',
+    checkItems: ['户籍核对', '生存状态', '残疾等级复核', '收入核对'],
+    executionRecords: [
+      { taskName: '2026残疾人两项补贴核查', phaseTime: '2026年第一季度', unfinishedPeople: '园博北社区-第001网格,丰竹园社区-第001网格' }
+    ]
+  },
+  {
+    id: 'ct4',
+    name: '2026高龄津贴核查',
+    content: '高龄津贴资格核查',
+    communities: '紫润北社区',
+    cycleFrequency: '年',
+    startTime: '2026-01-05 08:30:00',
+    executePeriod: '已循环执行1季',
+    enabled: true,
+    taskTarget: '高龄老人',
+    taskTag: '高龄',
+    creator: '李芳',
+    checkItems: ['户籍核对', '生存状态', '年龄复核'],
+    executionRecords: [
+      { taskName: '2026高龄津贴核查', phaseTime: '2026年度', unfinishedPeople: '紫润北社区-第003网格,紫润北社区-第004网格' }
+    ]
+  },
+  {
+    id: 'ct5',
+    name: '2026公租房租赁补贴核查',
+    content: '公租房租赁补贴资格核查',
+    communities: '长宜社区,百泽社区',
+    cycleFrequency: '半年',
+    startTime: '2026-02-15 10:00:00',
+    executePeriod: '已循环执行1季',
+    enabled: true,
+    taskTarget: '公租房住户',
+    taskTag: '公租房',
+    creator: '周文婧',
+    checkItems: ['户籍核对', '收入核对', '房产核对'],
+    executionRecords: [
+      { taskName: '2026公租房租赁补贴核查', phaseTime: '2026年上半年', unfinishedPeople: '长宜社区-第001网格,百泽社区-第001网格,百泽社区-第002网格' }
+    ]
+  },
+  {
+    id: 'ct6',
+    name: '2026计生特扶核查',
+    content: '计生特别扶助资格核查',
+    communities: '新墩社区,永利社区',
+    cycleFrequency: '年',
+    startTime: '2026-03-01 09:00:00',
+    executePeriod: '已循环执行1季',
+    enabled: true,
+    taskTarget: '计生特扶家庭',
+    taskTag: '计生',
+    creator: '李芳',
+    checkItems: ['户籍核对', '生存状态', '子女情况复核'],
+    executionRecords: [
+      { taskName: '2026计生特扶核查', phaseTime: '2026年度', unfinishedPeople: '新墩社区-第001网格' }
+    ]
+  },
+  {
+    id: 'ct7',
+    name: '2026困境儿童核查',
+    content: '困境儿童基本生活保障核查',
+    communities: '团结社区,长宁社区',
+    cycleFrequency: '月',
+    startTime: '2026-04-01 08:00:00',
+    executePeriod: '已循环执行2季',
+    enabled: true,
+    taskTarget: '困境儿童',
+    taskTag: '困境儿童',
+    creator: '李芳',
+    checkItems: ['户籍核对', '生存状态', '监护情况复核'],
+    executionRecords: [
+      { taskName: '2026困境儿童核查', phaseTime: '2026年5月', unfinishedPeople: '团结社区-第001网格' },
+      { taskName: '2026困境儿童核查', phaseTime: '2026年6月', unfinishedPeople: '长宁社区-第001网格' }
+    ]
+  },
+  {
+    id: 'ct8',
+    name: '优抚对象核查',
+    content: '优抚对象资格年度核查',
+    communities: '荣荟社区',
+    cycleFrequency: '年',
+    startTime: '2026-01-20 10:00:00',
+    executePeriod: '已循环执行1季',
+    enabled: false,
+    taskTarget: '优抚对象',
+    taskTag: '涉军',
+    creator: '周文婧',
+    checkItems: ['户籍核对', '生存状态', '身份复核'],
+    executionRecords: [
+      { taskName: '优抚对象核查', phaseTime: '2026年度', unfinishedPeople: '荣荟社区-第001网格,荣荟社区-第002网格' }
+    ]
+  },
+  {
+    id: 'ct9',
+    name: '4050社保补贴核查',
+    content: '4050灵活就业社保补贴核查',
+    communities: '长源社区,正康社区',
+    cycleFrequency: '季',
+    startTime: '2026-02-10 14:30:00',
+    executePeriod: '已循环执行1季',
+    enabled: false,
+    taskTarget: '4050人员',
+    taskTag: '社保',
+    creator: '李芳',
+    checkItems: ['户籍核对', '就业状态复核', '缴费情况'],
+    executionRecords: [
+      { taskName: '4050社保补贴核查', phaseTime: '2026年第一季度', unfinishedPeople: '长源社区-第001网格,正康社区-第001网格' }
+    ]
+  }
+]
+
+// 人员核查执行记录
+const communityList = ['长顺社区', '长丰社区', '长宁社区', '长源社区', '园博北社区', '紫润北社区', '天勤社区', '丰竹园社区', '正康社区', '新墩社区', '永利社区', '团结社区', '荣荟社区', '百泽社区']
+const gridList = ['第001网格', '第002网格', '第003网格']
+const taskNames = ['高龄老人状态核实', '低保人员状态核实', '残疾人两项补贴核实', '特困人员状态核实', '公租房资格核实', '高龄津贴领取核实', '计生特扶家庭核实', '困境儿童基本情况核实', '优抚对象状态核实', '4050社保补贴核实']
+const executionResults = ['死亡', '在世正常', '在世异常', '已搬迁', '拒访', '联系方式变更', '情况属实', '需要跟进']
+const completionStatuses = ['已完成', '待核实', '核实中', '已跟进']
+const residentNames = ['王智茂', '刘金花', '陈国强', '张秀英', '李建国', '赵桂芳', '孙志强', '周桂英', '吴建华', '郑秀兰', '冯耀宗', '朱淑珍', '钱海涛', '孙慧敏', '何志强', '罗建萍', '梁金生', '宋美玲', '谢天乐', '韩晓梅']
+
+function genIdCard(seed) {
+  const prefix = '420104'
+  const year = 1940 + (seed % 30)
+  const month = String((seed % 12) + 1).padStart(2, '0')
+  const day = String((seed % 28) + 1).padStart(2, '0')
+  const tail = String(seed).padStart(4, '0')
+  return `${prefix}${year}${month}${day}${tail.slice(-4)}`
+}
+
+function genPhone(seed) {
+  const prefix = ['139', '138', '136', '137', '158', '159', '188', '189']
+  const p = prefix[seed % prefix.length]
+  const rest = String(10000000 + seed * 1237 % 89999999).padStart(8, '0')
+  return p + rest
+}
+
+export const verifyTasks = []
+for (let i = 0; i < 96; i++) {
+  const communityIdx = i % communityList.length
+  const gridIdx = Math.floor(i / communityList.length) % gridList.length
+  const taskIdx = i % taskNames.length
+  const startTime = `2024-12-${String((i % 7) + 1).padStart(2, '0')} ${String((i % 24)).padStart(2, '0')}:${String((i * 7) % 60).padStart(2, '0')}:${String((i * 13) % 60).padStart(2, '0')}`
+  const endHour = Math.min(23, (i % 24) + 1)
+  const endTime = `2024-12-${String((i % 7) + 1).padStart(2, '0')} ${String(endHour).padStart(2, '0')}:${String((i * 11) % 60).padStart(2, '0')}:${String((i * 17) % 60).padStart(2, '0')}`
+  
+  const recordCount = (i % 3) + 1
+  const records = []
+  for (let j = 0; j < recordCount; j++) {
+    const rIdx = (i * 3 + j) % residentNames.length
+    records.push({
+      residentName: residentNames[rIdx],
+      idCard: genIdCard(i * 10 + j),
+      phone: genPhone(i * 10 + j),
+      result: executionResults[(i + j) % executionResults.length],
+      hasImage: (i + j) % 3 !== 0,
+      status: completionStatuses[(i + j) % completionStatuses.length]
+    })
+  }
+  
+  verifyTasks.push({
+    id: `vt_${String(i + 1).padStart(3, '0')}`,
+    taskName: taskNames[taskIdx],
+    content: taskNames[taskIdx] === '高龄老人状态核实' 
+      ? '请各网格按照要求上门核实辖区内高龄老人真实状态，并及时更新居民底数数据'
+      : `请各网格按照要求上门核实辖区内${taskNames[taskIdx].replace('状态核实', '').replace('资格核实', '')}真实状态`,
+    target: `${communityList[communityIdx]}-${gridList[gridIdx]}`,
+    startTime: startTime,
+    endTime: endTime,
+    records: records
+  })
+}

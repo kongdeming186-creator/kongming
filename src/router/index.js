@@ -66,6 +66,16 @@ const routes = [
         path: '/ai-match',
         name: 'AiMatch',
         component: () => import('../views/backend/AiMatch.vue')
+      },
+      {
+        path: '/task/visit',
+        name: 'VisitTask',
+        component: () => import('../views/backend/VisitTask.vue')
+      },
+      {
+        path: '/task/check',
+        name: 'CheckTask',
+        component: () => import('../views/backend/CheckTask.vue')
       }
     ]
   },

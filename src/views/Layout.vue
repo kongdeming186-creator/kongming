@@ -70,6 +70,15 @@
           </template>
           <span>政策匹配</span>
         </el-menu-item>
+
+        <el-sub-menu index="task">
+          <template #title>
+            <el-icon><Tickets /></el-icon>
+            <span>任务发布</span>
+          </template>
+          <el-menu-item index="/task/visit">人员走访任务</el-menu-item>
+          <el-menu-item index="/task/check">人员核查任务</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </aside>
     
@@ -184,7 +193,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import {
   DataBoard, User, Upload, Warning, PieChart,
-  Menu, Expand, Bell, ArrowDown, UserFilled, Star 
+  Menu, Expand, Bell, ArrowDown, UserFilled, Star, Tickets 
 } from '@element-plus/icons-vue'
 import { warnings } from '../data/mock'
 
@@ -237,7 +246,9 @@ const titleMap = {
   '/warning': '核查列表',
   '/warning/config': '规则配置',
   '/report': '统计报表',
-  '/ai-match': '政策匹配'
+  '/ai-match': '政策匹配',
+  '/task/visit': '人员走访任务',
+  '/task/check': '人员核查任务'
 }
 
 const currentTitle = computed(() => {
