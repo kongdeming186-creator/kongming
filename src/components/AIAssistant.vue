@@ -13,7 +13,7 @@
           @touchstart.prevent="startDrag($event, 'chat')"
         >
           <div class="chat-header-info">
-            <img src="/src/assets/ai-assistant.jpg" class="chat-avatar" />
+            <img :src="aiAvatar" class="chat-avatar" />
             <div class="chat-title">
               <div class="chat-name">小智 AI 助手</div>
               <div class="chat-status"><span class="dot"></span>在线</div>
@@ -26,7 +26,7 @@
 
         <div ref="chatBodyRef" class="chat-body">
           <div v-for="msg in messages" :key="msg.id" class="chat-msg" :class="msg.role">
-            <img v-if="msg.role === 'assistant'" src="/src/assets/ai-assistant.jpg" class="msg-avatar" />
+            <img v-if="msg.role === 'assistant'" :src="aiAvatar" class="msg-avatar" />
             <div class="msg-bubble">
               <div v-if="msg.loading" class="typing">
                 <span></span><span></span><span></span>
@@ -75,7 +75,7 @@
     >
       <div class="fab-shadow"></div>
       <div class="fab-body">
-        <img src="/src/assets/ai-assistant.jpg" class="fab-img" />
+        <img :src="aiAvatar" class="fab-img" />
       </div>
       <div class="fab-ring"></div>
       <div class="fab-ring delay"></div>
@@ -87,6 +87,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Close, Promotion } from '@element-plus/icons-vue'
+import aiAvatar from '../assets/ai-assistant.jpg'
 
 const showChat = ref(false)
 const inputMsg = ref('')
