@@ -188,7 +188,7 @@ import {
   Menu, Expand, Bell, ArrowDown, UserFilled, Star, Tickets 
 } from '@element-plus/icons-vue'
 import { warnings } from '../data/mock'
-import AiAssistant from '../components/AiAssistant.vue'
+import AiAssistant from '../components/AIAssistant.vue'
 
 
 const router = useRouter()
