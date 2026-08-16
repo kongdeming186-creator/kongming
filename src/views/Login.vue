@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
@@ -62,11 +62,6 @@
           </el-button>
         </el-form-item>
       </el-form>
-      
-      <div class="login-footer">
-        <span>© 2024 智汇亭</span>
-        <button type="button" class="mobile-link" @click="goMobile">移动端入口 →</button>
-      </div>
     </div>
   </div>
 </template>
@@ -114,10 +109,6 @@ const handleLogin = () => {
       }
     }
   })
-}
-
-const goMobile = () => {
-  router.push('/mobile/login')
 }
 </script>
 
@@ -191,23 +182,6 @@ const goMobile = () => {
   font-size: 18px;
 }
 
-.login-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
-  font-size: 18px;
-  color: #94a3b8;
-}
-
-.mobile-link {
-  color: #1e40af;
-  cursor: pointer;
-  font-size: 18px;
-}
-
 .forgot-link {
   font-size: 18px;
   color: #94a3b8;
@@ -221,4 +195,3 @@ const goMobile = () => {
   color: #1e40af;
 }
 </style>
-

@@ -120,6 +120,21 @@
       id: "P6-6", page: "all", title: "非功能性需求-安全与性能",
       selector: "body",
       content: "**P6-6 非功能性需求**\n\n**安全需求：**\n- 🔐 数据脱敏：身份证号仅显示前6后4\n- 🔐 权限控制：基于角色的访问控制（RBAC）\n- 🔐 操作日志：所有增删改操作留痕\n- 🔐 会话超时：30分钟无操作自动退出\n- 🔐 密码强度：≥8位，字母+数字\n- 🔐 传输安全：生产环境HTTPS\n\n**性能需求：**\n- ⚡ 页面首屏加载 ≤ 3秒\n- ⚡ 列表查询响应 ≤ 1秒\n- ⚡ 并发用户 ≥ 50\n\n**兼容性需求：**\n- 🖥️ Chrome 90+、Edge 90+、Firefox 88+\n- 📱 iOS Safari 13+、Android Chrome 80+\n\n**PRD章节：** 第11章 非功能性需求"
+    },
+    "P7-1": {
+      id: "P7-1", page: "ai-match", title: "政策匹配-批量检索（上传文件+AI识别条件）",
+      selector: ".batch-tools, .policy-desc-section, .content-card, #app",
+      content: "**P7-1 批量检索**\n\n**功能模块：**\n1. **上传居民底册**：按钮上传 .xlsx/.xls/.csv，AI 自动解析条数\n2. **政策条件描述框**：手动输入自然语言条件（例如「查找60岁以上人均月收入低于1000元高龄老人」）\n3. **AI识别条件**：基于描述自动勾选对应政策类型标签\n4. **政策类型选择**：低保/特困人员/高龄津贴/重度残疾人护理补贴/公租房/4050灵活就业补贴 等标签\n5. **AI智能匹配按钮**：从全量底册筛选符合条件居民并展示匹配结果表格（姓名/性别/年龄/身份证/社区/网格/匹配政策/匹配度/操作）\n\n**跳转测试**：点击标签可跳转对应筛选。\n\n**PRD章节：** 10.2.4 AI政策匹配"
+    },
+    "P7-2": {
+      id: "P7-2", page: "ai-match", title: "政策匹配-单人判定（库内联动+AI解析描述）",
+      selector: ".single-tools, .form-section, .content-card, #app",
+      content: "**P7-2 单人判定**\n\n**功能模块：**\n1. **手动描述居民信息 按钮**：打开对话框，内置 2 条示例（高龄老人 / 三级残疾离异妇女），点击即填，再点「AI解析并填充」自动填入表单\n2. **姓名 / 身份证号失焦自动填充**：只要输入库中存在的居民姓名或身份证号，失焦即联动填充其他 14 项字段（性别、年龄、婚姻、残疾、收入、存款、房产、车辆、联系方式等），并成功提示\n3. **AI一键判定**：输出匹配政策卡片列表（政策名、描述、补贴标准、匹配度、匹配原因、申请办理按钮）\n\n**跳转测试**：点击「手动描述居民信息」打开弹窗、示例标签、姓名输入张三后失焦验证。\n\n**PRD章节：** 10.2.4 AI政策匹配-单人判定"
+    },
+    "P7-3": {
+      id: "P7-3", page: "ai-match", title: "政策匹配-服务场景（6大AI场景+感知日志）",
+      selector: ".scene-grid, .scene-log-section, .content-card, #app",
+      content: "**P7-3 服务场景**\n\n**功能模块：**\n1. **6个 AI 场景卡片**（可点击开关）：\n   - ☀️ 天气灾害预警：高温暴雨寒潮，推送重点关怀\n   - 🏠 独居老人关怀：用水用电轨迹异常感知\n   - 📅 重点节日走访：中秋春节自动生成走访任务\n   - 🔔 政策到期提醒：提前 30 天通知办理续期\n   - ⚠️ 涉毒人员管控：社会关系识别风险行为\n   - 👤 精神障碍监护：监护人复诊提醒 + 网格员上门\n2. **场景感知日志表格**：时间/场景/级别/内容/影响人群/操作（推送通知、详情）\n\n**跳转测试**：点击任意场景卡片切换开关状态，点击场景日志「推送通知」测试。\n\n**PRD章节：** 10.2.4 AI服务场景"
     }
   };
 
@@ -142,6 +157,9 @@
     if (hash.includes('warning')) return 'warning-list';
     if (hash.includes('import')) return 'data-import';
     if (hash.includes('report') || hash.includes('statistics')) return 'report';
+    if (hash.includes('ai-match') || hash.includes('policy')) return 'ai-match';
+    if (hash.includes('task/visit')) return 'visit-task';
+    if (hash.includes('task/check')) return 'check-history';
     return 'all';
   }
 

@@ -53,6 +53,16 @@ const routes = [
         component: () => import('../views/backend/Report.vue')
       },
       {
+        path: '/report/task',
+        name: 'TaskReport',
+        component: () => import('../views/backend/TaskReport.vue')
+      },
+      {
+        path: '/report/community',
+        name: 'CommunityReport',
+        component: () => import('../views/backend/CommunityReport.vue')
+      },
+      {
         path: '/grid-worker',
         name: 'GridWorkerList',
         component: () => import('../views/backend/GridWorkerList.vue')

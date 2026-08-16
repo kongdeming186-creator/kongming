@@ -43,26 +43,9 @@
             <span>核查管理</span>
           </template>
           <el-menu-item index="/warning">核查列表</el-menu-item>
+          <el-menu-item index="/task/check">核查历史</el-menu-item>
           <el-menu-item index="/warning/config">规则配置</el-menu-item>
         </el-sub-menu>
-        
-        <el-menu-item index="/report">
-          <template #icon>
-            <el-icon><PieChart /></el-icon>
-          </template>
-          <span>统计报表</span>
-        </el-menu-item>
-        
-        <!-- 网格员管理模块已隐藏
-        <el-sub-menu index="grid-worker">
-          <template #title>
-            <el-icon><UserFilled /></el-icon>
-            <span>网格员管理</span>
-          </template>
-          <el-menu-item index="/grid-worker">网格员列表</el-menu-item>
-          <el-menu-item index="/grid-worker/assessment">考核管理</el-menu-item>
-        </el-sub-menu>
-        -->
         
         <el-menu-item index="/ai-match">
           <template #icon>
@@ -71,13 +54,21 @@
           <span>政策匹配</span>
         </el-menu-item>
 
-        <el-sub-menu index="task">
-          <template #title>
+        <el-menu-item index="/task/visit">
+          <template #icon>
             <el-icon><Tickets /></el-icon>
-            <span>任务发布</span>
           </template>
-          <el-menu-item index="/task/visit">人员走访任务</el-menu-item>
-          <el-menu-item index="/task/check">人员核查任务</el-menu-item>
+          <span>走访任务</span>
+        </el-menu-item>
+
+        <el-sub-menu index="report">
+          <template #title>
+            <el-icon><PieChart /></el-icon>
+            <span>统计报表</span>
+          </template>
+          <el-menu-item index="/report">数据汇总</el-menu-item>
+          <el-menu-item index="/report/task">任务统计报表</el-menu-item>
+          <el-menu-item index="/report/community">社区工作统计报表</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </aside>
@@ -184,6 +175,7 @@
       </main>
     </div>
     
+    <AiAssistant />
   </div>
 </template>
 
@@ -196,6 +188,7 @@ import {
   Menu, Expand, Bell, ArrowDown, UserFilled, Star, Tickets 
 } from '@element-plus/icons-vue'
 import { warnings } from '../data/mock'
+import AiAssistant from '../components/AiAssistant.vue'
 
 
 const router = useRouter()
@@ -245,10 +238,12 @@ const titleMap = {
   '/import': '数据导入',
   '/warning': '核查列表',
   '/warning/config': '规则配置',
-  '/report': '统计报表',
   '/ai-match': '政策匹配',
-  '/task/visit': '人员走访任务',
-  '/task/check': '人员核查任务'
+  '/task/visit': '走访任务',
+  '/task/check': '核查历史',
+  '/report': '数据汇总',
+  '/report/task': '任务统计报表',
+  '/report/community': '社区工作统计报表'
 }
 
 const currentTitle = computed(() => {
@@ -290,17 +285,20 @@ const handleCommand = (command) => {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #f5f7fa;
+  background: #eef2f7;
 }
 
+/* ============ 侧边栏 ============ */
 .sidebar {
-  width: 220px;
-  background: #1e3a8a;
+  width: 230px;
+  background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.12);
+  z-index: 10;
 }
 
 .sidebar.collapsed {
@@ -308,11 +306,11 @@ const handleCommand = (command) => {
 }
 
 .sidebar-header {
-  padding: 16px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   height: 64px;
   flex-shrink: 0;
 }
@@ -329,71 +327,112 @@ const handleCommand = (command) => {
 }
 
 .logo-text {
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: #f8fafc;
   white-space: nowrap;
+  letter-spacing: 1px;
 }
 
 .sidebar-menu {
   flex: 1;
   border-right: none;
+  padding: 8px 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidebar-menu:not(.el-menu--collapse) {
   width: 100%;
 }
 
+.sidebar-menu::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
 :deep(.el-menu) {
   border-right: none;
+  background: transparent !important;
 }
 
 :deep(.el-menu-item),
 :deep(.el-sub-menu__title) {
-  height: 44px;
-  line-height: 44px;
-  margin: 4px 8px;
-  border-radius: 4px;
+  height: 46px;
+  line-height: 46px;
+  margin: 3px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 :deep(.el-menu-item:hover),
 :deep(.el-sub-menu__title:hover) {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 :deep(.el-menu-item.is-active) {
-  background-color: #1e40af !important;
+  background: linear-gradient(135deg, #1e40af, #3b82f6) !important;
   color: #fff !important;
   font-weight: 500;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 }
 
 :deep(.el-sub-menu .el-menu-item) {
   min-width: auto;
   padding-left: 48px !important;
-  margin: 2px 8px;
-  height: 38px;
-  line-height: 38px;
+  margin: 2px 10px;
+  height: 40px;
+  line-height: 40px;
   font-size: 13px;
 }
 
+/* ============ 主内容区 ============ */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
-  background: #f5f7fa;
+  background: #eef2f7;
+  margin: 16px 16px 16px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
 }
 
 .top-header {
   height: 60px;
   background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e8ecf1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 28px;
   flex-shrink: 0;
+  border-radius: 12px 12px 0 0;
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #eef2f7;
+  border-radius: 0 0 12px 12px;
+  padding: 20px 24px;
+}
+
+.content-area::-webkit-scrollbar {
+  width: 6px;
+}
+.content-area::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.content-area::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .header-left {
@@ -482,12 +521,6 @@ const handleCommand = (command) => {
   padding: 0 4px !important;
 }
 
-.content-area {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: #f5f7fa;
-}
 
 .message-item {
   display: flex;

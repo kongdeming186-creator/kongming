@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <div class="detail-page-header">
       <div class="header-left">
@@ -36,6 +36,7 @@
             <span class="meta-item">
               <el-icon><Place /></el-icon>
               {{ resident.community }} · {{ resident.estate }}
+              <template v-if="resident.grid"> · {{ resident.grid }}</template>
             </span>
           </div>
         </div>
@@ -46,7 +47,6 @@
       <div class="section-header">
         <div class="section-title-wrapper">
           <h3 class="section-title">基础信息</h3>
-          <span class="section-desc">居民个人及家庭基本资料</span>
         </div>
       </div>
       
@@ -120,8 +120,27 @@
           <span class="info-value">{{ resident.workUnit || '无' }}</span>
         </div>
         <div class="info-item">
-          <span class="info-label">重症疾病</span>
-          <span class="info-value">{{ resident.severeDisease || '无' }}</span>
+          <span class="info-label">重症</span>
+          <span class="info-value">
+            <el-tag v-if="resident.severeDisease && resident.severeDisease !== '无'" type="danger" size="small" effect="plain">是</el-tag>
+            <el-tag v-else type="info" size="small" effect="plain">否</el-tag>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">特殊人群</span>
+          <span class="info-value">
+            <div v-if="resident.specialGroups && resident.specialGroups.length > 0" class="special-tags-inline">
+              <el-tag
+                v-for="s in resident.specialGroups"
+                :key="s"
+                size="small"
+                effect="plain"
+                :type="getSpecialTagType(s)">
+                {{ s }}
+              </el-tag>
+            </div>
+            <span v-else style="color: #cbd5e1;">--</span>
+          </span>
         </div>
         <div class="info-item full-width">
           <span class="info-label">户籍地址</span>
@@ -138,7 +157,6 @@
       <div class="section-header">
         <div class="section-title-wrapper">
           <h3 class="section-title">保障信息</h3>
-          <span class="section-desc">该居民关联的所有保障标签及核实详情</span>
         </div>
         <div class="header-actions">
           <el-button type="primary" size="default" @click="showAddTagDialog = true">
@@ -169,25 +187,12 @@
         </div>
         
         <div v-for="(group, tagType) in groupedTags" :key="'content-' + tagType" v-show="activeTagType === tagType" class="benefit-group-content">
-          <div v-if="tagType === '残疾' && disabilityGroupInfo.length > 0" class="group-base-info">
-            <div class="benefit-subtitle group-info-subtitle">残疾信息</div>
-            <div class="group-info-compact">
-              <div class="benefit-row">
-                <span class="benefit-label">残疾种类等级</span>
-                <span class="benefit-value highlight">{{ disabilityTypesDisplay }}</span>
-              </div>
-              <div class="benefit-row" v-if="disabilityCardsDisplay">
-                <span class="benefit-label">残疾证号</span>
-                <span class="benefit-value">{{ disabilityCardsDisplay }}</span>
-              </div>
-            </div>
-          </div>
           <div class="benefit-block-list">
             <div v-for="tag in group" :key="tag.id" :id="'tag-card-' + tag.id" class="benefit-block">
               <div class="benefit-block-header">
                 <span class="benefit-block-title">{{ tag.tagSubType }}</span>
-                <el-tag :type="tag.isEnjoy ? 'success' : 'info'" size="small" effect="plain">
-                  {{ tag.isEnjoy ? '享受中' : '已停发' }}
+                <el-tag :type="getEnjoyTagType(tag.isEnjoy, tag.cancelled)" size="small" effect="plain">
+                  {{ getEnjoyTagText(tag.isEnjoy, tag.cancelled) }}
                 </el-tag>
               </div>
               <div class="benefit-block-body">
@@ -398,26 +403,19 @@
       </el-table>
     </div>
     
-    <el-dialog title="添加标签" v-model="showAddTagDialog" width="500px">
+    <el-dialog title="修改详情" v-model="showAddTagDialog" width="500px">
       <el-form :model="tagForm" label-width="100px">
-        <el-form-item label="标签类型">
-          <el-select v-model="tagForm.tagType" @change="onTagTypeChange">
-            <el-option v-for="t in tagTypes" :key="t" :label="t" :value="t" />
+        <el-form-item label="异动类型">
+          <el-select v-model="tagForm.actionType" @change="onActionTypeChange">
+            <el-option label="修改" value="modify" />
+            <el-option label="取消" value="cancel" />
           </el-select>
         </el-form-item>
-        <el-form-item label="子类型">
-          <el-select v-model="tagForm.tagSubType">
-            <el-option v-for="s in currentSubTypes" :key="s" :label="s" :value="s" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="失效日期">
+        <el-form-item label="异动日期">
           <el-date-picker v-model="tagForm.expireDate" type="date" />
         </el-form-item>
-        <el-form-item label="是否享受">
-          <el-switch v-model="tagForm.isEnjoy" />
-        </el-form-item>
         <el-form-item label="补贴金额">
-          <el-input v-model.number="tagForm.subsidyAmount" suffix="元" />
+          <el-input v-model.number="tagForm.subsidyAmount" suffix="元" :disabled="tagForm.actionType === 'cancel'" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -468,6 +466,8 @@ const resident = ref(residents.find(r => r.id === residentId) || {})
 const showAddTagDialog = ref(false)
 const showFamilyMembers = ref(false)
 const activeTagType = ref('')
+const isEditingTag = ref(false)
+const editingTagId = ref(null)
 
 const residentTags = computed(() => tags.filter(t => t.residentId === residentId))
 
@@ -614,13 +614,19 @@ const tagForm = reactive({
   tagType: '',
   tagSubType: '',
   expireDate: '',
-  isEnjoy: true,
+  actionType: 'modify',
   subsidyAmount: ''
 })
 
 const currentSubTypes = computed(() => {
   return tagSubTypes[tagForm.tagType] || []
 })
+
+const onActionTypeChange = () => {
+  if (tagForm.actionType === 'cancel') {
+    tagForm.subsidyAmount = 0
+  }
+}
 
 const operationHistory = ref([
   { time: '2024-06-20 10:30', operator: 'admin', action: '修改', content: '更新联系方式' },
@@ -641,6 +647,22 @@ const getTagType = (type) => {
   }
   return map[type] || 'info'
 }
+
+const getEnjoyTagType = (isEnjoy, cancelled) => {
+  if (cancelled) return 'info'
+  return isEnjoy ? 'success' : 'info'
+}
+const getEnjoyTagText = (isEnjoy, cancelled) => {
+  if (cancelled) return '已取消'
+  return isEnjoy ? '享受中' : '已停发'
+}
+const getSpecialTagType = (name) => ({
+  '高龄': 'warning',
+  '涉毒': 'danger',
+  '孤儿': 'warning',
+  '独居': 'info',
+  '精障': 'danger'
+}[name] || 'info')
 
 const goBack = () => {
   router.push('/resident')
@@ -689,27 +711,24 @@ const handleVerify = (tag) => {
 }
 
 const editTag = (tag) => {
+  isEditingTag.value = true
+  editingTagId.value = tag.id
   tagForm.tagType = tag.tagType
   tagForm.tagSubType = tag.tagSubType
   tagForm.expireDate = tag.expireDate
-  tagForm.isEnjoy = tag.isEnjoy
+  tagForm.actionType = tag.cancelled ? 'cancel' : 'modify'
   tagForm.subsidyAmount = tag.subsidyAmount
   showAddTagDialog.value = true
 }
 
-const deleteTag = (id) => {
-  ElMessageBox.confirm('确定要删除该标签吗？删除后不可恢复。', '删除确认', {
-    type: 'warning',
-    confirmButtonText: '确定删除',
-    cancelButtonText: '取消'
-  }).then(() => {
-    ElMessage.success('删除成功')
-  }).catch(() => {})
-}
-
 const handleAddTag = () => {
+  // 取消时补贴金额自动置0
+  if (tagForm.actionType === 'cancel') {
+    tagForm.subsidyAmount = 0
+  }
   showAddTagDialog.value = false
-  ElMessage.success('添加成功')
+  isEditingTag.value = false
+  ElMessage.success(isEditingTag ? '修改成功' : '添加成功')
 }
 </script>
 
@@ -1000,6 +1019,12 @@ const handleAddTag = () => {
 
 .family-count-tag:hover {
   opacity: 0.85;
+}
+
+.special-tags-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .benefit-info-container {

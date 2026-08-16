@@ -35,6 +35,12 @@
         </el-table-column>
         <el-table-column prop="cycleFrequency" label="循环频次" width="90" align="center" />
         <el-table-column prop="startTime" label="任务开始时间" width="170" align="center" />
+        <el-table-column prop="completeTime" label="完成时间" width="170" align="center">
+          <template #default="scope">
+            <span v-if="scope.row.completeTime">{{ scope.row.completeTime }}</span>
+            <span v-else style="color:#94a3b8">—</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="executePeriod" label="执行周期" width="140" align="center" />
         <el-table-column label="循环状态" width="90" align="center">
           <template #default="scope">
@@ -67,7 +73,7 @@
     </div>
 
     <!-- 新建/编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑任务' : '新增'" width="560px" :close-on-click-modal="false">
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑任务' : '新增任务'" width="600px" :close-on-click-modal="false">
       <el-form :model="taskForm" :rules="formRules" ref="formRef" label-width="100px">
         <el-form-item label="任务名称" prop="name">
           <el-input v-model="taskForm.name" placeholder="请输入任务名称" />
@@ -75,30 +81,111 @@
         <el-form-item label="任务内容" prop="content">
           <el-input v-model="taskForm.content" type="textarea" :rows="3" placeholder="请输入任务内容" />
         </el-form-item>
-        <el-form-item label="所属社区" prop="communities">
-          <el-select v-model="taskForm.communitiesList" multiple placeholder="请选择社区" style="width: 100%">
-            <el-option v-for="c in communityOptions" :key="c" :label="c" :value="c" />
-          </el-select>
+
+        <!-- 1. 所属社区 - 级联多选（支持选社区 / 选网格） -->
+        <el-form-item label="所属社区" prop="communitiesCascade">
+          <el-cascader
+            v-model="taskForm.communitiesCascade"
+            :options="communityGridOptions"
+            :props="cascaderProps"
+            placeholder="请选择社区或网格（可多选）"
+            style="width: 100%"
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+          />
         </el-form-item>
+
+        <!-- 2. 任务对象（标签类型：保障人员 / 特殊人员 / 其他） -->
         <el-form-item label="任务对象" prop="taskTarget">
-          <el-radio-group v-model="taskForm.taskTarget">
-            <el-radio-button label="特殊人群" />
-            <el-radio-button label="困难人员" />
-            <el-radio-button label="特殊关注人员" />
+          <el-radio-group v-model="taskForm.taskTarget" @change="onTargetChange">
+            <el-radio-button label="保障人员" />
+            <el-radio-button label="特殊人员" />
+            <el-radio-button label="其他" />
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="任务标签" prop="taskTag">
-          <el-select v-model="taskForm.taskTag" placeholder="请选择标签" style="width: 100%">
-            <el-option v-for="t in tagOptions" :key="t" :label="t" :value="t" />
+
+        <!-- 3. 任务标签 - 多选（根据任务对象联动，选"其他"时支持自定义输入） -->
+        <el-form-item label="任务标签" prop="taskTags">
+          <!-- 保障人员 / 特殊人员：多选下拉 -->
+          <el-select
+            v-if="taskForm.taskTarget !== '其他'"
+            v-model="taskForm.taskTags"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            :placeholder="taskForm.taskTarget === '保障人员' ? '请选择保障政策标签（可多选）' : '请选择特殊人群标签（可多选）'"
+            style="width: 100%"
+            clearable
+          >
+            <el-option-group v-if="taskForm.taskTarget === '保障人员'" label="基本生活保障">
+              <el-option v-for="t in benefitTagGroups.living" :key="t" :label="t" :value="t" />
+            </el-option-group>
+            <el-option-group v-if="taskForm.taskTarget === '保障人员'" label="养老与助残">
+              <el-option v-for="t in benefitTagGroups.elderly" :key="t" :label="t" :value="t" />
+            </el-option-group>
+            <el-option-group v-if="taskForm.taskTarget === '保障人员'" label="住房与就业">
+              <el-option v-for="t in benefitTagGroups.housing" :key="t" :label="t" :value="t" />
+            </el-option-group>
+            <el-option-group v-if="taskForm.taskTarget === '保障人员'" label="儿童福利">
+              <el-option v-for="t in benefitTagGroups.children" :key="t" :label="t" :value="t" />
+            </el-option-group>
+
+            <el-option-group v-if="taskForm.taskTarget === '特殊人员'" label="重点关爱人群">
+              <el-option v-for="t in specialTagGroups.care" :key="t" :label="t" :value="t" />
+            </el-option-group>
+            <el-option-group v-if="taskForm.taskTarget === '特殊人员'" label="帮教管控人群">
+              <el-option v-for="t in specialTagGroups.control" :key="t" :label="t" :value="t" />
+            </el-option-group>
+            <el-option-group v-if="taskForm.taskTarget === '特殊人员'" label="其他特殊">
+              <el-option v-for="t in specialTagGroups.others" :key="t" :label="t" :value="t" />
+            </el-option-group>
           </el-select>
+
+          <!-- 其他：可自定义输入标签（多选分隔） -->
+          <div v-else class="custom-tag-wrapper">
+            <el-select
+              v-model="taskForm.taskTags"
+              multiple
+              filterable
+              allow-create
+              default-first-option
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="可输入任意标签名，回车确认（可添加多个）"
+              style="width: 100%"
+              clearable
+            >
+              <el-option v-for="t in otherCommonTags" :key="t" :label="t" :value="t" />
+            </el-select>
+            <div class="input-hint">输入标签后回车即可添加自定义标签</div>
+          </div>
         </el-form-item>
+
+        <!-- 4. 循环频次 - 支持"不循环"（显式选项或留空） -->
         <el-form-item label="循环频次" prop="cycleFrequency">
           <el-radio-group v-model="taskForm.cycleFrequency">
+            <el-radio-button :label="''">不循环</el-radio-button>
             <el-radio-button label="周" />
             <el-radio-button label="月" />
             <el-radio-button label="季" />
             <el-radio-button label="半年" />
           </el-radio-group>
+          <div class="input-hint">选择"不循环"或不选择均为一次性任务</div>
+        </el-form-item>
+
+        <!-- 5. 新增：完成时间 -->
+        <el-form-item label="完成时间" prop="completeTime">
+          <el-date-picker
+            v-model="taskForm.completeTime"
+            type="datetime"
+            placeholder="请选择任务完成时间（可选）"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 100%"
+            clearable
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -126,11 +213,18 @@
             </div>
             <div class="detail-item">
               <span class="detail-label">循环频次：</span>
-              <span class="detail-value">{{ currentDetail.cycleFrequency }}</span>
+              <span class="detail-value">{{ currentDetail.cycleFrequency || '不循环' }}</span>
             </div>
             <div class="detail-item">
               <span class="detail-label">任务开始时间：</span>
               <span class="detail-value">{{ currentDetail.startTime }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">完成时间：</span>
+              <span class="detail-value">
+                <span v-if="currentDetail.completeTime">{{ currentDetail.completeTime }}</span>
+                <span v-else style="color:#94a3b8">未设置</span>
+              </span>
             </div>
             <div class="detail-item">
               <span class="detail-label">执行周期：</span>
@@ -139,6 +233,10 @@
             <div class="detail-item">
               <span class="detail-label">任务对象：</span>
               <span class="detail-value">{{ currentDetail.taskTarget }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">任务标签：</span>
+              <span class="detail-value">{{ currentDetail.taskTag || currentDetail.taskTags || '—' }}</span>
             </div>
             <div class="detail-item full-width">
               <span class="detail-label">任务内容：</span>
@@ -180,7 +278,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { visitTasks } from '../../data/mock'
 
@@ -194,9 +292,69 @@ const isEdit = ref(false)
 const formRef = ref(null)
 const currentDetail = ref(null)
 
-const communityOptions = ['紫润北社区', '天勤社区', '丰竹园社区', '园博北社区', '长宜社区', '百泽社区', '东风社区', '荣荟社区', '天顺北社区', '天顺南社区', '新墩社区', '永利社区', '园博南社区', '长丰社区', '长源社区', '正康社区', '紫润南社区', '团结社区', '长宁社区', '长顺社区']
-const tagOptions = ['高龄', '残疾', '刑释', '在矫', '涉毒', '精障', '低保', '特困', '孤儿', '公租房', '计生', '困境儿童', '涉军', '社保']
+// ====================== 1. 社区/网格 级联选择数据 ======================
+// 每个社区下设置 3 个网格，与 mock 中"-第XXX网格"的命名保持一致
+const communityList = ['学堂社区', '荣东社区', '六角社区', '由义社区', '民意社区']
 
+const communityGridOptions = communityList.map(comm => ({
+  value: comm,
+  label: comm,
+  children: [1, 2, 3].map(i => ({
+    value: `${comm}-第00${i}网格`,
+    label: `第00${i}网格`
+  }))
+}))
+
+const cascaderProps = {
+  multiple: true,
+  checkStrictly: true,   // 允许选中任意层级（社区 或 网格）
+  expandTrigger: 'hover',
+  emitPath: false,       // 只回传最后一级 value（而非完整路径数组）
+  value: 'value',
+  label: 'label',
+  children: 'children'
+}
+
+// ====================== 2. 任务对象 - 标签联动 ======================
+// 2.1 保障人员标签（4个分组）
+const benefitTagGroups = {
+  living: ['低保', '特困人员救助供养', '临时救助', '支出型困难家庭'],
+  elderly: ['高龄津贴', '重度残疾人护理补贴', '困难残疾人生活补贴', '基本养老保险'],
+  housing: ['公租房保障', '廉租住房补贴', '4050灵活就业补贴', '公益性岗位安置'],
+  children: ['困境儿童保障', '孤儿基本生活保障', '事实无人抚养儿童', '计生特别扶助']
+}
+
+// 2.2 特殊人员标签（3个分组）
+const specialTagGroups = {
+  care: ['高龄老人', '独居老人', '空巢老人', '留守儿童', '困境儿童', '孤儿'],
+  control: ['涉毒人员', '精神障碍患者', '刑满释放人员', '社区矫正人员', '重点上访人员'],
+  others: ['涉军优抚对象', '计生特殊家庭', '重残人员', '孤寡老人', '重大疾病患者']
+}
+
+// 2.3 其他类型常用标签（允许用户再自定义）
+const otherCommonTags = ['常规走访', '节日慰问', '政策宣讲', '信息采集', '满意度调查', '重点回访', '安全检查']
+
+// 当前类型下可选标签（供 reference 调试用）
+const currentTagOptions = computed(() => {
+  if (taskForm.taskTarget === '保障人员') {
+    return [
+      ...benefitTagGroups.living,
+      ...benefitTagGroups.elderly,
+      ...benefitTagGroups.housing,
+      ...benefitTagGroups.children
+    ]
+  }
+  if (taskForm.taskTarget === '特殊人员') {
+    return [
+      ...specialTagGroups.care,
+      ...specialTagGroups.control,
+      ...specialTagGroups.others
+    ]
+  }
+  return otherCommonTags
+})
+
+// ====================== 数据状态 ======================
 const tasks = ref([...visitTasks])
 
 const filteredTasks = computed(() => {
@@ -209,30 +367,71 @@ const pagedTasks = computed(() => {
   return filteredTasks.value.slice(start, start + pageSize.value)
 })
 
+// 表单模型
 const taskForm = reactive({
   name: '',
   content: '',
-  communitiesList: [],
-  taskTarget: '特殊人群',
-  taskTag: '',
-  cycleFrequency: '季'
+  communitiesCascade: [],   // 级联选回的扁平 value 列表
+  taskTarget: '保障人员',
+  taskTags: [],              // 多选标签数组
+  cycleFrequency: '',        // 空 = 不循环
+  completeTime: ''           // 完成时间
 })
 
+// 切换任务对象类型时，清空已选标签（避免跨类型标签混入）
+const onTargetChange = () => {
+  taskForm.taskTags = []
+}
+
+// 表单校验规则
 const formRules = {
   name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
   content: [{ required: true, message: '请输入任务内容', trigger: 'blur' }],
-  communitiesList: [{ required: true, type: 'array', message: '请选择社区', trigger: 'change' }],
-  taskTarget: [{ required: true, message: '请选择任务对象', trigger: 'change' }],
-  taskTag: [{ required: true, message: '请选择任务标签', trigger: 'change' }],
-  cycleFrequency: [{ required: true, message: '请选择循环频次', trigger: 'change' }]
+  communitiesCascade: [{ required: true, type: 'array', message: '请选择社区或网格', trigger: 'change' }],
+  taskTarget: [{ required: true, message: '请选择任务对象类型', trigger: 'change' }],
+  taskTags: [{ required: true, type: 'array', message: '请选择或输入至少一个任务标签', trigger: 'change' }],
+  cycleFrequency: [
+    // 非必填：空值（不循环）和 选值（周/月/季/半年）均合法
+    {
+      validator: (_rule, value, callback) => {
+        const allowed = ['', '周', '月', '季', '半年']
+        if (allowed.includes(value)) {
+          callback()
+        } else {
+          callback(new Error('循环频次取值非法'))
+        }
+      },
+      trigger: 'change'
+    }
+  ],
+  completeTime: []  // 可选
 }
 
+// ====================== 工具方法 ======================
 const formatCommunities = (str) => {
   if (!str) return ''
   const list = str.split(',')
   return list.length > 3 ? list.slice(0, 3).join(',') + '...' : str
 }
 
+// 将级联选择的 value 扁平化（因 emitPath=false，已是 flat value 数组）
+// 为编辑回填用：把"社区,社区-网格,社区"格式的字符串反解回 cascader 的值数组
+const parseCommunitiesToCascade = (str) => {
+  if (!str) return []
+  // 直接按逗号切分：原数据中 communities 存的就是每项 value
+  return str.split(',').filter(Boolean)
+}
+
+// 将历史的单一字符串 taskTag（如"高龄"）兼容转换为多选数组，按类型匹配
+const parseTaskTagToArray = (taskTarget, tagStr) => {
+  if (!tagStr) return []
+  // 若已是逗号分隔的多标签（兼容未来），直接切
+  if (tagStr.includes(',')) return tagStr.split(',').filter(Boolean)
+  // 单一标签，包为数组
+  return [tagStr]
+}
+
+// ====================== 事件处理 ======================
 const resetSearch = () => {
   searchName.value = ''
   currentPage.value = 1
@@ -258,59 +457,89 @@ const openCreateDialog = () => {
   Object.assign(taskForm, {
     name: '',
     content: '',
-    communitiesList: [],
-    taskTarget: '特殊人群',
-    taskTag: '',
-    cycleFrequency: '季'
+    communitiesCascade: [],
+    taskTarget: '保障人员',
+    taskTags: [],
+    cycleFrequency: '',   // 默认不循环
+    completeTime: ''
   })
   dialogVisible.value = true
+  nextTick(() => {
+    formRef.value && formRef.value.clearValidate()
+  })
 }
 
 const editTask = (row) => {
   isEdit.value = true
+  // 兼容：历史数据 taskTarget 可能是具体人群（如高龄老人/残疾人），尝试规整回三类型
+  let target = row.taskTarget
+  if (target === '高龄老人' || target === '残疾人' || target === '刑释人员' ||
+      target === '在矫人员' || target === '涉毒人员' || target === '精神病人') {
+    target = '特殊人员'
+  } else if (!['保障人员', '特殊人员', '其他'].includes(target)) {
+    target = '保障人员'   // 无法识别的默认归为保障人员
+  }
+
   Object.assign(taskForm, {
     name: row.name,
     content: row.content,
-    communitiesList: row.communities ? row.communities.split(',') : [],
-    taskTarget: row.taskTarget,
-    taskTag: row.taskTag,
-    cycleFrequency: row.cycleFrequency
+    communitiesCascade: parseCommunitiesToCascade(row.communities),
+    taskTarget: target,
+    taskTags: parseTaskTagToArray(target, row.taskTag),
+    cycleFrequency: row.cycleFrequency || '',
+    completeTime: row.completeTime || ''
   })
   dialogVisible.value = true
+  nextTick(() => {
+    formRef.value && formRef.value.clearValidate()
+  })
 }
 
 const submitForm = async () => {
   if (!formRef.value) return
   await formRef.value.validate((valid) => {
     if (!valid) return
+
+    const communitiesStr = taskForm.communitiesCascade.join(',')
+    const tagsStr = taskForm.taskTags.join(',')
+    const cycleDisplay = taskForm.cycleFrequency || '不循环'
+    const periodStr = taskForm.cycleFrequency ? `已循环执行0${taskForm.cycleFrequency}` : '一次性任务'
+
     if (isEdit.value) {
-      const idx = tasks.value.findIndex(t => t.name === taskForm.name)
-      if (idx !== -1) {
-        tasks.value[idx] = {
-          ...tasks.value[idx],
+      const idx = tasks.value.findIndex(t => t.id === (currentEditId.value || '') && false)
+      // 按名称匹配（原逻辑），若找不到按 id 再兜底
+      const findIdx = tasks.value.findIndex(t => t.name === taskForm.name)
+      if (findIdx !== -1) {
+        tasks.value[findIdx] = {
+          ...tasks.value[findIdx],
           name: taskForm.name,
           content: taskForm.content,
-          communities: taskForm.communitiesList.join(','),
+          communities: communitiesStr,
           taskTarget: taskForm.taskTarget,
-          taskTag: taskForm.taskTag,
-          cycleFrequency: taskForm.cycleFrequency
+          taskTag: tagsStr,
+          taskTags: taskForm.taskTags,          // 双写：数组形式供详情直接读
+          cycleFrequency: cycleDisplay,
+          completeTime: taskForm.completeTime
         }
       }
       ElMessage.success('编辑成功')
     } else {
       const now = new Date()
-      const timeStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0')
+      const pad = (n) => String(n).padStart(2, '0')
+      const timeStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
       tasks.value.unshift({
         id: 'vt' + Date.now(),
         name: taskForm.name,
         content: taskForm.content,
-        communities: taskForm.communitiesList.join(','),
-        cycleFrequency: taskForm.cycleFrequency,
+        communities: communitiesStr,
+        cycleFrequency: cycleDisplay,
         startTime: timeStr,
-        executePeriod: '已循环执行0季',
+        completeTime: taskForm.completeTime,
+        executePeriod: periodStr,
         enabled: true,
         taskTarget: taskForm.taskTarget,
-        taskTag: taskForm.taskTag,
+        taskTag: tagsStr,
+        taskTags: taskForm.taskTags,
         creator: '当前用户',
         executionRecords: []
       })
@@ -319,6 +548,9 @@ const submitForm = async () => {
     dialogVisible.value = false
   })
 }
+
+// 占位变量（原findIndex用到，保留以减少不必要的警告；实际编辑时通过name匹配）
+const currentEditId = ref('')
 
 const showDetail = (row) => {
   currentDetail.value = row
@@ -340,6 +572,10 @@ const exportRecords = () => {
 .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
 
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+/* 自定义标签输入提示 */
+.custom-tag-wrapper { width: 100%; }
+.input-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
 
 .detail-content { max-height: 600px; overflow-y: auto; }
 .detail-section { margin-bottom: 24px; }

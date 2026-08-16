@@ -6,7 +6,7 @@ export const residents = [
     birthDate: '1990-01-01',
     age: 35,
     idCard: '420101199001011234',
-    community: '六角社区',
+    community: '学堂社区',
     estate: '阳光小区',
     grid: '第一网格',
     personType: '户在人在',
@@ -69,7 +69,7 @@ export const residents = [
     birthDate: '1985-05-15',
     age: 40,
     idCard: '420101198505152345',
-    community: '六角社区',
+    community: '荣东社区',
     estate: '幸福花园',
     grid: '第二网格',
     personType: '户在人在',
@@ -190,7 +190,7 @@ export const residents = [
     birthDate: '2010-03-10',
     age: 15,
     idCard: '420101201003104567',
-    community: '六角社区',
+    community: '由义社区',
     estate: '阳光小区',
     grid: '第一网格',
     personType: '流动',
@@ -253,7 +253,7 @@ export const residents = [
     birthDate: '1975-12-12',
     age: 50,
     idCard: '420101197512125678',
-    community: '六角社区',
+    community: '民意社区',
     estate: '幸福花园',
     grid: '第二网格',
     personType: '流动',
@@ -310,7 +310,7 @@ export const residents = [
     birthDate: '1942-03-10',
     age: 83,
     idCard: '420101194203101234',
-    community: '六角社区',
+    community: '学堂社区',
     estate: '阳光小区',
     grid: '第一网格',
     personType: '户在人在',
@@ -369,7 +369,7 @@ export const residents = [
     birthDate: '1950-08-20',
     age: 74,
     idCard: '420101195008205678',
-    community: '六角社区',
+    community: '荣东社区',
     estate: '幸福花园',
     grid: '第二网格',
     personType: '空挂',
@@ -1664,7 +1664,7 @@ export const gridWorkers = [
     age: 32,
     phone: '13800138101',
     grid: '第一网格',
-    community: '六角社区',
+    community: '学堂社区',
     position: '网格员',
     abPost: 'A岗',
     bPostWorker: '小李',
@@ -1697,7 +1697,7 @@ export const gridWorkers = [
     age: 28,
     phone: '13900139102',
     grid: '第二网格',
-    community: '六角社区',
+    community: '荣东社区',
     position: '网格员',
     abPost: 'B岗',
     aPostWorker: '小王',
@@ -1763,7 +1763,7 @@ export const gridWorkers = [
     age: 26,
     phone: '13600136104',
     grid: '第四网格',
-    community: '六角社区',
+    community: '由义社区',
     position: '网格员',
     abPost: 'B岗',
     aPostWorker: '小张',
@@ -1796,7 +1796,7 @@ export const gridWorkers = [
     age: 30,
     phone: '13500135105',
     grid: '第一网格',
-    community: '六角社区',
+    community: '民意社区',
     position: '委员顶岗',
     abPost: '顶岗',
     status: '在职',
@@ -2089,7 +2089,7 @@ export const extendedWarningRules = [
 export const warningTypes = ['状态不一致', '到龄提醒', '政策符合通知', '政策到期提醒', '政策互斥']
 export const taskTypes = ['核实', '走访', '年审', '采集', '整改']
 
-export const communities = ['六角社区', '幸福社区', '阳光社区', '常青社区']
+export const communities = ['学堂社区', '荣东社区', '六角社区', '由义社区', '民意社区']
 export const grids = ['第一网格', '第二网格', '第三网格', '第四网格']
 export const personTypes = ['户在人在', '空挂', '流动']
 export const survivalStatus = ['在世', '已去世', '待核实']
@@ -2113,7 +2113,7 @@ export const visitTasks = [
     id: 'vt1',
     name: '2026高龄老人走访任务',
     content: '2026高龄老人走访',
-    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区,长宜社区,百泽社区,东风社区,荣荟社区,天顺北社区,天顺南社区,新墩社区,永利社区,园博南社区,长丰社区,长源社区,正康社区,紫润南社区,团结社区,长宁社区,长顺社区',
+    communities: '学堂社区,荣东社区,六角社区,由义社区,民意社区,学堂社区,荣东社区,六角社区,由义社区,民意社区,学堂社区,荣东社区,六角社区,由义社区,民意社区,学堂社区,荣东社区,六角社区,由义社区,民意社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 17:11:52',
     executePeriod: '已循环执行3季',
@@ -2122,16 +2122,16 @@ export const visitTasks = [
     taskTag: '高龄',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026高龄老人走访', phaseTime: '2026年第一季度', unfinishedPeople: '天顺北社区-第001网格,天顺北社区-第006网格,天顺北社区-第004网格,天顺北社区-第007网格,天顺北社区-第002网格,天顺北社区-第005网格,天顺北社区-第003网格,园博北社区-第001网格,长丰社区-第002网格,长丰社区-第009网格,长丰社区-第003网格' },
-      { taskName: '2026高龄老人走访', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第001网格,紫润北社区-第002网格,紫润北社区-第003网格' },
-      { taskName: '2026高龄老人走访', phaseTime: '2026年第三季度', unfinishedPeople: '长丰社区-第005网格,长丰社区-第006网格,天勤社区-第001网格,天勤社区-第002网格' }
+      { taskName: '2026高龄老人走访', phaseTime: '2026年第一季度', unfinishedPeople: '由义社区-第001网格,由义社区-第006网格,由义社区-第004网格,由义社区-第007网格,由义社区-第002网格,由义社区-第005网格,由义社区-第003网格,由义社区-第001网格,由义社区-第002网格,由义社区-第009网格,由义社区-第003网格' },
+      { taskName: '2026高龄老人走访', phaseTime: '2026年第二季度', unfinishedPeople: '学堂社区-第001网格,学堂社区-第002网格,学堂社区-第003网格' },
+      { taskName: '2026高龄老人走访', phaseTime: '2026年第三季度', unfinishedPeople: '由义社区-第005网格,由义社区-第006网格,荣东社区-第001网格,荣东社区-第002网格' }
     ]
   },
   {
     id: 'vt2',
     name: '2026残疾人员走访任务',
     content: '2026残疾人员走访',
-    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区,长宜社区,百泽社区,东风社区,荣荟社区,天顺北社区,天顺南社区',
+    communities: '学堂社区,荣东社区,六角社区,由义社区,民意社区,学堂社区,荣东社区,六角社区,由义社区,民意社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 17:06:29',
     executePeriod: '已循环执行3季',
@@ -2140,16 +2140,16 @@ export const visitTasks = [
     taskTag: '残疾',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026残疾人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '东风社区-第001网格,东风社区-第002网格,荣荟社区-第003网格' },
-      { taskName: '2026残疾人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '百泽社区-第001网格,百泽社区-第002网格' },
-      { taskName: '2026残疾人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '丰竹园社区-第001网格,丰竹园社区-第002网格,丰竹园社区-第003网格' }
+      { taskName: '2026残疾人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '荣东社区-第001网格,荣东社区-第002网格,六角社区-第003网格' },
+      { taskName: '2026残疾人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '学堂社区-第001网格,学堂社区-第002网格' },
+      { taskName: '2026残疾人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '六角社区-第001网格,六角社区-第002网格,六角社区-第003网格' }
     ]
   },
   {
     id: 'vt3',
     name: '2026刑满释放人员走访任务',
     content: '2026刑满释放人员走访',
-    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区,长宜社区',
+    communities: '学堂社区,荣东社区,六角社区,由义社区,民意社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 17:06:07',
     executePeriod: '已循环执行3季',
@@ -2158,16 +2158,16 @@ export const visitTasks = [
     taskTag: '刑释',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '长宜社区-第001网格,长宜社区-第002网格' },
-      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '园博北社区-第001网格' },
-      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第001网格' }
+      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '民意社区-第001网格,民意社区-第002网格' },
+      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '由义社区-第001网格' },
+      { taskName: '2026刑满释放人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '学堂社区-第001网格' }
     ]
   },
   {
     id: 'vt4',
     name: '2026在矫人员走访任务',
     content: '2026在矫人员走访',
-    communities: '紫润北社区,天勤社区,丰竹园社区',
+    communities: '学堂社区,荣东社区,六角社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 17:05:36',
     executePeriod: '已循环执行3季',
@@ -2176,16 +2176,16 @@ export const visitTasks = [
     taskTag: '在矫',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026在矫人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '丰竹园社区-第001网格' },
-      { taskName: '2026在矫人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '天勤社区-第001网格' },
-      { taskName: '2026在矫人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第001网格,紫润北社区-第002网格' }
+      { taskName: '2026在矫人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '六角社区-第001网格' },
+      { taskName: '2026在矫人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '荣东社区-第001网格' },
+      { taskName: '2026在矫人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '学堂社区-第001网格,学堂社区-第002网格' }
     ]
   },
   {
     id: 'vt5',
     name: '2026涉毒人员走访任务',
     content: '2026涉毒人员走访',
-    communities: '紫润北社区,天勤社区',
+    communities: '学堂社区,荣东社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 17:05:12',
     executePeriod: '已循环执行3季',
@@ -2194,16 +2194,16 @@ export const visitTasks = [
     taskTag: '涉毒',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026涉毒人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '天勤社区-第001网格' },
-      { taskName: '2026涉毒人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第001网格' },
-      { taskName: '2026涉毒人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第002网格' }
+      { taskName: '2026涉毒人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '荣东社区-第001网格' },
+      { taskName: '2026涉毒人员走访', phaseTime: '2026年第二季度', unfinishedPeople: '学堂社区-第001网格' },
+      { taskName: '2026涉毒人员走访', phaseTime: '2026年第三季度', unfinishedPeople: '学堂社区-第002网格' }
     ]
   },
   {
     id: 'vt6',
     name: '2026精神病人走访任务',
     content: '2026精神病人走访',
-    communities: '紫润北社区',
+    communities: '学堂社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 17:04:47',
     executePeriod: '已循环执行3季',
@@ -2212,16 +2212,16 @@ export const visitTasks = [
     taskTag: '精障',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026精神病人走访', phaseTime: '2026年第一季度', unfinishedPeople: '紫润北社区-第003网格' },
-      { taskName: '2026精神病人走访', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第003网格,紫润北社区-第004网格' },
-      { taskName: '2026精神病人走访', phaseTime: '2026年第三季度', unfinishedPeople: '紫润北社区-第001网格' }
+      { taskName: '2026精神病人走访', phaseTime: '2026年第一季度', unfinishedPeople: '学堂社区-第003网格' },
+      { taskName: '2026精神病人走访', phaseTime: '2026年第二季度', unfinishedPeople: '学堂社区-第003网格,学堂社区-第004网格' },
+      { taskName: '2026精神病人走访', phaseTime: '2026年第三季度', unfinishedPeople: '学堂社区-第001网格' }
     ]
   },
   {
     id: 'vt7',
     name: '2026低保走访任务',
     content: '2026低保走访',
-    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区',
+    communities: '学堂社区,荣东社区,六角社区,由义社区',
     cycleFrequency: '半年',
     startTime: '2026-03-04 17:04:14',
     executePeriod: '已循环执行2季',
@@ -2230,15 +2230,15 @@ export const visitTasks = [
     taskTag: '低保',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '2026低保走访', phaseTime: '2026年上半年', unfinishedPeople: '园博北社区-第001网格,园博北社区-第002网格' },
-      { taskName: '2026低保走访', phaseTime: '2026年下半年', unfinishedPeople: '丰竹园社区-第001网格,天勤社区-第001网格,紫润北社区-第001网格' }
+      { taskName: '2026低保走访', phaseTime: '2026年上半年', unfinishedPeople: '由义社区-第001网格,由义社区-第002网格' },
+      { taskName: '2026低保走访', phaseTime: '2026年下半年', unfinishedPeople: '六角社区-第001网格,荣东社区-第001网格,学堂社区-第001网格' }
     ]
   },
   {
     id: 'vt8',
     name: '低保人员走访',
     content: '低保人员走访',
-    communities: '紫润北社区,天勤社区',
+    communities: '学堂社区,荣东社区',
     cycleFrequency: '半年',
     startTime: '2026-03-04 15:07:34',
     executePeriod: '已循环执行1季',
@@ -2247,14 +2247,14 @@ export const visitTasks = [
     taskTag: '低保',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '低保人员走访', phaseTime: '2026年上半年', unfinishedPeople: '天勤社区-第001网格,紫润北社区-第001网格,紫润北社区-第002网格,紫润北社区-第003网格' }
+      { taskName: '低保人员走访', phaseTime: '2026年上半年', unfinishedPeople: '荣东社区-第001网格,学堂社区-第001网格,学堂社区-第002网格,学堂社区-第003网格' }
     ]
   },
   {
     id: 'vt9',
     name: '精神病人走访任务',
     content: '精神病人走访任务',
-    communities: '紫润北社区',
+    communities: '学堂社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 15:08:16',
     executePeriod: '已循环执行1季',
@@ -2263,14 +2263,14 @@ export const visitTasks = [
     taskTag: '精障',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '精神病人走访任务', phaseTime: '2026年第一季度', unfinishedPeople: '紫润北社区-第003网格,紫润北社区-第004网格' }
+      { taskName: '精神病人走访任务', phaseTime: '2026年第一季度', unfinishedPeople: '学堂社区-第003网格,学堂社区-第004网格' }
     ]
   },
   {
     id: 'vt10',
     name: '涉毒人员走访',
     content: '涉毒人员走访',
-    communities: '紫润北社区',
+    communities: '学堂社区',
     cycleFrequency: '季',
     startTime: '2026-03-04 15:08:44',
     executePeriod: '已循环执行1季',
@@ -2279,14 +2279,14 @@ export const visitTasks = [
     taskTag: '涉毒',
     creator: '周文婧',
     executionRecords: [
-      { taskName: '涉毒人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '紫润北社区-第001网格,紫润北社区-第002网格' }
+      { taskName: '涉毒人员走访', phaseTime: '2026年第一季度', unfinishedPeople: '学堂社区-第001网格,学堂社区-第002网格' }
     ]
   },
   {
     id: 'vt11',
     name: '特困人员走访',
     content: '特困人员走访',
-    communities: '紫润北社区,天勤社区',
+    communities: '学堂社区,荣东社区',
     cycleFrequency: '月',
     startTime: '2026-03-04 14:00:00',
     executePeriod: '已循环执行6季',
@@ -2295,15 +2295,15 @@ export const visitTasks = [
     taskTag: '特困',
     creator: '李芳',
     executionRecords: [
-      { taskName: '特困人员走访', phaseTime: '2026年3月', unfinishedPeople: '天勤社区-第001网格' },
-      { taskName: '特困人员走访', phaseTime: '2026年4月', unfinishedPeople: '紫润北社区-第001网格' }
+      { taskName: '特困人员走访', phaseTime: '2026年3月', unfinishedPeople: '荣东社区-第001网格' },
+      { taskName: '特困人员走访', phaseTime: '2026年4月', unfinishedPeople: '学堂社区-第001网格' }
     ]
   },
   {
     id: 'vt12',
     name: '孤儿走访任务',
     content: '孤儿走访',
-    communities: '百泽社区,东风社区',
+    communities: '学堂社区,荣东社区',
     cycleFrequency: '月',
     startTime: '2026-02-15 10:30:00',
     executePeriod: '已循环执行4季',
@@ -2312,8 +2312,8 @@ export const visitTasks = [
     taskTag: '孤儿',
     creator: '李芳',
     executionRecords: [
-      { taskName: '孤儿走访', phaseTime: '2026年5月', unfinishedPeople: '百泽社区-第001网格' },
-      { taskName: '孤儿走访', phaseTime: '2026年6月', unfinishedPeople: '东风社区-第001网格' }
+      { taskName: '孤儿走访', phaseTime: '2026年5月', unfinishedPeople: '学堂社区-第001网格' },
+      { taskName: '孤儿走访', phaseTime: '2026年6月', unfinishedPeople: '荣东社区-第001网格' }
     ]
   }
 ]
@@ -2324,7 +2324,7 @@ export const checkTasks = [
     id: 'ct1',
     name: '2026低保年审核查',
     content: '低保资格年度核查',
-    communities: '紫润北社区,天勤社区,丰竹园社区',
+    communities: '学堂社区,荣东社区,六角社区',
     cycleFrequency: '半年',
     startTime: '2026-01-10 09:00:00',
     executePeriod: '已循环执行1季',
@@ -2334,14 +2334,14 @@ export const checkTasks = [
     creator: '周文婧',
     checkItems: ['户籍核对', '生存状态', '收入核对', '房产核对', '车辆核对', '工商注册', '纳税信息'],
     executionRecords: [
-      { taskName: '2026低保年审核查', phaseTime: '2026年上半年', unfinishedPeople: '丰竹园社区-第001网格,天勤社区-第001网格' }
+      { taskName: '2026低保年审核查', phaseTime: '2026年上半年', unfinishedPeople: '六角社区-第001网格,荣东社区-第001网格' }
     ]
   },
   {
     id: 'ct2',
     name: '2026特困供养核查',
     content: '特困供养资格核查',
-    communities: '紫润北社区,天勤社区',
+    communities: '学堂社区,荣东社区',
     cycleFrequency: '季',
     startTime: '2026-02-01 10:00:00',
     executePeriod: '已循环执行2季',
@@ -2351,15 +2351,15 @@ export const checkTasks = [
     creator: '周文婧',
     checkItems: ['户籍核对', '生存状态', '收入核对', '房产核对', '存款核对'],
     executionRecords: [
-      { taskName: '2026特困供养核查', phaseTime: '2026年第一季度', unfinishedPeople: '天勤社区-第002网格' },
-      { taskName: '2026特困供养核查', phaseTime: '2026年第二季度', unfinishedPeople: '紫润北社区-第001网格' }
+      { taskName: '2026特困供养核查', phaseTime: '2026年第一季度', unfinishedPeople: '荣东社区-第002网格' },
+      { taskName: '2026特困供养核查', phaseTime: '2026年第二季度', unfinishedPeople: '学堂社区-第001网格' }
     ]
   },
   {
     id: 'ct3',
     name: '2026残疾人两项补贴核查',
     content: '残疾人两项补贴资格核查',
-    communities: '紫润北社区,天勤社区,丰竹园社区,园博北社区',
+    communities: '学堂社区,荣东社区,六角社区,由义社区',
     cycleFrequency: '季',
     startTime: '2026-03-01 14:00:00',
     executePeriod: '已循环执行1季',
@@ -2369,14 +2369,14 @@ export const checkTasks = [
     creator: '李芳',
     checkItems: ['户籍核对', '生存状态', '残疾等级复核', '收入核对'],
     executionRecords: [
-      { taskName: '2026残疾人两项补贴核查', phaseTime: '2026年第一季度', unfinishedPeople: '园博北社区-第001网格,丰竹园社区-第001网格' }
+      { taskName: '2026残疾人两项补贴核查', phaseTime: '2026年第一季度', unfinishedPeople: '由义社区-第001网格,六角社区-第001网格' }
     ]
   },
   {
     id: 'ct4',
     name: '2026高龄津贴核查',
     content: '高龄津贴资格核查',
-    communities: '紫润北社区',
+    communities: '学堂社区',
     cycleFrequency: '年',
     startTime: '2026-01-05 08:30:00',
     executePeriod: '已循环执行1季',
@@ -2386,14 +2386,14 @@ export const checkTasks = [
     creator: '李芳',
     checkItems: ['户籍核对', '生存状态', '年龄复核'],
     executionRecords: [
-      { taskName: '2026高龄津贴核查', phaseTime: '2026年度', unfinishedPeople: '紫润北社区-第003网格,紫润北社区-第004网格' }
+      { taskName: '2026高龄津贴核查', phaseTime: '2026年度', unfinishedPeople: '学堂社区-第003网格,学堂社区-第004网格' }
     ]
   },
   {
     id: 'ct5',
     name: '2026公租房租赁补贴核查',
     content: '公租房租赁补贴资格核查',
-    communities: '长宜社区,百泽社区',
+    communities: '民意社区,学堂社区',
     cycleFrequency: '半年',
     startTime: '2026-02-15 10:00:00',
     executePeriod: '已循环执行1季',
@@ -2403,14 +2403,14 @@ export const checkTasks = [
     creator: '周文婧',
     checkItems: ['户籍核对', '收入核对', '房产核对'],
     executionRecords: [
-      { taskName: '2026公租房租赁补贴核查', phaseTime: '2026年上半年', unfinishedPeople: '长宜社区-第001网格,百泽社区-第001网格,百泽社区-第002网格' }
+      { taskName: '2026公租房租赁补贴核查', phaseTime: '2026年上半年', unfinishedPeople: '民意社区-第001网格,学堂社区-第001网格,学堂社区-第002网格' }
     ]
   },
   {
     id: 'ct6',
     name: '2026计生特扶核查',
     content: '计生特别扶助资格核查',
-    communities: '新墩社区,永利社区',
+    communities: '学堂社区,荣东社区',
     cycleFrequency: '年',
     startTime: '2026-03-01 09:00:00',
     executePeriod: '已循环执行1季',
@@ -2420,14 +2420,14 @@ export const checkTasks = [
     creator: '李芳',
     checkItems: ['户籍核对', '生存状态', '子女情况复核'],
     executionRecords: [
-      { taskName: '2026计生特扶核查', phaseTime: '2026年度', unfinishedPeople: '新墩社区-第001网格' }
+      { taskName: '2026计生特扶核查', phaseTime: '2026年度', unfinishedPeople: '学堂社区-第001网格' }
     ]
   },
   {
     id: 'ct7',
     name: '2026困境儿童核查',
     content: '困境儿童基本生活保障核查',
-    communities: '团结社区,长宁社区',
+    communities: '六角社区,由义社区',
     cycleFrequency: '月',
     startTime: '2026-04-01 08:00:00',
     executePeriod: '已循环执行2季',
@@ -2437,15 +2437,15 @@ export const checkTasks = [
     creator: '李芳',
     checkItems: ['户籍核对', '生存状态', '监护情况复核'],
     executionRecords: [
-      { taskName: '2026困境儿童核查', phaseTime: '2026年5月', unfinishedPeople: '团结社区-第001网格' },
-      { taskName: '2026困境儿童核查', phaseTime: '2026年6月', unfinishedPeople: '长宁社区-第001网格' }
+      { taskName: '2026困境儿童核查', phaseTime: '2026年5月', unfinishedPeople: '六角社区-第001网格' },
+      { taskName: '2026困境儿童核查', phaseTime: '2026年6月', unfinishedPeople: '由义社区-第001网格' }
     ]
   },
   {
     id: 'ct8',
     name: '优抚对象核查',
     content: '优抚对象资格年度核查',
-    communities: '荣荟社区',
+    communities: '六角社区',
     cycleFrequency: '年',
     startTime: '2026-01-20 10:00:00',
     executePeriod: '已循环执行1季',
@@ -2455,14 +2455,14 @@ export const checkTasks = [
     creator: '周文婧',
     checkItems: ['户籍核对', '生存状态', '身份复核'],
     executionRecords: [
-      { taskName: '优抚对象核查', phaseTime: '2026年度', unfinishedPeople: '荣荟社区-第001网格,荣荟社区-第002网格' }
+      { taskName: '优抚对象核查', phaseTime: '2026年度', unfinishedPeople: '六角社区-第001网格,六角社区-第002网格' }
     ]
   },
   {
     id: 'ct9',
     name: '4050社保补贴核查',
     content: '4050灵活就业社保补贴核查',
-    communities: '长源社区,正康社区',
+    communities: '民意社区,学堂社区',
     cycleFrequency: '季',
     startTime: '2026-02-10 14:30:00',
     executePeriod: '已循环执行1季',
@@ -2472,13 +2472,13 @@ export const checkTasks = [
     creator: '李芳',
     checkItems: ['户籍核对', '就业状态复核', '缴费情况'],
     executionRecords: [
-      { taskName: '4050社保补贴核查', phaseTime: '2026年第一季度', unfinishedPeople: '长源社区-第001网格,正康社区-第001网格' }
+      { taskName: '4050社保补贴核查', phaseTime: '2026年第一季度', unfinishedPeople: '民意社区-第001网格,学堂社区-第001网格' }
     ]
   }
 ]
 
 // 人员核查执行记录
-const communityList = ['长顺社区', '长丰社区', '长宁社区', '长源社区', '园博北社区', '紫润北社区', '天勤社区', '丰竹园社区', '正康社区', '新墩社区', '永利社区', '团结社区', '荣荟社区', '百泽社区']
+const communityList = ['学堂社区', '荣东社区', '六角社区', '由义社区', '民意社区']
 const gridList = ['第001网格', '第002网格', '第003网格']
 const taskNames = ['高龄老人状态核实', '低保人员状态核实', '残疾人两项补贴核实', '特困人员状态核实', '公租房资格核实', '高龄津贴领取核实', '计生特扶家庭核实', '困境儿童基本情况核实', '优抚对象状态核实', '4050社保补贴核实']
 const executionResults = ['死亡', '在世正常', '在世异常', '已搬迁', '拒访', '联系方式变更', '情况属实', '需要跟进']
