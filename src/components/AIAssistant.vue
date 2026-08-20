@@ -15,7 +15,7 @@
           <div class="chat-header-info">
             <img :src="aiAvatar" class="chat-avatar" />
             <div class="chat-title">
-              <div class="chat-name">小智 AI 助手</div>
+              <div class="chat-name">六小亭</div>
               <div class="chat-status"><span class="dot"></span>在线</div>
             </div>
           </div>
@@ -73,13 +73,8 @@
       @mousedown.prevent="startDrag($event, 'fab')"
       @touchstart.prevent="startDrag($event, 'fab')"
     >
-      <div class="fab-shadow"></div>
-      <div class="fab-body">
-        <img :src="aiAvatar" class="fab-img" />
-      </div>
-      <div class="fab-ring"></div>
-      <div class="fab-ring delay"></div>
-      <div class="fab-tip" v-if="!showChat">小智在线</div>
+      <img :src="aiAvatar" class="fab-img" />
+      <div class="fab-tip" v-if="!showChat">六小亭在线</div>
     </div>
   </div>
 </template>
@@ -124,7 +119,7 @@ const messages = ref([
   {
     id: 1,
     role: 'assistant',
-    content: '您好！我是小智 AI 助手 👋 可以帮助您进行政策匹配、数据分析、报告生成等工作。请问有什么可以帮您？'
+    content: '您好！我是六小亭 AI 助手 👋 可以帮助您进行政策匹配、数据分析、报告生成等工作。请问有什么可以帮您？'
   }
 ])
 
@@ -266,7 +261,7 @@ const generateReply = (input) => {
   if (lower.includes('统计') || lower.includes('数据')) {
     return '📊 数据统计概览：\n\n• 居民总数：8 人（本月新增 5 人）\n• 待处理预警：5 条\n• 享受中标签：34 个\n• 标签总数：40 个\n\n详细报表请查看「统计报表」页面。'
   }
-  return `收到您的问题：「${input}」\n\n小智正在为您分析...您可以尝试以下操作：\n• 在左侧菜单选择对应功能模块\n• 点击「政策匹配」进行智能推荐\n• 查看「核查列表」处理预警\n\n如需帮助，随时告诉我 😊`
+  return `收到您的问题：「${input}」\n\n六小亭正在为您分析...您可以尝试以下操作：\n• 在左侧菜单选择对应功能模块\n• 点击「政策匹配」进行智能推荐\n• 查看「核查列表」处理预警\n\n如需帮助，随时告诉我 😊`
 }
 
 // 清理
@@ -289,103 +284,32 @@ onBeforeUnmount(() => {
 
 .ai-fab {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 96px;
   cursor: grab;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   touch-action: none;
+  line-height: 0;
 }
 .ai-fab:active { cursor: grabbing; }
-
-.ai-fab:hover {
-  transform: translateY(-6px);
-}
-
-.ai-fab.active {
-  transform: scale(0) rotate(180deg);
-  pointer-events: none;
-}
-
-.fab-shadow {
-  position: absolute;
-  left: 8px;
-  right: 8px;
-  bottom: -6px;
-  height: 10px;
-  background: rgba(30, 64, 175, 0.35);
-  border-radius: 50%;
-  filter: blur(8px);
-  animation: shadow-pulse 3s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes shadow-pulse {
-  0%, 100% { transform: scaleX(1); opacity: 0.35; }
-  50% { transform: scaleX(0.85); opacity: 0.2; }
-}
-
-.fab-body {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 40%, #1e40af 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  box-shadow:
-    0 8px 24px rgba(30, 64, 175, 0.45),
-    0 2px 4px rgba(0, 0, 0, 0.15),
-    inset 0 2px 4px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-  transform-style: preserve-3d;
-  animation: bobble 3s ease-in-out infinite;
-}
-
-@keyframes bobble {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-4px) rotate(-2deg); }
-  75% { transform: translateY(-2px) rotate(2deg); }
-}
+.ai-fab:hover { transform: translateY(-3px); }
+.ai-fab.active { transform: scale(0) rotate(180deg); pointer-events: none; }
 
 .fab-img {
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-  background: white;
-  border: 3px solid rgba(255, 255, 255, 0.9);
+  height: auto;
   pointer-events: none;
-}
-
-.fab-ring {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid rgba(59, 130, 246, 0.5);
-  animation: ring-pulse 2s ease-out infinite;
-  pointer-events: none;
-}
-
-.fab-ring.delay {
-  animation-delay: 0.7s;
-}
-
-@keyframes ring-pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(1.6); opacity: 0; }
 }
 
 .fab-tip {
   position: absolute;
-  bottom: -24px;
+  bottom: -22px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 12px;
   font-weight: 600;
   color: #1e40af;
   background: white;
-  padding: 3px 10px;
+  padding: 2px 10px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   white-space: nowrap;
@@ -433,11 +357,10 @@ onBeforeUnmount(() => {
 }
 
 .chat-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  width: 46px;
+  height: auto;
+  display: block;
+  flex-shrink: 0;
 }
 
 .chat-name {
@@ -501,13 +424,10 @@ onBeforeUnmount(() => {
 }
 
 .msg-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
+  width: 42px;
+  height: auto;
+  display: block;
   flex-shrink: 0;
-  border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .msg-avatar.user-avatar {

@@ -68,6 +68,9 @@
             </el-select>
           </div>
           <div class="search-item">
+            <el-input v-model="searchForm.estate" placeholder="小区" style="width: 120px" clearable />
+          </div>
+          <div class="search-item">
             <el-select v-model="searchForm.gender" placeholder="性别" style="width: 90px" clearable>
               <el-option label="男" value="男" />
               <el-option label="女" value="女" />
@@ -84,9 +87,6 @@
               <el-option v-for="p in personTypes" :key="p" :label="p" :value="p" />
             </el-select>
           </div>
-          <div class="search-item">
-            <el-input v-model="searchForm.estate" placeholder="小区" style="width: 120px" clearable />
-          </div>
         </div>
         <div class="search-row advanced">
           <div class="search-item tag-filter-item">
@@ -100,6 +100,19 @@
               <el-checkbox v-for="t in guaranteeTagTypes" :key="t" :label="t" size="default">{{ t }}</el-checkbox>
             </el-checkbox-group>
           </div>
+        </div>
+        <div class="search-row advanced">
+          <div class="search-item tag-filter-item">
+            <span class="filter-label">特殊人群(多选)：</span>
+            <el-checkbox
+              v-model="isAllSpecialGroupsSelected"
+              :indeterminate="isSpecialGroupsIndeterminate"
+              @change="toggleAllSpecialGroups"
+              size="default">全选</el-checkbox>
+            <el-checkbox-group v-model="searchForm.selectedSpecialGroups">
+              <el-checkbox v-for="g in specialGroupTypes" :key="g" :label="g" size="default">{{ g }}</el-checkbox>
+            </el-checkbox-group>
+          </div>
           <div class="search-item search-actions">
             <el-button type="primary" @click="handleSearch"><el-icon><Search /></el-icon>查询</el-button>
             <el-button @click="handleReset"><el-icon><Refresh /></el-icon>重置</el-button>
@@ -110,7 +123,13 @@
       <div class="table-wrapper">
         <el-table :data="pagedResidents" border stripe style="width: 100%" :table-layout="'auto'"
           :header-cell-style="{ background: '#fafafa', color: '#666', fontWeight: 500 }">
-          <el-table-column type="index" label="序号" width="50" align="center" />
+          <el-table-column type="index" label="序号" width="50" align="center" fixed="left" />
+          <el-table-column prop="name" label="姓名" width="90" fixed="left" />
+          <el-table-column label="身份证号" width="180" show-overflow-tooltip fixed="left">
+            <template #default="scope">
+              {{ maskIdCard(scope.row.idCard) }}
+            </template>
+          </el-table-column>
           <el-table-column prop="community" label="社区" width="72" />
           <el-table-column prop="estate" label="小区" width="72" />
           <el-table-column prop="grid" label="网格" width="72" />
@@ -303,6 +322,8 @@ const selectedResident = ref(null)
 
 const guaranteeTagTypes = ['低保', '残疾', '公租房', '老年', '计生', '社保', '重症', '涉军', '支农返汉', '困境儿童']
 
+const specialGroupTypes = ['涉毒', '信访', '社矫', '刑释', '精障（肇事）', '特扶', '高龄', '独居', '空巢', '孤寡', '孤儿', '事无', '涉军', '精障', '问题儿童']
+
 const searchForm = reactive({
   keyword: '',
   community: '',
@@ -312,7 +333,8 @@ const searchForm = reactive({
   estate: '',
   minAge: '',
   maxAge: '',
-  selectedTagTypes: []
+  selectedTagTypes: [],
+  selectedSpecialGroups: []
 })
 
 const currentPage = ref(1)
@@ -351,6 +373,18 @@ const toggleAllTagTypes = (checked) => {
   searchForm.selectedTagTypes = checked ? [...guaranteeTagTypes] : []
 }
 
+// 特殊人群全选/半选状态
+const isAllSpecialGroupsSelected = computed({
+  get: () => searchForm.selectedSpecialGroups.length === specialGroupTypes.length,
+  set: (v) => { if (v) searchForm.selectedSpecialGroups = [...specialGroupTypes] }
+})
+const isSpecialGroupsIndeterminate = computed(() =>
+  searchForm.selectedSpecialGroups.length > 0 && searchForm.selectedSpecialGroups.length < specialGroupTypes.length
+)
+const toggleAllSpecialGroups = (checked) => {
+  searchForm.selectedSpecialGroups = checked ? [...specialGroupTypes] : []
+}
+
 const residentsWithWarning = computed(() => {
   const warnedIds = new Set(warnings.map(w => w.residentId))
   return residents.value.filter(r => warnedIds.has(r.id))
@@ -373,6 +407,12 @@ const filteredResidents = computed(() => {
     result = result.filter(r => {
       const residentTagTypes = new Set(tags.filter(t => t.residentId === r.id).map(t => t.tagType))
       return searchForm.selectedTagTypes.every(t => residentTagTypes.has(t))
+    })
+  }
+  if (searchForm.selectedSpecialGroups && searchForm.selectedSpecialGroups.length > 0) {
+    result = result.filter(r => {
+      const groups = getResidentSpecialGroups(r.id)
+      return searchForm.selectedSpecialGroups.every(g => groups.includes(g))
     })
   }
   return result
@@ -428,7 +468,13 @@ const deleteResident = (id) => {
 }
 const handleSearch = () => { currentPage.value = 1 }
 const handleReset = () => {
-  Object.keys(searchForm).forEach(k => searchForm[k] = k === 'selectedTagTypes' ? [] : '')
+  Object.keys(searchForm).forEach(k => {
+    if (k === 'selectedTagTypes' || k === 'selectedSpecialGroups') {
+      searchForm[k] = []
+    } else {
+      searchForm[k] = ''
+    }
+  })
   currentPage.value = 1
 }
 const tagTotalCount = computed(() => tags.length)

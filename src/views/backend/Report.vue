@@ -13,107 +13,213 @@
       </div>
     </div>
 
-    <!-- 全局筛选器 -->
-    <div class="content-card filter-card">
-      <div class="filter-row">
-        <span class="filter-title">筛选条件：</span>
-        <div class="filter-item">
-          <span class="filter-label">保障类别：</span>
-          <el-select v-model="filterCategory" placeholder="全部类别" clearable style="width: 160px">
-            <el-option v-for="c in categoryOptions" :key="c" :label="c" :value="c" />
-          </el-select>
+    <!-- 保障详情模块 -->
+    <div class="content-card module-card">
+      <div class="module-header">
+        <div class="module-title">
+          <span class="module-title-bar"></span>
+          保障详情
         </div>
-        <div class="filter-item">
-          <span class="filter-label">时间段：</span>
-          <el-date-picker
-            v-model="filterDateRange"
-            type="daterange"
-            value-format="YYYY-MM-DD"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            style="width: 280px"
+        <span class="module-desc">整合低保经办、残疾管理、公租房、社保等多套系统数据统一展示</span>
+      </div>
+
+      <!-- 详细筛选条件 -->
+      <div class="detail-filter">
+        <div class="filter-line">
+          <el-input v-model="detailFilter.keyword" placeholder="搜索姓名或身份证号…" style="width: 220px" clearable />
+          <el-select v-model="detailFilter.community" placeholder="选择社区" style="width: 130px" clearable>
+            <el-option v-for="c in communities" :key="c" :label="c" :value="c" />
+          </el-select>
+          <el-select v-model="detailFilter.grid" placeholder="选择网格" style="width: 120px" clearable>
+            <el-option v-for="g in grids" :key="g" :label="g" :value="g" />
+          </el-select>
+          <el-input v-model="detailFilter.estate" placeholder="小区" style="width: 120px" clearable />
+          <el-select v-model="detailFilter.gender" placeholder="性别" style="width: 90px" clearable>
+            <el-option label="男" value="男" />
+            <el-option label="女" value="女" />
+          </el-select>
+          <div class="age-range">
+            <el-input v-model="detailFilter.minAge" placeholder="最小" style="width: 70px" clearable type="number" />
+            <span class="age-sep">~</span>
+            <el-input v-model="detailFilter.maxAge" placeholder="最大" style="width: 70px" clearable type="number" />
+          </div>
+          <el-select v-model="detailFilter.personType" placeholder="人员类别" style="width: 120px" clearable>
+            <el-option v-for="p in personTypes" :key="p" :label="p" :value="p" />
+          </el-select>
+          <div class="expire-range">
+            <span class="filter-label">到期时间：</span>
+            <el-date-picker
+              v-model="detailFilter.expireDateRange"
+              type="daterange"
+              value-format="YYYY-MM-DD"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              style="width: 260px"
+              clearable
+            />
+          </div>
+        </div>
+
+        <div class="filter-line checkbox-line">
+          <span class="checkbox-label">保障类型(多选)：</span>
+          <el-checkbox
+            v-model="selectAllBenefits"
+            :indeterminate="isBenefitIndeterminate"
+            @change="handleSelectAllBenefits"
+          >全选</el-checkbox>
+          <el-checkbox-group v-model="detailFilter.selectedBenefits" class="benefit-checkboxes">
+            <el-checkbox
+              v-for="b in benefitTagTypes"
+              :key="b"
+              :label="b"
+              border
+            >{{ b }}</el-checkbox>
+          </el-checkbox-group>
+        </div>
+
+        <div class="filter-line checkbox-line">
+          <span class="checkbox-label">特殊人群(多选)：</span>
+          <el-checkbox
+            v-model="selectAllSpecialGroups"
+            :indeterminate="isSpecialGroupIndeterminate"
+            @change="handleSelectAllSpecialGroups"
+          >全选</el-checkbox>
+          <el-checkbox-group v-model="detailFilter.selectedSpecialGroups" class="benefit-checkboxes">
+            <el-checkbox
+              v-for="s in specialGroupTags"
+              :key="s"
+              :label="s"
+              border
+            >{{ s }}</el-checkbox>
+          </el-checkbox-group>
+        </div>
+
+        <div class="filter-line action-line">
+          <el-button type="primary" @click="handleDetailQuery">
+            <el-icon><Search /></el-icon>查询
+          </el-button>
+          <el-button @click="resetDetailFilter">重置</el-button>
+        </div>
+      </div>
+
+      <!-- 统计摘要条 -->
+      <div class="summary-bar" v-if="detailQueried">
+        <div class="summary-item-bar">
+          <span class="bar-label">时间段：</span>
+          <span class="bar-value">{{ filterDateLabel }}</span>
+        </div>
+        <div class="summary-item-bar">
+          <span class="bar-label">总人数：</span>
+          <span class="bar-value highlight-blue">{{ filteredResidents.length }}</span>
+          <span class="bar-unit">人</span>
+        </div>
+        <div class="summary-item-bar">
+          <span class="bar-label">新增人口：</span>
+          <span class="bar-value highlight-green">{{ summary.newPeople }}</span>
+          <span class="bar-unit">人</span>
+        </div>
+        <div class="summary-item-bar">
+          <span class="bar-label">取消人口：</span>
+          <span class="bar-value highlight-red">{{ summary.cancelPeople }}</span>
+          <span class="bar-unit">人</span>
+        </div>
+        <div class="summary-item-bar">
+          <span class="bar-label">发放金额：</span>
+          <span class="bar-value highlight-purple">¥{{ summary.totalAmount.toLocaleString() }}</span>
+        </div>
+        <div class="summary-item-bar">
+          <span class="bar-label">当前享受中：</span>
+          <span class="bar-value highlight-cyan">{{ summary.enjoyNow }}</span>
+          <span class="bar-unit">人</span>
+        </div>
+      </div>
+
+      <!-- 居民列表 -->
+      <div class="resident-table-wrapper" v-if="detailQueried">
+        <el-table :data="pagedResidents" border stripe style="width: 100%" :header-cell-style="{ background: '#f8fafc', color: '#475569', fontWeight: 600, fontSize: '13px' }">
+          <el-table-column type="index" label="序号" width="50" align="center" />
+          <el-table-column prop="name" label="姓名" width="80" align="center" />
+          <el-table-column label="身份证号" width="170" show-overflow-tooltip>
+            <template #default="{ row }">{{ maskIdCard(row.idCard) }}</template>
+          </el-table-column>
+          <el-table-column prop="community" label="社区" width="80" align="center" />
+          <el-table-column prop="estate" label="小区" width="80" show-overflow-tooltip />
+          <el-table-column prop="grid" label="网格" width="80" align="center" />
+          <el-table-column prop="personType" label="人员类别" width="80" align="center" />
+          <el-table-column label="家庭人口" width="80" align="center">
+            <template #default="{ row }">
+              <el-tag type="primary" size="small" effect="plain" class="family-tag">{{ row.familyCount || 0 }}人</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="特殊人群" width="150">
+            <template #default="{ row }">
+              <div v-if="(row.specialGroups || []).length > 0" class="special-tags">
+                <el-tag
+                  v-for="s in row.specialGroups"
+                  :key="s"
+                  size="small"
+                  effect="plain"
+                  :type="getSpecialTagType(s)"
+                  style="margin-right: 3px; margin-bottom: 2px;"
+                >{{ s }}</el-tag>
+              </div>
+              <span v-else class="no-tag">--</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="保障信息" min-width="240">
+            <template #default="{ row }">
+              <div v-if="(row.tags || []).filter(t => benefitTagTypes.includes(t)).length > 0" class="guarantee-tags">
+                <el-tag
+                  v-for="t in (row.tags || []).filter(tag => benefitTagTypes.includes(tag))"
+                  :key="t"
+                  :type="getTagType(t)"
+                  effect="light"
+                  size="small"
+                  class="guarantee-tag"
+                >
+                  {{ t }}<span class="guarantee-count">{{ getBenefitCount(row, t) }}项</span>
+                </el-tag>
+              </div>
+              <span v-else class="no-tag">暂无</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="到期时间" width="110" align="center">
+            <template #default="{ row }">
+              <span v-if="row.expireDate" :class="getExpireClass(row.expireDate)">{{ row.expireDate }}</span>
+              <span v-else class="no-tag">--</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="备注" width="200">
+            <template #default="{ row }">
+              <div class="remark-cell">
+                <div v-for="(log, i) in (row.remarkLogs || []).slice(0, 2)" :key="i" class="remark-log">
+                  <el-tag :type="log.type || 'info'" size="small" effect="light">{{ log.action }}</el-tag>
+                  <span class="remark-time">{{ log.time }}</span>
+                </div>
+                <span v-if="!row.remarkLogs || row.remarkLogs.length === 0" class="no-tag">--</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="70" align="center" fixed="right">
+            <template #default="{ row }">
+              <el-button type="primary" link size="small">详情</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="pagination-bar">
+          <span class="total-text">共 {{ filteredResidents.length }} 条</span>
+          <el-pagination
+            v-model:current-page="residentPage"
+            v-model:page-size="residentPageSize"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="filteredResidents.length"
+            layout="sizes, prev, pager, next, jumper"
+            background
           />
         </div>
-        <el-button type="primary" @click="handleQuery">
-          <el-icon><Search /></el-icon>查询
-        </el-button>
-        <el-button @click="resetFilter">重置</el-button>
       </div>
-      <div class="filter-tip">
-        <el-icon color="#94a3b8"><InfoFilled /></el-icon>
-        <span>总人数、发放金额按所选时间段统计（人数去重、金额累计）；新增/取消/异动人口统计时间段内的变化情况</span>
-      </div>
-    </div>
-
-    <!-- 汇总统计卡 -->
-    <div class="stats-row">
-      <div class="stat-card stat-total">
-        <div class="stat-icon" style="background: #1e40af"><el-icon><User /></el-icon></div>
-        <div class="stat-info">
-          <div class="stat-top-row">
-            <span class="stat-value">{{ summary.totalPeople }}</span>
-            <span class="stat-unit">人</span>
-          </div>
-          <span class="stat-label">总人数(去重)</span>
-          <span class="stat-sub">{{ filterCategoryLabel }} | {{ filterDateLabel }}</span>
-        </div>
-      </div>
-      <div class="stat-card stat-new">
-        <div class="stat-icon" style="background: #15803d"><el-icon><Plus /></el-icon></div>
-        <div class="stat-info">
-          <div class="stat-top-row">
-            <span class="stat-value">{{ summary.newPeople }}</span>
-            <span class="stat-unit">人</span>
-          </div>
-          <span class="stat-label">新增人口</span>
-          <span class="stat-sub up">较上期 +{{ (summary.newPeople * 0.08).toFixed(0) }}</span>
-        </div>
-      </div>
-      <div class="stat-card stat-cancel">
-        <div class="stat-icon" style="background: #b91c1c"><el-icon><Close /></el-icon></div>
-        <div class="stat-info">
-          <div class="stat-top-row">
-            <span class="stat-value">{{ summary.cancelPeople }}</span>
-            <span class="stat-unit">人</span>
-          </div>
-          <span class="stat-label">取消人口</span>
-          <span class="stat-sub down">较上期 -{{ (summary.cancelPeople * 0.05).toFixed(0) }}</span>
-        </div>
-      </div>
-      <div class="stat-card stat-change">
-        <div class="stat-icon" style="background: #d97706"><el-icon><Refresh /></el-icon></div>
-        <div class="stat-info">
-          <div class="stat-top-row">
-            <span class="stat-value">{{ summary.changePeople }}</span>
-            <span class="stat-unit">人</span>
-          </div>
-          <span class="stat-label">异动人口</span>
-          <span class="stat-sub">类别转换 / 信息变更</span>
-        </div>
-      </div>
-      <div class="stat-card stat-amount">
-        <div class="stat-icon" style="background: #6d28d9"><el-icon><Money /></el-icon></div>
-        <div class="stat-info">
-          <div class="stat-top-row">
-            <span class="stat-value">{{ summary.totalAmount }}</span>
-            <span class="stat-unit">元</span>
-          </div>
-          <span class="stat-label">发放金额(累计)</span>
-          <span class="stat-sub">约 {{ (summary.totalAmount / 10000).toFixed(1) }} 万元</span>
-        </div>
-      </div>
-      <div class="stat-card stat-enjoy">
-        <div class="stat-icon" style="background: #0891b2"><el-icon><CircleCheck /></el-icon></div>
-        <div class="stat-info">
-          <div class="stat-top-row">
-            <span class="stat-value">{{ summary.enjoyNow }}</span>
-            <span class="stat-unit">人</span>
-          </div>
-          <span class="stat-label">当前享受中</span>
-          <span class="stat-sub">覆盖率 {{ (summary.enjoyNow / Math.max(summary.totalPeople,1) * 100).toFixed(1) }}%</span>
-        </div>
-      </div>
+      <el-empty v-else description="请设置筛选条件并点击查询" />
     </div>
 
     <!-- 个人轨迹查询 -->
@@ -121,9 +227,9 @@
       <div class="card-header">
         <span class="card-title">
           <el-icon style="color: #1e40af"><Tickets /></el-icon>
-          个人轨迹查询
+          个人待遇轨迹
         </span>
-        <span class="card-desc">查询某居民的数据采集时间点、预警触发时间点及预警处理完成情况</span>
+        <span class="card-desc">查询某居民在时间段内每月享受的保障待遇变化</span>
       </div>
 
       <div class="trace-search-row">
@@ -144,15 +250,9 @@
         <el-button @click="resetTrace">重置</el-button>
       </div>
 
-      <!-- 轨迹类型图例 -->
-      <div class="trace-legend" v-if="traceResult.length > 0">
-        <div class="legend-item"><span class="dot dot-capture"></span>数据采集</div>
-        <div class="legend-item"><span class="dot dot-warning"></span>预警触发</div>
-        <div class="legend-item"><span class="dot dot-resolved"></span>预警处理完成</div>
-      </div>
-
-      <!-- 轨迹列表 -->
+      <!-- 轨迹内容：月度待遇列表 -->
       <div class="trace-content" v-if="traceResult.length > 0">
+        <!-- 居民基本信息 -->
         <div class="trace-person">
           <div class="person-avatar">{{ traceResult[0].residentName?.charAt(0) || '?' }}</div>
           <div class="person-info">
@@ -162,82 +262,86 @@
             </div>
             <div class="person-meta">
               身份证：{{ maskIdCard(traceResult[0].idCard) }}
-              | 共 {{ traceResult.length }} 条轨迹
-              （采集 {{ countByType('capture') }} 条 · 预警 {{ countByType('warning') }} 条 · 已处理 {{ countByType('resolved') }} 条）
+              | 查询周期：{{ traceDateRange[0] }} 至 {{ traceDateRange[1] }}
+            </div>
+          </div>
+          <div class="person-summary">
+            <div class="summary-item">
+              <span class="summary-value">{{ getTotalMonths() }}</span>
+              <span class="summary-label">查询月数</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">{{ getTotalEnjoyMonths() }}</span>
+              <span class="summary-label">有待遇月数</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-value">{{ getLatestMonth() }}</span>
+              <span class="summary-label">最近享受</span>
             </div>
           </div>
         </div>
-        <el-timeline class="trace-timeline">
-          <el-timeline-item
-            v-for="(t, idx) in traceResult"
-            :key="idx"
-            :type="getTraceTypeClass(t.type)"
-            :timestamp="t.time"
-            :icon="getTraceIcon(t.type)"
-            size="large"
+
+        <!-- 月度待遇变化表 -->
+        <div class="benefit-table-wrapper">
+          <div class="table-title">
+            <span class="table-title-bar"></span>
+            月度享受待遇明细
+          </div>
+          <el-table
+            :data="traceResult"
+            stripe
+            border
+            style="width: 100%"
+            :header-cell-style="{ background: '#f8fafc', color: '#475569', fontWeight: 600, fontSize: '13px' }"
+            :cell-style="{ fontSize: '13px' }"
           >
-            <div class="trace-item" :class="'trace-item-' + t.type">
-              <div class="trace-header">
-                <span class="trace-type-tag" :class="'tag-' + t.type">{{ getTraceTypeLabel(t.type) }}</span>
-                <span class="trace-title">{{ t.title }}</span>
-                <el-tag v-if="t.warningLevel" size="small" :type="getLevelType(t.warningLevel)" effect="light" class="level-tag">{{ t.warningLevel }}</el-tag>
-              </div>
-
-              <!-- 数据采集内容 -->
-              <template v-if="t.type === 'capture'">
-                <div class="trace-section">
-                  <div class="section-title">📡 数据来源</div>
-                  <div class="section-content">{{ t.source }}</div>
-                </div>
-                <div class="trace-section">
-                  <div class="section-title">📋 采集信息</div>
-                  <div class="capture-grid">
-                    <div class="capture-item" v-for="(v, k) in t.capturedData" :key="k">
-                      <span class="capture-key">{{ k }}</span>
-                      <span class="capture-val">{{ v }}</span>
-                    </div>
-                  </div>
+            <el-table-column prop="month" label="月份" width="100" align="center">
+              <template #default="{ row }">
+                <span class="month-cell">{{ row.month }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="享受待遇" min-width="260">
+              <template #default="{ row }">
+                <div class="benefit-tags">
+                  <el-tag
+                    v-for="b in row.benefits"
+                    :key="b.name"
+                    :type="b.type"
+                    effect="light"
+                    size="default"
+                    class="benefit-tag"
+                  >
+                    {{ b.name }}
+                    <span v-if="b.amount" class="benefit-amount">¥{{ b.amount }}</span>
+                  </el-tag>
+                  <span v-if="row.benefits.length === 0" class="no-benefit">—</span>
                 </div>
               </template>
-
-              <!-- 预警触发内容 -->
-              <template v-else-if="t.type === 'warning'">
-                <div class="trace-section">
-                  <div class="section-title">⚠️ 触发原因</div>
-                  <div class="section-content warning-reason">{{ t.triggerReason }}</div>
+            </el-table-column>
+            <el-table-column prop="changeDesc" label="变动情况" min-width="200">
+              <template #default="{ row }">
+                <div class="change-cell" v-if="row.changeDesc">
+                  <template v-for="(c, i) in row.changeDesc" :key="i">
+                    <span :class="'change-' + c.type" v-if="c.text">{{ c.text }}</span>
+                  </template>
                 </div>
-                <div class="trace-section">
-                  <div class="section-title">📐 匹配规则</div>
-                  <div class="section-content">{{ t.matchRule }}</div>
-                </div>
-                <div class="trace-meta meta-2col">
-                  <div><span class="meta-k">预警类型：</span><span class="meta-v">{{ t.warningType }}</span></div>
-                  <div><span class="meta-k">预警编号：</span><span class="meta-v mono">{{ t.warningId }}</span></div>
-                </div>
+                <span v-else class="no-change">无变动</span>
               </template>
-
-              <!-- 预警处理完成内容 -->
-              <template v-else-if="t.type === 'resolved'">
-                <div class="trace-section">
-                  <div class="section-title">✅ 核查结论</div>
-                  <div class="section-content resolved-result">
-                    <el-tag size="small" :type="t.checkResult === '停发取消' ? 'danger' : 'success'" effect="dark">{{ t.checkResult }}</el-tag>
-                    <span class="resolved-text">{{ t.checkConclusion }}</span>
-                  </div>
-                </div>
-                <div class="trace-section">
-                  <div class="section-title">📝 处理说明</div>
-                  <div class="section-content">{{ t.processNote }}</div>
-                </div>
-                <div class="trace-meta meta-3col">
-                  <div><span class="meta-k">关联预警：</span><span class="meta-v mono">{{ t.linkWarningId }}</span></div>
-                  <div><span class="meta-k">核查人：</span><span class="meta-v">{{ t.operator }}</span></div>
-                  <div><span class="meta-k">处理用时：</span><span class="meta-v">{{ t.duration }}</span></div>
-                </div>
+            </el-table-column>
+            <el-table-column prop="status" label="状态" width="100" align="center">
+              <template #default="{ row }">
+                <el-tag
+                  :type="row.hasBenefit ? 'success' : 'info'"
+                  effect="dark"
+                  size="small"
+                >
+                  {{ row.hasBenefit ? '享受中' : '停发' }}
+                </el-tag>
               </template>
-            </div>
-          </el-timeline-item>
-        </el-timeline>
+            </el-table-column>
+          </el-table>
+        </div>
+
       </div>
 
       <el-empty v-else description="请输入居民姓名或身份证号并点击查询轨迹" />
@@ -246,11 +350,219 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   Download, User, Plus, Close, Refresh, Money, CircleCheck, Search, InfoFilled, Tickets
 } from '@element-plus/icons-vue'
+import { residents as mockResidents, communities, grids, personTypes } from '../../data/mock'
+
+// ============ 详细筛选 ============
+const benefitTagTypes = ['低保', '残疾', '公租房', '老年', '计生', '社保', '重症', '涉军', '支农返汉', '困境儿童']
+
+// 特殊人群标签
+const specialGroupTags = ['涉毒', '信访', '社矫', '刑释', '精障（肇事）', '特扶', '高龄', '独居', '空巢', '孤寡', '孤儿', '事无', '涉军', '精障', '问题儿童']
+
+const detailFilter = reactive({
+  keyword: '',
+  community: '',
+  grid: '',
+  estate: '',
+  gender: '',
+  minAge: '',
+  maxAge: '',
+  personType: '',
+  selectedBenefits: [],
+  selectedSpecialGroups: [],
+  expireDateRange: []
+})
+
+const detailQueried = ref(false)
+const residentPage = ref(1)
+const residentPageSize = ref(10)
+
+const selectAllBenefits = computed({
+  get: () => detailFilter.selectedBenefits.length === benefitTagTypes.length,
+  set: (v) => { if (v) detailFilter.selectedBenefits = [...benefitTagTypes] }
+})
+const isBenefitIndeterminate = computed(
+  () => detailFilter.selectedBenefits.length > 0 && detailFilter.selectedBenefits.length < benefitTagTypes.length
+)
+const handleSelectAllBenefits = (val) => {
+  detailFilter.selectedBenefits = val ? [...benefitTagTypes] : []
+}
+
+// 特殊人群全选
+const selectAllSpecialGroups = computed({
+  get: () => detailFilter.selectedSpecialGroups.length === specialGroupTags.length,
+  set: (v) => { if (v) detailFilter.selectedSpecialGroups = [...specialGroupTags] }
+})
+const isSpecialGroupIndeterminate = computed(
+  () => detailFilter.selectedSpecialGroups.length > 0 && detailFilter.selectedSpecialGroups.length < specialGroupTags.length
+)
+const handleSelectAllSpecialGroups = (val) => {
+  detailFilter.selectedSpecialGroups = val ? [...specialGroupTags] : []
+}
+
+// 将 mock 居民数据映射 tags 字段（从 specialGroups 和属性推断）
+const mapResidentTags = (r) => {
+  const tags = [...(r.specialGroups || [])]
+  // 根据属性推断保障类型
+  if (r.disabilityLevel) tags.push('残疾')
+  if (r.age >= 80 || (r.specialGroups || []).includes('高龄')) {
+    if (!tags.includes('高龄')) tags.push('高龄')
+  }
+  if (r.age >= 60 && !tags.includes('老年')) tags.push('老年')
+  if (r.idCard) {
+    const year = new Date(r.birthDate || '').getFullYear()
+    if (year && new Date().getFullYear() - year >= 80 && !tags.includes('老年')) {
+      // 80岁以上算老年
+    }
+  }
+  // 低保通过特殊标识推断
+  if ((r.specialGroups || []).includes('低保')) tags.push('低保')
+  // 困境儿童
+  if ((r.specialGroups || []).includes('孤儿')) tags.push('困境儿童')
+  return [...new Set(tags.filter(t => benefitTagTypes.includes(t)))]
+}
+
+// 生成到期日期（基于居民索引，生成不同月份的到期时间）
+const generateExpireDate = (idx) => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = ((idx * 3) % 12) + 1
+  const day = 15 + (idx % 14)
+  // 有些已过期，有些即将到期
+  if (idx % 4 === 0) {
+    // 已过期
+    return `${year - 1}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  } else if (idx % 4 === 1) {
+    // 即将到期（1个月内）
+    const nextMonth = now.getMonth() + 2
+    const realYear = nextMonth > 12 ? year + 1 : year
+    const realMonth = nextMonth > 12 ? nextMonth - 12 : nextMonth
+    return `${realYear}-${String(realMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  } else {
+    // 正常期限
+    return `${year + 1}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
+}
+
+// 生成操作记录
+const generateRemarkLogs = (idx) => {
+  const allLogs = [
+    [{ action: '新增低保', type: 'success', time: '2025-01-15' }, { action: '数据采集', type: 'info', time: '2025-01-10' }],
+    [{ action: '低保复审', type: 'warning', time: '2025-03-20' }, { action: '信息变更', type: 'info', time: '2025-02-08' }],
+    [{ action: '新增高龄津贴', type: 'success', time: '2025-02-05' }],
+    [{ action: '停发低保', type: 'danger', time: '2025-06-01' }, { action: '数据核实', type: 'info', time: '2025-05-20' }],
+    [{ action: '新增公租房', type: 'success', time: '2025-04-12' }, { action: '专项核查', type: 'warning', time: '2025-03-15' }],
+    [{ action: '发放重疾救助', type: 'success', time: '2025-05-30' }],
+    [{ action: '信息更新', type: 'info', time: '2025-06-10' }, { action: '走访登记', type: 'warning', time: '2025-05-22' }],
+    [{ action: '新增社保', type: 'success', time: '2025-01-08' }]
+  ]
+  return allLogs[idx % allLogs.length] || []
+}
+
+const allResidents = mockResidents.map((r, idx) => ({
+  ...r,
+  tags: mapResidentTags(r),
+  personType: r.personType || '户在人在',
+  expireDate: generateExpireDate(idx),
+  remarkLogs: generateRemarkLogs(idx)
+}))
+
+const filteredResidents = computed(() => {
+  if (!detailQueried.value) return []
+  let result = allResidents
+  if (detailFilter.keyword) {
+    const kw = detailFilter.keyword.toLowerCase()
+    result = result.filter(r => r.name?.toLowerCase().includes(kw) || r.idCard?.includes(kw))
+  }
+  if (detailFilter.community) result = result.filter(r => r.community === detailFilter.community)
+  if (detailFilter.grid) result = result.filter(r => r.grid === detailFilter.grid)
+  if (detailFilter.estate) result = result.filter(r => r.estate?.includes(detailFilter.estate))
+  if (detailFilter.gender) result = result.filter(r => r.gender === detailFilter.gender)
+  if (detailFilter.personType) result = result.filter(r => r.personType === detailFilter.personType)
+  if (detailFilter.minAge) result = result.filter(r => r.age >= Number(detailFilter.minAge))
+  if (detailFilter.maxAge) result = result.filter(r => r.age <= Number(detailFilter.maxAge))
+  if (detailFilter.selectedBenefits.length > 0) {
+    result = result.filter(r => detailFilter.selectedBenefits.some(b => (r.tags || []).includes(b)))
+  }
+  // 特殊人群筛选：AND逻辑，所有选中的标签必须都命中
+  if (detailFilter.selectedSpecialGroups.length > 0) {
+    result = result.filter(r => {
+      const groups = r.specialGroups || []
+      return detailFilter.selectedSpecialGroups.every(s => groups.includes(s))
+    })
+  }
+  if (detailFilter.expireDateRange && detailFilter.expireDateRange.length === 2) {
+    const [start, end] = detailFilter.expireDateRange
+    result = result.filter(r => r.expireDate && r.expireDate >= start && r.expireDate <= end)
+  }
+  return result
+})
+
+const pagedResidents = computed(() => {
+  const start = (residentPage.value - 1) * residentPageSize.value
+  return filteredResidents.value.slice(start, start + residentPageSize.value)
+})
+
+const getTagType = (tag) => {
+  const danger = ['低保', '残疾']
+  const warning = ['重症', '困境儿童']
+  const success = ['公租房', '社保']
+  if (danger.includes(tag)) return 'danger'
+  if (warning.includes(tag)) return 'warning'
+  if (success.includes(tag)) return 'success'
+  return 'info'
+}
+
+const getExpireClass = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.floor((date - now) / (1000 * 60 * 60 * 24))
+  if (diffDays < 0) return 'expire-expired'
+  if (diffDays <= 30) return 'expire-soon'
+  return 'expire-normal'
+}
+
+// 特殊人群标签颜色
+const RED_SPECIAL_TAGS = ['涉毒', '信访', '社矫', '刑释', '精障（肇事）']
+const YELLOW_SPECIAL_TAGS = ['特扶', '高龄', '独居', '空巢', '孤寡', '孤儿', '事无', '涉军', '精障']
+const getSpecialTagType = (tag) => {
+  if (RED_SPECIAL_TAGS.includes(tag)) return 'danger'
+  if (YELLOW_SPECIAL_TAGS.includes(tag)) return 'warning'
+  return 'info'
+}
+
+// 保障信息项数
+const getBenefitCount = (row, tag) => {
+  // 为每个保障类型生成1-5项不等的子项
+  const seed = (row.id?.charCodeAt(0) || 0) + (tag?.charCodeAt(0) || 0)
+  return (seed % 5) + 1
+}
+
+const handleDetailQuery = () => {
+  detailQueried.value = true
+  residentPage.value = 1
+  ElMessage.success(`查询完成，共 ${filteredResidents.value.length} 条记录`)
+}
+
+const resetDetailFilter = () => {
+  detailFilter.keyword = ''
+  detailFilter.community = ''
+  detailFilter.grid = ''
+  detailFilter.estate = ''
+  detailFilter.gender = ''
+  detailFilter.minAge = ''
+  detailFilter.maxAge = ''
+  detailFilter.personType = ''
+  detailFilter.selectedBenefits = []
+  detailFilter.selectedSpecialGroups = []
+  detailFilter.expireDateRange = []
+  detailQueried.value = false
+}
 
 // ============ 全局筛选 ============
 const categoryOptions = ['低保', '特困', '残疾两项', '高龄津贴', '公租房', '4050灵活就业', '计生特扶', '重症', '困境儿童']
@@ -291,168 +603,17 @@ const residentPool = [
   { name: '赵六', idCard: '420106197210058901', community: '由义社区' }
 ]
 
-const traceTemplates = [
-  // ===== 数据采集 =====
-  {
-    type: 'capture',
-    title: '社保系统数据同步',
-    source: '武汉市人力资源和社会保障局 - 数据共享接口（每日自动同步）',
-    capturedData: {
-      '养老待遇发放': '4,120元/月',
-      '医疗参保状态': '在职职工医保',
-      '社保缴费基数': '6,850元',
-      '最近缴费月份': '2025-04'
-    }
-  },
-  {
-    type: 'capture',
-    title: '不动产登记信息抓取',
-    source: '武汉市自然资源和规划局 - 不动产登记信息平台',
-    capturedData: {
-      '名下房产数量': '1套',
-      '房屋坐落': '江汉区解放大道XX号XX栋XX单元XX室',
-      '建筑面积': '87.52㎡',
-      '登记时间': '2010-06-15',
-      '房屋用途': '住宅'
-    }
-  },
-  {
-    type: 'capture',
-    title: '民政死亡人员信息比对',
-    source: '武汉市民政局 - 人口死亡信息库（月度批量比对）',
-    capturedData: {
-      '比对结果': '未匹配',
-      '最近比对日期': '2025-05-10',
-      '户籍状态': '在籍'
-    }
-  },
-  {
-    type: 'capture',
-    title: '工商登记信息抓取',
-    source: '武汉市市场监督管理局 - 企业登记信息共享库',
-    capturedData: {
-      '是否担任股东/法人': '是',
-      '企业名称': '武汉XX便民超市有限公司',
-      '注册资本': '50万元',
-      '持股比例': '30%',
-      '登记状态': '存续（在营）'
-    }
-  },
-  {
-    type: 'capture',
-    title: '网格员入户信息采集',
-    source: '六角亭街道网格员上门采集',
-    capturedData: {
-      '采集方式': '入户走访',
-      '采集人': '网格员小刘',
-      '家庭人口': '3人',
-      '月总收入': '约3,200元',
-      '住房情况': '自购商品房',
-      '生活状况': '一般'
-    }
-  },
-  {
-    type: 'capture',
-    title: '残联残疾人证信息同步',
-    source: '武汉市残疾人联合会 - 残疾人证管理系统',
-    capturedData: {
-      '残疾证号': '42010619XXXXXXXXXX43',
-      '残疾类别': '肢体残疾',
-      '残疾等级': '二级',
-      '发证日期': '2023-03-20',
-      '有效期至': '2033-03-19'
-    }
-  },
-
-  // ===== 预警触发 =====
-  {
-    type: 'warning',
-    title: '工商登记异常预警',
-    warningLevel: '红色预警',
-    warningType: '政策不符',
-    warningId: 'YJ20250512-0087',
-    triggerReason: '居民名下登记有注册资本50万元企业，持股30%，不符合低保家庭金融资产条件（家庭人均金融资产需低于当地低保标准24倍）',
-    matchRule: '规则ID: R003-工商登记资产核查 | 条件: 名下企业注册资本≥20万或持股比例≥20% | 判定: 触发预警'
-  },
-  {
-    type: 'warning',
-    title: '收入超标预警',
-    warningLevel: '橙色预警',
-    warningType: '政策不符',
-    warningId: 'YJ20250515-0124',
-    triggerReason: '社保养老待遇4120元/月 + 退休金 + 家庭其他收入，推算人均月收入超过武汉市低保标准（980元/人·月）3倍以上',
-    matchRule: '规则ID: R001-低保人均收入核查 | 公式: 家庭月总收入÷家庭人口 > 980×3 | 当前值: ~1,067元/人 | 判定: 触发预警'
-  },
-  {
-    type: 'warning',
-    title: '生存状态不一致预警',
-    warningLevel: '红色预警',
-    warningType: '状态变化',
-    warningId: 'YJ20250520-0156',
-    triggerReason: '本系统居民状态为"在世"，民政局死亡人口库显示该身份证已于2025-04-28注销；高龄津贴及低保仍在按月发放',
-    matchRule: '规则ID: R012-跨系统生存状态比对 | 条件: 本系统状态=在世 AND 民政局状态=已死亡 AND 存在享受中标签 | 判定: 触发预警'
-  },
-  {
-    type: 'warning',
-    title: '高龄津贴到期提醒',
-    warningLevel: '黄色预警',
-    warningType: '到期提醒',
-    warningId: 'YJ20250525-0203',
-    triggerReason: '高龄津贴年度资格认证将于2025-06-30到期，到期后将自动暂停发放；居民已满82周岁，需完成年度生存认证续期',
-    matchRule: '规则ID: R021-津贴到期提醒 | 条件: 距认证到期≤30天 AND 未完成本年度认证 | 判定: 触发预警'
-  },
-  {
-    type: 'warning',
-    title: '低保与公租房政策互斥',
-    warningLevel: '橙色预警',
-    warningType: '政策互斥',
-    warningId: 'YJ20250528-0234',
-    triggerReason: '同时享受低保A类（980元/月）及公租房实物配租，根据武政规[2022]8号文，住房保障与低保补助享受标准存在冲突，需重新核定',
-    matchRule: '规则ID: R032-低保+公租房互斥核查 | 条件: 低保享受中 AND 公租房实物配租享受中 AND 家庭人均面积≥15㎡ | 判定: 触发预警'
-  },
-
-  // ===== 预警处理完成 =====
-  {
-    type: 'resolved',
-    title: '预警处理完成 - 工商登记异常',
-    linkWarningId: 'YJ20250512-0087',
-    checkResult: '停发取消',
-    checkConclusion: '核查属实，居民持股30%，经社区和街道两级审批后，自2025-06起停发低保待遇',
-    processNote: '2025-05-13 网格员入户核实并收集佐证材料；2025-05-16 社区低保评议小组讨论通过；2025-05-22 街道民政办审批完成，出具停发告知书',
-    operator: '张某某(街道民政办)',
-    duration: '10天12小时'
-  },
-  {
-    type: 'resolved',
-    title: '预警处理完成 - 收入超标',
-    linkWarningId: 'YJ20250515-0124',
-    checkResult: '停发取消',
-    checkConclusion: '经核查家庭收入属实，人均月收入超过低保标准，低保予以退保；保留高龄津贴（不冲突）',
-    processNote: '2025-05-16 电话通知居民本人；2025-05-18 居民到社区签字确认；2025-05-25 完成停发手续',
-    operator: '李某某(社区民政干事)',
-    duration: '10天6小时'
-  },
-  {
-    type: 'resolved',
-    title: '预警处理完成 - 生存状态不一致',
-    linkWarningId: 'YJ20250520-0156',
-    checkResult: '停发取消',
-    checkConclusion: '已确认死亡，追回2025-05月多发放低保及高龄津贴合计1,380元，家属已全额退回',
-    processNote: '2025-05-21 网格员上门核实，家属提供死亡证明（2025-04-28）；2025-05-27 核算多发金额并通知家属退款；2025-06-01 家属到社区银行专户缴款，系统核销',
-    operator: '王某某(社区+街道联合)',
-    duration: '12天4小时'
-  },
-  {
-    type: 'resolved',
-    title: '预警处理完成 - 高龄津贴到期提醒',
-    linkWarningId: 'YJ20250525-0203',
-    checkResult: '继续享受',
-    checkConclusion: '已完成年度生存认证（人脸识别），认证通过，高龄津贴继续发放',
-    processNote: '2025-05-26 发送短信提醒；2025-05-28 家属协助通过"鄂汇办"APP完成人脸识别；2025-05-29 系统自动续期',
-    operator: '系统自动+社区跟进',
-    duration: '4天'
-  }
-]
+// 月度待遇数据：1-6月每月享受的保障类型
+const monthlyBenefitsData = {
+  '张三': [
+    { month: '2025-01', benefits: [{ name: '低保', type: 'danger', amount: '980' }], changeDesc: [], hasBenefit: true },
+    { month: '2025-02', benefits: [{ name: '低保', type: 'danger', amount: '980' }, { name: '高龄津贴', type: 'success', amount: '100' }], changeDesc: [{ text: '新增高龄津贴', type: 'new' }], hasBenefit: true },
+    { month: '2025-03', benefits: [{ name: '低保', type: 'danger', amount: '980' }, { name: '高龄津贴', type: 'success', amount: '100' }], changeDesc: [], hasBenefit: true },
+    { month: '2025-04', benefits: [{ name: '低保', type: 'danger', amount: '980' }, { name: '高龄津贴', type: 'success', amount: '100' }, { name: '公租房', type: 'warning', amount: '320' }], changeDesc: [{ text: '新增公租房', type: 'new' }], hasBenefit: true },
+    { month: '2025-05', benefits: [{ name: '低保', type: 'danger', amount: '980' }, { name: '高龄津贴', type: 'success', amount: '150' }, { name: '公租房', type: 'warning', amount: '580' }], changeDesc: [{ text: '高龄津贴 100→150', type: 'change' }, { text: '公租房 320→580', type: 'change' }], hasBenefit: true },
+    { month: '2025-06', benefits: [{ name: '高龄津贴', type: 'success', amount: '150' }, { name: '公租房', type: 'warning', amount: '580' }], changeDesc: [{ text: '停发低保', type: 'cancel' }], hasBenefit: true }
+  ]
+}
 
 const queryTrace = () => {
   if (!traceName.value && !traceIdCard.value) {
@@ -466,37 +627,30 @@ const queryTrace = () => {
   )
   if (!target) target = residentPool[0] // 默认取第一个做演示
 
-  // 生成时间序列轨迹（按时间正序：采集→触发→处理）
-  const start = new Date(traceDateRange.value?.[0] || '2025-01-01')
-  const end = new Date(traceDateRange.value?.[1] || '2025-06-30')
-  const totalDays = Math.max(1, Math.floor((end - start) / 86400000))
-  const dayStep = Math.floor(totalDays / (traceTemplates.length + 1)) + 1
+  // 生成月度待遇列表
+  const rawData = monthlyBenefitsData[target.name] || monthlyBenefitsData['张三']
+  traceResult.value = rawData.map(item => ({
+    ...item,
+    residentName: target.name,
+    idCard: target.idCard,
+    community: target.community
+  }))
 
-  traceResult.value = traceTemplates
-    .map((tpl, idx) => {
-      // 保证采集在前面，预警在中间，处理在后面
-      let dayOffset = 0
-      if (tpl.type === 'capture') dayOffset = Math.floor(idx * dayStep * 0.6)
-      else if (tpl.type === 'warning') dayOffset = Math.floor(totalDays * 0.4 + (idx - 6) * dayStep)
-      else dayOffset = Math.floor(totalDays * 0.6 + (idx - 11) * dayStep * 1.2)
+  ElMessage.success(`查询成功，共 ${rawData.length} 个月的待遇记录`)
+}
 
-      const dt = new Date(start.getTime() + Math.min(dayOffset, totalDays - 1) * 86400000 + Math.floor(Math.random() * 86400000))
-      const y = dt.getFullYear()
-      const m = String(dt.getMonth() + 1).padStart(2, '0')
-      const d = String(dt.getDate()).padStart(2, '0')
-      const h = String(dt.getHours()).padStart(2, '0')
-      const min = String(dt.getMinutes()).padStart(2, '0')
-      return {
-        residentName: target.name,
-        idCard: target.idCard,
-        community: target.community,
-        ...tpl,
-        time: `${y}-${m}-${d} ${h}:${min}`
-      }
-    })
-    .sort((a, b) => b.time.localeCompare(a.time))
+const getTotalMonths = () => {
+  if (!traceDateRange.value) return 0
+  const start = new Date(traceDateRange.value[0])
+  const end = new Date(traceDateRange.value[1])
+  return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1
+}
 
-  ElMessage.success(`查询成功，共找到 ${traceResult.value.length} 条轨迹记录`)
+const getTotalEnjoyMonths = () => traceResult.value.filter(r => r.hasBenefit).length
+
+const getLatestMonth = () => {
+  const enjoyMonths = traceResult.value.filter(r => r.hasBenefit)
+  return enjoyMonths.length > 0 ? enjoyMonths[enjoyMonths.length - 1].month : '—'
 }
 
 const resetTrace = () => {
@@ -505,33 +659,6 @@ const resetTrace = () => {
   traceDateRange.value = ['2025-01-01', '2025-06-30']
   traceResult.value = []
 }
-
-const countByType = (type) => traceResult.value.filter(t => t.type === type).length
-
-const getLevelType = (level) => {
-  if (level.includes('红色')) return 'danger'
-  if (level.includes('橙色')) return 'warning'
-  if (level.includes('黄色')) return 'warning'
-  return 'info'
-}
-
-const getTraceTypeLabel = (t) => ({
-  'capture': '📡 数据采集',
-  'warning': '⚠️ 预警触发',
-  'resolved': '✅ 预警处理完成'
-})[t] || t
-
-const getTraceTypeClass = (t) => ({
-  'capture': 'primary',
-  'warning': 'danger',
-  'resolved': 'success'
-})[t] || ''
-
-const getTraceIcon = (t) => ({
-  'capture': Tickets,
-  'warning': InfoFilled,
-  'resolved': CircleCheck
-})[t] || Tickets
 
 // ============ 工具 & 事件 ============
 const maskIdCard = (idCard) => {
@@ -570,8 +697,27 @@ const exportReport = () => {
   margin-bottom: 16px;
 }
 
+/* 模块卡片 */
+.module-card { padding: 20px 24px; }
+.module-header {
+  display: flex; align-items: center; gap: 14px;
+  padding-bottom: 14px; margin-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.module-title {
+  font-size: 16px; font-weight: 700; color: #1f2937;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.module-title-bar {
+  width: 4px; height: 16px; background: linear-gradient(180deg, #1e40af, #2563eb);
+  border-radius: 2px;
+}
+.module-desc {
+  font-size: 12px; color: #94a3b8;
+}
+
 /* 筛选器卡片 */
-.filter-card { padding: 14px 20px; }
+.filter-card { padding: 14px 0; }
 .filter-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .filter-title { font-size: 13px; font-weight: 600; color: #475569; }
 .filter-item { display: flex; align-items: center; gap: 8px; }
@@ -583,7 +729,7 @@ const exportReport = () => {
 
 /* 统计卡 */
 .stats-row {
-  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
 }
 .stat-card {
   display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #fff;
@@ -634,28 +780,15 @@ const exportReport = () => {
 }
 .card-desc { font-size: 12px; color: #94a3b8; }
 
+/* 搜索行 */
 .trace-search-row {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
   padding: 12px 14px; background: #f8fafc; border-radius: 6px; margin-bottom: 14px;
 }
 
-/* 轨迹类型图例 */
-.trace-legend {
-  display: flex; gap: 22px; margin-bottom: 16px; padding: 10px 14px;
-  background: #fafbfc; border: 1px dashed #e2e8f0; border-radius: 6px;
-}
-.legend-item {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #475569;
-}
-.legend-item .dot {
-  width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
-}
-.dot-capture { background: #1e40af; box-shadow: 0 0 0 3px rgba(30,64,175,.12); }
-.dot-warning { background: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,.12); }
-.dot-resolved { background: #15803d; box-shadow: 0 0 0 3px rgba(21,128,61,.12); }
-
+/* 人员信息卡片 */
 .trace-person {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 16px;
   padding: 14px 16px; background: linear-gradient(135deg, #eff6ff 0%, #faf5ff 100%);
   border-radius: 8px; margin-bottom: 14px; border: 1px solid #dbeafe;
 }
@@ -672,71 +805,114 @@ const exportReport = () => {
   display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
 }
 .person-meta { font-size: 12px; color: #64748b; line-height: 1.6; }
+.person-summary {
+  display: flex; gap: 20px;
+  padding-left: 16px; border-left: 1px solid #e2e8f0;
+}
+.summary-item { text-align: center; }
+.summary-value {
+  display: block; font-size: 18px; font-weight: 700; color: #1e40af;
+  font-variant-numeric: tabular-nums;
+}
+.summary-label { font-size: 11px; color: #64748b; }
 
-.trace-timeline { padding: 4px 10px 4px 2px; }
-.trace-item {
-  background: #fff; border-radius: 8px;
+/* 表格标题 */
+.table-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600; color: #1f2937;
+  margin: 16px 0 10px;
+}
+.table-title-bar {
+  width: 3px; height: 14px; background: #1e40af; border-radius: 2px;
+}
+
+/* 月度待遇表 */
+.benefit-table-wrapper { margin-bottom: 20px; }
+.month-cell { font-weight: 700; color: #1e3a8a; font-variant-numeric: tabular-nums; }
+.benefit-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+}
+.benefit-tag {
+  font-weight: 600; font-size: 12px;
+  padding: 4px 10px; border-radius: 4px;
+}
+.benefit-amount {
+  margin-left: 4px; font-weight: 700;
+}
+.no-benefit { color: #94a3b8; }
+
+.change-cell { display: flex; flex-direction: column; gap: 3px; }
+.change-new { color: #15803d; font-weight: 600; font-size: 12px; }
+.change-cancel { color: #b91c1c; font-weight: 600; font-size: 12px; }
+.change-change { color: #b45309; font-weight: 600; font-size: 12px; }
+.no-change { color: #94a3b8; font-size: 12px; }
+
+/* ============ 详细筛选 ============ */
+.detail-filter {
+  padding: 4px 0 16px;
+  border-bottom: 1px dashed #e2e8f0;
+  margin-bottom: 16px;
+}
+.filter-line {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.checkbox-line { align-items: flex-start; }
+.checkbox-label {
+  font-size: 13px; color: #475569; font-weight: 600;
+  white-space: nowrap; padding-top: 4px;
+}
+.benefit-checkboxes { gap: 4px; flex-wrap: wrap; }
+.age-range { display: flex; align-items: center; gap: 4px; }
+.age-sep { color: #94a3b8; }
+.expire-range { display: flex; align-items: center; gap: 6px; }
+.action-line { justify-content: flex-end; }
+
+/* ============ 统计摘要条 ============ */
+.summary-bar {
+  display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
   padding: 12px 16px;
-  transition: box-shadow 0.15s ease;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  margin-bottom: 14px;
 }
-.trace-item:hover { box-shadow: 0 4px 12px rgba(15,23,42,.06); }
+.summary-item-bar {
+  display: inline-flex; align-items: baseline; gap: 4px;
+}
+.bar-label { font-size: 12px; color: #64748b; }
+.bar-value { font-size: 15px; font-weight: 700; color: #1f2937; }
+.bar-unit { font-size: 12px; color: #94a3b8; }
+.highlight-blue { color: #1e40af; }
+.highlight-green { color: #15803d; }
+.highlight-red { color: #b91c1c; }
+.highlight-purple { color: #6d28d9; }
+.highlight-cyan { color: #0891b2; }
 
-.trace-item-capture { border: 1px solid #bfdbfe; background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 40%); }
-.trace-item-warning { border: 1px solid #fecaca; background: linear-gradient(180deg, #fff1f2 0%, #ffffff 40%); }
-.trace-item-resolved { border: 1px solid #bbf7d0; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 40%); }
+/* ============ 居民列表 ============ */
+.resident-table-wrapper { }
+.pagination-bar {
+  padding: 12px 0 0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.total-text { font-size: 13px; color: #64748b; }
+.no-benefit { color: #94a3b8; }
 
-.trace-header {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
-}
-.trace-type-tag {
-  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px;
-  color: #fff; letter-spacing: 0.2px;
-}
-.tag-capture { background: linear-gradient(135deg, #1e40af, #2563eb); }
-.tag-warning { background: linear-gradient(135deg, #b91c1c, #dc2626); }
-.tag-resolved { background: linear-gradient(135deg, #15803d, #16a34a); }
+/* 到期时间样式 */
+.expire-expired { color: #dc2626; font-weight: 600; }
+.expire-soon { color: #d97706; font-weight: 600; }
+.expire-normal { color: #15803d; font-weight: 500; }
 
-.trace-title { font-size: 14px; font-weight: 700; color: #1f2937; flex: 1; }
-.level-tag { margin-left: auto; font-weight: 600; }
+/* 与居民列表一致的样式 */
+.family-tag { cursor: pointer; }
+.special-tags { display: flex; flex-wrap: wrap; }
+.no-tag { color: #94a3b8; font-size: 12px; }
+.guarantee-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.guarantee-tag { margin-right: 0; }
+.guarantee-count { margin-left: 4px; opacity: 0.75; }
 
-.trace-section { margin-bottom: 8px; }
-.trace-section:last-child { margin-bottom: 0; }
-.section-title {
-  font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 5px;
-  display: flex; align-items: center; gap: 4px;
-}
-.section-content {
-  font-size: 13px; color: #334155; line-height: 1.6;
-  padding: 8px 10px; background: #f8fafc; border-radius: 6px;
-}
-.warning-reason {
-  color: #991b1b; background: #fef2f2; border-left: 3px solid #dc2626; border-radius: 4px 6px 6px 4px;
-  font-weight: 500;
-}
-.resolved-result {
-  background: #f0fdf4; border-left: 3px solid #16a34a; border-radius: 4px 6px 6px 4px;
-  display: flex; align-items: center; gap: 10px;
-}
-.resolved-text { font-size: 13px; color: #14532d; font-weight: 500; }
-
-/* 数据采集信息网格 */
-.capture-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 16px;
-  padding: 8px 10px; background: #f8fafc; border-radius: 6px;
-}
-.capture-item { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; }
-.capture-key { color: #64748b; flex-shrink: 0; }
-.capture-val { color: #1f2937; font-weight: 500; text-align: right; word-break: break-all; }
-
-/* 通用meta */
-.trace-meta {
-  display: flex; gap: 14px 24px; flex-wrap: wrap;
-  font-size: 12px; color: #475569;
-  padding-top: 8px; margin-top: 8px; border-top: 1px dashed #e2e8f0;
-}
-.meta-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 20px; }
-.meta-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 16px; }
-.meta-k { color: #94a3b8; }
-.meta-v { color: #1f2937; font-weight: 500; }
-.meta-v.mono { font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; color: #475569; }
+/* 备注列样式 */
+.remark-cell { display: flex; flex-direction: column; gap: 3px; }
+.remark-log { display: flex; align-items: center; gap: 5px; }
+.remark-time { font-size: 11px; color: #94a3b8; }
 </style>

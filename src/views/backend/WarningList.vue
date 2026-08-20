@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="warning-list-page">
     <!-- 顶部标题栏 -->
     <div class="page-header">
@@ -531,6 +531,13 @@ const comparisonTableData = computed(() => {
     value: r.maritalStatus || '—',
     status: 'normal',
     extra: ''
+  })
+
+  items.push({
+    name: '学历',
+    value: r.education || ci.education || '—',
+    status: ci.educationAbnormal ? 'abnormal' : 'normal',
+    extra: ci.educationSource || ''
   })
 
   items.push({

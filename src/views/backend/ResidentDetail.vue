@@ -126,27 +126,43 @@
             <el-tag v-else type="info" size="small" effect="plain">否</el-tag>
           </span>
         </div>
-        <div class="info-item">
+        <div class="info-item special-groups-cell">
           <span class="info-label">特殊人群</span>
           <span class="info-value">
-            <div v-if="resident.specialGroups && resident.specialGroups.length > 0" class="special-tags-inline">
-              <el-tag
-                v-for="s in resident.specialGroups"
-                :key="s"
-                size="small"
-                effect="plain"
-                :type="getSpecialTagType(s)">
-                {{ s }}
-              </el-tag>
+            <div v-if="hasAnySpecialTag" class="special-chips-wrapper">
+              <div v-if="residentRedTags.length > 0" class="special-chips-row">
+                <span class="chip-group-caption cap-red">重点</span>
+                <el-tag
+                  v-for="t in residentRedTags"
+                  :key="'r-'+t"
+                  size="small"
+                  effect="plain"
+                  type="danger"
+                  class="special-chip-border">
+                  {{ t }}
+                </el-tag>
+              </div>
+              <div v-if="residentYellowTags.length > 0" class="special-chips-row">
+                <span class="chip-group-caption cap-yellow">优抚</span>
+                <el-tag
+                  v-for="t in residentYellowTags"
+                  :key="'y-'+t"
+                  size="small"
+                  effect="plain"
+                  type="warning"
+                  class="special-chip-border">
+                  {{ t }}
+                </el-tag>
+              </div>
             </div>
             <span v-else style="color: #cbd5e1;">--</span>
           </span>
         </div>
-        <div class="info-item full-width">
+        <div class="info-item col-span-3">
           <span class="info-label">户籍地址</span>
           <span class="info-value">{{ resident.householdAddress }}</span>
         </div>
-        <div class="info-item full-width">
+        <div class="info-item col-span-3">
           <span class="info-label">居住地址</span>
           <span class="info-value">{{ resident.residenceAddress }}</span>
         </div>
@@ -490,6 +506,13 @@ const comparisonTableData = computed(() => {
       updateTime: ci.survivalUpdateTime || '2024-06-20 10:30'
     },
     {
+      name: '学历',
+      value: resident.value?.education || ci.education || '—',
+      extra: ci.educationSource || '',
+      status: ci.educationAbnormal ? 'abnormal' : 'normal',
+      updateTime: ci.educationUpdateTime || '2024-06-20 10:30'
+    },
+    {
       name: '婚姻状态',
       value: resident.value?.maritalStatus || '—',
       extra: '',
@@ -656,13 +679,39 @@ const getEnjoyTagText = (isEnjoy, cancelled) => {
   if (cancelled) return '已取消'
   return isEnjoy ? '享受中' : '已停发'
 }
-const getSpecialTagType = (name) => ({
-  '高龄': 'warning',
-  '涉毒': 'danger',
-  '孤儿': 'warning',
-  '独居': 'info',
-  '精障': 'danger'
-}[name] || 'info')
+
+// 红色标签（重点人员，高关注度）—— 显示为红色边框框
+const RED_SPECIAL_TAGS = ['涉毒', '信访', '社矫', '刑释', '精障（肇事）']
+// 黄色标签（困境/优抚群体）—— 显示为黄色边框框
+const YELLOW_SPECIAL_TAGS = ['特扶', '高龄', '独居', '空巢', '孤寡', '孤儿', '事无', '涉军', '精障', '问题儿童']
+
+// 全部特殊人群字典（便于渲染全部可选 + 标注是否命中）
+const ALL_SPECIAL_TAGS = [
+  ...RED_SPECIAL_TAGS,
+  ...YELLOW_SPECIAL_TAGS.filter(t => !RED_SPECIAL_TAGS.includes(t))
+]
+
+const getSpecialTagColor = (name) => {
+  if (RED_SPECIAL_TAGS.includes(name)) return 'red'
+  if (YELLOW_SPECIAL_TAGS.includes(name)) return 'yellow'
+  return 'gray'
+}
+
+const getSpecialTagType = (name) => {
+  const color = getSpecialTagColor(name)
+  if (color === 'red') return 'danger'
+  if (color === 'yellow') return 'warning'
+  return 'info'
+}
+
+// 当前居民特殊人群集合，便于模板内快速判断
+const residentSpecialSet = computed(() => new Set(resident.value?.specialGroups || []))
+// 重点人员（红色框）：此居民实际具备的标签
+const residentRedTags = computed(() => (resident.value?.specialGroups || []).filter(t => RED_SPECIAL_TAGS.includes(t)))
+// 优抚/困境（黄色框）：此居民实际具备的标签
+const residentYellowTags = computed(() => (resident.value?.specialGroups || []).filter(t => YELLOW_SPECIAL_TAGS.includes(t)))
+// 是否存在任意特殊人群标签
+const hasAnySpecialTag = computed(() => residentRedTags.value.length > 0 || residentYellowTags.value.length > 0)
 
 const goBack = () => {
   router.push('/resident')
@@ -974,18 +1023,26 @@ const handleAddTag = () => {
 .basic-info-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
+  gap: 6px;
 }
 
 .info-item {
-  padding: 3px 8px;
+  padding: 6px 10px;
   background: #f8fafc;
   border-radius: 4px;
   border: 1px solid #e2e8f0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .info-item.full-width {
   grid-column: 1 / -1;
+}
+
+.info-item.col-span-3 {
+  grid-column: span 3;
 }
 
 .info-label {
@@ -1025,6 +1082,72 @@ const handleAddTag = () => {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+/* 特殊人群：紧凑展示 */
+.special-groups-cell > .info-value {
+  width: 100%;
+}
+.special-groups-cell {
+  min-height: 44px;
+}
+.special-chips-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.special-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+.chip-group-caption {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 20px;
+  line-height: 20px;
+  padding: 0 2px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.cap-red {
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.cap-yellow {
+  background: rgba(217, 119, 6, 0.08);
+  color: #a16207;
+  border: 1px solid #fde68a;
+}
+
+/* 命中：红框 / 黄框（danger / warning plain） */
+.special-chip-border {
+  border-radius: 4px !important;
+  padding: 0 8px !important;
+  height: 22px;
+  line-height: 20px;
+  font-size: 12px !important;
+  font-weight: 500;
+  border-width: 1px !important;
+}
+/* 未命中：灰色空心框 */
+.special-chip-border.chip-off {
+  background: #fff !important;
+  color: #cbd5e1 !important;
+  border-color: #e2e8f0 !important;
+  border-style: solid !important;
+}
+.special-chip-border.chip-off .el-tag__content {
+  color: #cbd5e1 !important;
 }
 
 .benefit-info-container {

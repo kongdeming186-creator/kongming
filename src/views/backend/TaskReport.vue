@@ -10,28 +10,11 @@
           <div class="task-group">
             <div class="group-title" @click="toggleGroup('periodic')">
               <span class="group-arrow" :class="{ expanded: groupExpanded.periodic }">▶</span>
-              <span>周期任务</span>
+              <span>走访任务</span>
             </div>
             <div v-show="groupExpanded.periodic" class="group-items">
               <div
                 v-for="task in filteredPeriodicTasks"
-                :key="task.id"
-                class="task-item"
-                :class="{ active: selectedTask?.id === task.id }"
-                @click="selectTask(task)"
-              >
-                {{ task.name }}
-              </div>
-            </div>
-          </div>
-          <div class="task-group">
-            <div class="group-title" @click="toggleGroup('temp')">
-              <span class="group-arrow" :class="{ expanded: groupExpanded.temp }">▶</span>
-              <span>临时任务</span>
-            </div>
-            <div v-show="groupExpanded.temp" class="group-items">
-              <div
-                v-for="task in filteredTempTasks"
                 :key="task.id"
                 class="task-item"
                 :class="{ active: selectedTask?.id === task.id }"
@@ -76,6 +59,7 @@
           <el-table-column prop="totalCount" label="任务总数" width="100" align="center" />
           <el-table-column prop="completedCount" label="已完成任务总数" width="130" align="center" />
           <el-table-column prop="uncompletedCount" label="未完成任务总数" width="130" align="center" />
+          <el-table-column prop="reviewer" label="审核人" width="120" align="center" />
           <el-table-column prop="completionRate" label="完成率" width="110" align="center">
             <template #default="{ row }">
               <span :class="{ 'rate-high': row.rate >= 90, 'rate-mid': row.rate >= 50 && row.rate < 90, 'rate-low': row.rate < 50 }">{{ row.rate }}%</span>
@@ -144,7 +128,7 @@ import { Search, Download } from '@element-plus/icons-vue'
 
 const communities = ['学堂社区', '荣东社区', '六角社区', '由义社区', '民意社区']
 
-const groupExpanded = ref({ periodic: true, temp: true })
+const groupExpanded = ref({ periodic: true })
 const toggleGroup = (key) => {
   groupExpanded.value[key] = !groupExpanded.value[key]
 }
@@ -163,28 +147,9 @@ const periodicTasks = [
   { id: 'p9', name: '"留守儿童"走访' }
 ]
 
-const tempTasks = [
-  { id: 't1', name: '测试任务' },
-  { id: 't2', name: '涉毒人员走访' },
-  { id: 't3', name: '在矫人员走访' },
-  { id: 't4', name: '刑满释放人员走访' },
-  { id: 't5', name: '涉毒人员走访' },
-  { id: 't6', name: '精神病人走访' },
-  { id: 't7', name: '低保人员走访' }
-]
-
 const filteredPeriodicTasks = computed(() =>
   periodicTasks.filter(t => t.name.includes(searchKeyword.value))
 )
-const filteredTempTasks = computed(() =>
-  tempTasks.filter(t => t.name.includes(searchKeyword.value))
-)
-
-const selectedTask = ref(null)
-const selectTask = (task) => {
-  selectedTask.value = task
-  generateReportData(task)
-}
 
 const filterCommunity = ref('')
 const currentPage = ref(1)
@@ -192,11 +157,13 @@ const pageSize = ref(10)
 
 const allData = ref([])
 
+const reviewerNames = ['李某某', '王某某', '张某某', '刘某某', '陈某某']
+
 const generateReportData = (task) => {
   if (!task) return
   const data = []
   const basePeriod = '2026-07-01 00:00:00~2026-09-30 00:00:00'
-  communities.forEach(comm => {
+  communities.forEach((comm, idx) => {
     const total = Math.floor(Math.random() * 120) + 5
     const completed = Math.floor(total * Math.random())
     const uncompleted = total - completed
@@ -209,12 +176,23 @@ const generateReportData = (task) => {
       totalCount: total,
       completedCount: completed,
       uncompletedCount: uncompleted,
+      reviewer: reviewerNames[idx % reviewerNames.length],
       rate: parseFloat(rate)
     })
   })
   allData.value = data
   currentPage.value = 1
 }
+
+// 默认选中第一个走访任务
+const selectedTask = ref(periodicTasks[0])
+const selectTask = (task) => {
+  selectedTask.value = task
+  generateReportData(task)
+}
+
+// 初始化加载数据
+generateReportData(periodicTasks[0])
 
 const filteredData = computed(() => {
   if (!filterCommunity.value) return allData.value
@@ -267,9 +245,6 @@ const openGridDialog = (row) => {
 const handleGridExport = () => {
   ElMessage.success('网格报表导出功能触发（功能框架已完成）')
 }
-
-// 初始化
-selectTask(periodicTasks[0])
 </script>
 
 <style scoped>

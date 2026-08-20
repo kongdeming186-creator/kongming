@@ -48,19 +48,44 @@
       <div class="search-bar">
         <div class="search-row">
           <div class="search-item">
-            <el-input v-model="searchKeyword" placeholder="搜索姓名或身份证号…" style="width: 220px" clearable>
+            <el-input v-model="searchForm.keyword" placeholder="搜索姓名或身份证号…" style="width: 220px" clearable>
               <template #prefix><el-icon><Search /></el-icon></template>
             </el-input>
+          </div>
+          <div class="search-item">
+            <el-select v-model="searchForm.community" placeholder="选择社区" clearable style="width: 130px">
+              <el-option v-for="c in communities" :key="c" :label="c" :value="c" />
+            </el-select>
+          </div>
+          <div class="search-item">
+            <el-select v-model="searchForm.grid" placeholder="选择网格" clearable style="width: 110px">
+              <el-option v-for="g in grids" :key="g" :label="g" :value="g" />
+            </el-select>
+          </div>
+          <div class="search-item">
+            <el-input v-model="searchForm.estate" placeholder="小区" style="width: 120px" clearable />
+          </div>
+          <div class="search-item">
+            <el-select v-model="searchForm.gender" placeholder="性别" clearable style="width: 90px">
+              <el-option label="男" value="男" />
+              <el-option label="女" value="女" />
+            </el-select>
+          </div>
+          <div class="search-item">
+            <el-input v-model="searchForm.minAge" placeholder="最小年龄" style="width: 90px" clearable type="number" />
+          </div>
+          <div class="search-item">
+            <el-input v-model="searchForm.maxAge" placeholder="最大年龄" style="width: 90px" clearable type="number" />
+          </div>
+          <div class="search-item">
+            <el-select v-model="searchForm.personType" placeholder="人员类别" clearable style="width: 120px">
+              <el-option v-for="p in personTypes" :key="p" :label="p" :value="p" />
+            </el-select>
           </div>
           <div class="search-item">
             <el-select v-model="filterReason" placeholder="迁出原因" clearable style="width: 130px">
               <el-option label="已去世" value="已去世" />
               <el-option label="户籍迁出" value="户籍迁出" />
-            </el-select>
-          </div>
-          <div class="search-item">
-            <el-select v-model="searchForm.community" placeholder="选择社区" clearable style="width: 130px">
-              <el-option v-for="c in communities" :key="c" :label="c" :value="c" />
             </el-select>
           </div>
           <div class="search-item search-actions">
@@ -73,14 +98,36 @@
       <div class="table-wrapper">
         <el-table :data="pagedResidents" border stripe style="width: 100%"
           :header-cell-style="{ background: '#fafafa', color: '#666', fontWeight: 500 }">
-          <el-table-column type="index" label="序号" width="55" align="center" />
-          <el-table-column prop="name" label="姓名" width="80" />
-          <el-table-column prop="gender" label="性别" width="55" align="center" />
-          <el-table-column prop="idCard" label="身份证号" width="170">
+          <el-table-column type="index" label="序号" width="50" align="center" fixed="left" />
+          <el-table-column prop="name" label="姓名" width="90" fixed="left" />
+          <el-table-column label="身份证号" width="180" show-overflow-tooltip fixed="left">
             <template #default="scope">{{ maskIdCard(scope.row.idCard) }}</template>
           </el-table-column>
-          <el-table-column prop="community" label="社区" width="90" />
-          <el-table-column prop="estate" label="小区" width="100" />
+          <el-table-column prop="community" label="社区" width="72" />
+          <el-table-column prop="estate" label="小区" width="72" />
+          <el-table-column prop="grid" label="网格" width="72" />
+          <el-table-column prop="personType" label="人员类别" width="72" />
+          <el-table-column label="家庭人口" width="70" align="center">
+            <template #default="scope">
+              <el-tag type="primary" size="small" class="family-tag">
+                {{ scope.row.familyCount || 0 }}人
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="特殊人群" width="160">
+            <template #default="scope">
+              <div v-if="(scope.row.specialGroups || []).length > 0" class="special-tags">
+                <el-tag
+                  v-for="s in scope.row.specialGroups"
+                  :key="s"
+                  size="small"
+                  effect="plain"
+                  :type="getSpecialTagType(s)"
+                >{{ s }}</el-tag>
+              </div>
+              <span v-else class="no-tag">--</span>
+            </template>
+          </el-table-column>
           <el-table-column label="迁出原因" width="100" align="center">
             <template #default="scope">
               <el-tag :type="getReasonType(scope.row)" size="small" effect="light">
@@ -93,7 +140,7 @@
               {{ scope.row.outDate || scope.row.updateTime || '--' }}
             </template>
           </el-table-column>
-          <el-table-column label="已停发待遇" min-width="200">
+          <el-table-column label="已停发待遇" min-width="180">
             <template #default="scope">
               <div v-if="getResidentTags(scope.row.id).length > 0" class="stopped-tags">
                 <el-tag
@@ -110,7 +157,7 @@
               <span v-else class="no-tag">--</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right" align="center">
+          <el-table-column label="操作" width="140" fixed="right" align="center">
             <template #default="scope">
               <div class="action-buttons">
                 <el-button type="primary" link size="small" @click="viewDetail(scope.row)">详情</el-button>
@@ -135,7 +182,7 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, ArrowLeft, User, Close, Location, PriceTag } from '@element-plus/icons-vue'
-import { residents as mockResidents, tags, communities } from '../../data/mock'
+import { residents as mockResidents, tags, communities, grids, personTypes } from '../../data/mock'
 
 const router = useRouter()
 
@@ -155,9 +202,17 @@ const stoppedTagsCount = computed(() => {
   return count
 })
 
-const searchKeyword = ref('')
 const filterReason = ref('')
-const searchForm = reactive({ community: '' })
+const searchForm = reactive({
+  keyword: '',
+  community: '',
+  grid: '',
+  estate: '',
+  gender: '',
+  minAge: '',
+  maxAge: '',
+  personType: ''
+})
 const currentPage = ref(1)
 const pageSize = ref(10)
 
@@ -174,15 +229,41 @@ const getReasonType = (resident) => {
   return 'warning'
 }
 
+const getSpecialTagType = (tag) => {
+  const redTags = ['涉毒', '信访', '社矫', '刑释', '精障（肇事）']
+  const yellowTags = ['特扶', '高龄', '独居', '空巢', '孤寡', '孤儿', '事无', '涉军', '精障', '问题儿童']
+  if (redTags.includes(tag)) return 'danger'
+  if (yellowTags.includes(tag)) return 'warning'
+  return 'info'
+}
+
 const maskIdCard = (idCard) => idCard ? idCard.slice(0, 6) + '********' + idCard.slice(-4) : ''
 
 const filteredResidents = computed(() => {
   let result = historyResidents.value
-  if (searchKeyword.value) {
-    const kw = searchKeyword.value.toLowerCase()
+  if (searchForm.keyword) {
+    const kw = searchForm.keyword.toLowerCase()
     result = result.filter(r => r.name.toLowerCase().includes(kw) || r.idCard.includes(kw))
   }
   if (searchForm.community) result = result.filter(r => r.community === searchForm.community)
+  if (searchForm.grid) result = result.filter(r => r.grid === searchForm.grid)
+  if (searchForm.estate) result = result.filter(r => r.estate && r.estate.includes(searchForm.estate))
+  if (searchForm.gender) result = result.filter(r => r.gender === searchForm.gender)
+  if (searchForm.personType) result = result.filter(r => r.personType === searchForm.personType)
+  if (searchForm.minAge) {
+    const min = parseInt(searchForm.minAge)
+    result = result.filter(r => {
+      const age = r.age || (r.birthday ? new Date().getFullYear() - new Date(r.birthday).getFullYear() : 0)
+      return age >= min
+    })
+  }
+  if (searchForm.maxAge) {
+    const max = parseInt(searchForm.maxAge)
+    result = result.filter(r => {
+      const age = r.age || (r.birthday ? new Date().getFullYear() - new Date(r.birthday).getFullYear() : 0)
+      return age <= max
+    })
+  }
   if (filterReason.value) {
     result = result.filter(r => {
       if (filterReason.value === '已去世') return r.survivalStatus === '已去世'
@@ -222,9 +303,15 @@ const handleRestore = (row) => {
 
 const handleSearch = () => { currentPage.value = 1 }
 const handleReset = () => {
-  searchKeyword.value = ''
-  filterReason.value = ''
+  searchForm.keyword = ''
   searchForm.community = ''
+  searchForm.grid = ''
+  searchForm.estate = ''
+  searchForm.gender = ''
+  searchForm.minAge = ''
+  searchForm.maxAge = ''
+  searchForm.personType = ''
+  filterReason.value = ''
   currentPage.value = 1
 }
 const handleSizeChange = (size) => { pageSize.value = size }
@@ -257,6 +344,8 @@ const handleCurrentChange = (page) => { currentPage.value = page }
 .search-actions { margin-left: auto; display: flex; gap: 8px; }
 
 .table-wrapper { overflow-x: auto; }
+.special-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.family-tag { cursor: default; }
 .stopped-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .stopped-tag { cursor: default; }
 .no-tag { font-size: 12px; color: #d1d5db; }

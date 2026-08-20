@@ -206,7 +206,7 @@ export const residents = [
     retirementType: '',
     criminalRecord: '无',
     familyCount: 4,
-    specialGroups: ['孤儿'],
+    specialGroups: ['孤儿', '问题儿童'],
     emergencyContact: '赵芳',
     emergencyPhone: '13600136004',
     severeDisease: '无',

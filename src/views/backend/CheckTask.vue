@@ -3,8 +3,24 @@
     <div class="content-card">
       <!-- 搜索栏 -->
       <div class="filter-bar">
-        <el-input v-model="searchName" placeholder="居民姓名" style="width: 180px" clearable />
-        <el-input v-model="searchIdCard" placeholder="身份证号" style="width: 240px" clearable />
+        <el-input v-model="searchName" placeholder="居民姓名" style="width: 140px" clearable />
+        <el-input v-model="searchIdCard" placeholder="身份证号" style="width: 180px" clearable />
+        <el-select v-model="searchCommunity" placeholder="所属社区" style="width: 120px" clearable>
+          <el-option v-for="c in communities" :key="c" :label="c" :value="c" />
+        </el-select>
+        <el-select v-model="searchGrid" placeholder="所属网格" style="width: 120px" clearable>
+          <el-option v-for="g in grids" :key="g" :label="g" :value="g" />
+        </el-select>
+        <el-input v-model="searchReviewer" placeholder="审核人" style="width: 120px" clearable />
+        <el-date-picker
+          v-model="searchDateRange"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          style="width: 260px"
+          value-format="YYYY-MM-DD"
+        />
         <el-button @click="resetSearch">重置</el-button>
         <el-button type="primary" @click="doSearch">
           <el-icon><Search /></el-icon>查询
@@ -13,6 +29,11 @@
 
       <!-- 任务类型 Tab -->
       <el-tabs v-model="activeTab" class="task-type-tabs" @tab-change="onTabChange">
+        <el-tab-pane name="全部">
+          <template #label>
+            <span class="tab-label">全部 <el-badge :value="totalCount" :max="99" class="tab-badge" /></span>
+          </template>
+        </el-tab-pane>
         <el-tab-pane name="政策不符">
           <template #label>
             <span class="tab-label">政策不符 <el-badge :value="getTabCount('政策不符')" :max="99" class="tab-badge" /></span>
@@ -56,7 +77,8 @@
             <el-tag :type="getResultTagType(row.checkResult)" size="small" effect="light">{{ row.checkResult }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="checker" label="核查人" width="100" />
+        <el-table-column prop="checker" label="核查人" width="90" />
+        <el-table-column prop="reviewer" label="审核人" width="90" />
         <el-table-column prop="checkTime" label="核查时间" width="170" align="center" />
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
@@ -79,6 +101,16 @@
           layout="total, sizes, prev, pager, next, jumper"
           background
         />
+      </div>
+
+      <!-- 数据统计 -->
+      <div class="data-stats-bar">
+        <span class="stats-text">
+          共 <strong>{{ filteredData.length }}</strong> 条，
+          按期完成 <span class="stats-rate done">{{ dataStats.doneRate }}%</span>，
+          超期完成 <span class="stats-rate overdue">{{ dataStats.overdueRate }}%</span>，
+          未完成 <span class="stats-rate pending">{{ dataStats.pendingRate }}%</span>
+        </span>
       </div>
     </div>
 
@@ -157,9 +189,39 @@
                 <el-tag :type="getStatusTagType(currentDetail.status)" size="small">{{ currentDetail.status }}</el-tag>
               </span>
             </div>
+            <div class="detail-item">
+              <span class="detail-label">初审人：</span>
+              <span class="detail-value">{{ currentDetail.firstReviewer }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">初审时间：</span>
+              <span class="detail-value">{{ currentDetail.firstReviewTime }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">复审人：</span>
+              <span class="detail-value">{{ currentDetail.secondReviewer }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">复审时间：</span>
+              <span class="detail-value">{{ currentDetail.secondReviewTime }}</span>
+            </div>
             <div class="detail-item full-width">
               <span class="detail-label">核查说明：</span>
               <span class="detail-value">{{ currentDetail.checkNote }}</span>
+            </div>
+            <div class="detail-item full-width" v-if="currentDetail.images && currentDetail.images.length">
+              <span class="detail-label">核查图片：</span>
+              <span class="detail-value">
+                <el-image
+                  v-for="(img, idx) in currentDetail.images"
+                  :key="idx"
+                  :src="img"
+                  :preview-src-list="currentDetail.images"
+                  :initial-index="idx"
+                  fit="cover"
+                  class="check-image"
+                />
+              </span>
             </div>
           </div>
         </div>
@@ -178,7 +240,11 @@ import { Search } from '@element-plus/icons-vue'
 const loading = ref(false)
 const searchName = ref('')
 const searchIdCard = ref('')
-const activeTab = ref('政策不符')
+const searchCommunity = ref('')
+const searchGrid = ref('')
+const searchReviewer = ref('')
+const searchDateRange = ref([])
+const activeTab = ref('全部')
 const currentPage = ref(1)
 const pageSize = ref(10)
 const detailVisible = ref(false)
@@ -196,12 +262,13 @@ const warningTypeMap = {
 }
 
 const checkResults = ['停发取消', '继续享受']
-const completionStatuses = ['已完成', '已完成', '已完成', '已复核']
+const completionStatuses = ['已完成', '已完成', '已完成', '未完成', '超期']
 
 const residentsData = ref([])
 const communities = ['学堂社区', '荣东社区', '六角社区', '由义社区', '民意社区']
 const grids = ['001网格', '002网格', '003网格', '004网格', '005网格']
 const checkers = ['小王', '小李', '小张', '小陈', '小刘', '小赵']
+const reviewers = ['李某某', '王某某', '张某某', '刘某某', '陈某某']
 const residentNames = ['张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十', '郑十一', '王十二', '刘十三', '陈十四', '杨十五', '黄十六', '林十七', '何十八']
 
 const genIdCard = (seed) => {
@@ -241,9 +308,20 @@ const generateData = () => {
         warningContent: `${subType}：${residentNames[rIdx]}（${communities[cIdx]}）触发${type}预警，需核实处理。`,
         checkResult: checkResults[idx % checkResults.length],
         checker: checkers[idx % checkers.length],
+        reviewer: reviewers[idx % reviewers.length],
         checkTime: `2025-0${(idx % 6) + 1}-${day} ${hour}:${min}:00`,
+        firstReviewer: reviewers[(idx + 1) % reviewers.length],
+        firstReviewTime: `2025-0${(idx % 6) + 1}-${day} ${String((idx % 24) + 1).padStart(2, '0')}:${String(((idx * 7) % 60) + 10).padStart(2, '0')}:00`,
+        secondReviewer: reviewers[(idx + 2) % reviewers.length],
+        secondReviewTime: `2025-0${(idx % 6) + 1}-${day} ${String((idx % 24) + 2).padStart(2, '0')}:${String(((idx * 7) % 60) + 20).padStart(2, '0')}:00`,
         status: completionStatuses[idx % completionStatuses.length],
-        checkNote: `经核查，该居民${subType}情况属实，已按相关规定处理完毕。核查方式：上门走访+系统比对。`
+        checkNote: `经核查，该居民${subType}情况属实，已按相关规定处理完毕。核查方式：上门走访+系统比对。`,
+        images: idx % 3 === 0 ? [
+          `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=政府办公场所核查现场照片&image_size=square`,
+          `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=居民身份核实材料照片&image_size=square`
+        ] : idx % 3 === 1 ? [
+          `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=上门走访居民家现场&image_size=square`
+        ] : []
       })
       idx++
     }
@@ -254,16 +332,51 @@ const generateData = () => {
 residentsData.value = generateData()
 
 const getTabCount = (type) => residentsData.value.filter(d => d.taskType === type).length
+const totalCount = computed(() => residentsData.value.length)
 
 const filteredData = computed(() => {
-  let data = residentsData.value.filter(d => d.taskType === activeTab.value)
+  let data = activeTab.value === '全部'
+    ? [...residentsData.value]
+    : residentsData.value.filter(d => d.taskType === activeTab.value)
   if (searchName.value) {
     data = data.filter(d => d.residentName.includes(searchName.value))
   }
   if (searchIdCard.value) {
     data = data.filter(d => d.idCard.includes(searchIdCard.value))
   }
+  if (searchCommunity.value) {
+    data = data.filter(d => d.community === searchCommunity.value)
+  }
+  if (searchGrid.value) {
+    data = data.filter(d => d.gridName === searchGrid.value)
+  }
+  if (searchReviewer.value) {
+    data = data.filter(d => d.reviewer.includes(searchReviewer.value))
+  }
+  if (searchDateRange.value && searchDateRange.value.length === 2) {
+    const [start, end] = searchDateRange.value
+    data = data.filter(d => {
+      const date = d.checkTime.split(' ')[0]
+      return date >= start && date <= end
+    })
+  }
   return data
+})
+
+const dataStats = computed(() => {
+  const total = filteredData.value.length
+  const done = filteredData.value.filter(item => item.status === '已完成').length
+  const pending = filteredData.value.filter(item => item.status === '未完成').length
+  const overdue = filteredData.value.filter(item => item.status === '超期').length
+  const calcRate = (num) => total > 0 ? ((num / total) * 100).toFixed(1) : '0.0'
+  return {
+    done,
+    pending,
+    overdue,
+    doneRate: calcRate(done),
+    pendingRate: calcRate(pending),
+    overdueRate: calcRate(overdue)
+  }
 })
 
 const pagedData = computed(() => {
@@ -278,6 +391,11 @@ const onTabChange = () => {
 const resetSearch = () => {
   searchName.value = ''
   searchIdCard.value = ''
+  searchCommunity.value = ''
+  searchGrid.value = ''
+  searchReviewer.value = ''
+  searchDateRange.value = []
+  activeTab.value = '全部'
   currentPage.value = 1
 }
 
@@ -307,7 +425,8 @@ const getResultTagType = (result) => {
 
 const getStatusTagType = (status) => {
   if (status === '已完成') return 'success'
-  if (status === '已复核') return 'primary'
+  if (status === '未完成') return 'warning'
+  if (status === '超期') return 'danger'
   return 'info'
 }
 </script>
@@ -363,4 +482,39 @@ const getStatusTagType = (status) => {
 .detail-item.full-width { grid-column: 1 / -1; }
 .detail-label { color: #64748b; flex-shrink: 0; }
 .detail-value { color: #1f2937; word-break: break-all; }
+.check-image {
+  width: 120px;
+  height: 120px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+}
+.check-image:last-child {
+  margin-right: 0;
+}
+
+.data-stats-bar {
+  margin-top: 16px;
+  padding: 10px 16px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+.stats-text {
+  font-size: 13px;
+  color: #475569;
+}
+.stats-text strong {
+  font-size: 15px;
+  color: #1e40af;
+}
+.stats-rate {
+  font-weight: 600;
+  padding: 0 4px;
+}
+.stats-rate.done { color: #10b981; }
+.stats-rate.pending { color: #f59e0b; }
+.stats-rate.overdue { color: #ef4444; }
 </style>

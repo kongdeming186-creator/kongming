@@ -32,9 +32,18 @@
             <el-icon><User /></el-icon>
             <span>居民信息管理</span>
           </template>
-          <el-menu-item index="/resident">居民列表</el-menu-item>
-          <el-menu-item index="/resident/history">历史居民</el-menu-item>
-          <el-menu-item index="/import">数据导入</el-menu-item>
+          <el-menu-item index="/resident">
+            <template #icon><el-icon><UserFilled /></el-icon></template>
+            <span>居民列表</span>
+          </el-menu-item>
+          <el-menu-item index="/resident/history">
+            <template #icon><el-icon><Clock /></el-icon></template>
+            <span>历史居民</span>
+          </el-menu-item>
+          <el-menu-item index="/import">
+            <template #icon><el-icon><DataAnalysis /></el-icon></template>
+            <span>数据采集</span>
+          </el-menu-item>
         </el-sub-menu>
         
         <el-sub-menu index="warning">
@@ -42,9 +51,18 @@
             <el-icon><Bell /></el-icon>
             <span>核查管理</span>
           </template>
-          <el-menu-item index="/warning">核查列表</el-menu-item>
-          <el-menu-item index="/task/check">核查历史</el-menu-item>
-          <el-menu-item index="/warning/config">规则配置</el-menu-item>
+          <el-menu-item index="/warning">
+            <template #icon><el-icon><View /></el-icon></template>
+            <span>核查列表</span>
+          </el-menu-item>
+          <el-menu-item index="/task/check">
+            <template #icon><el-icon><Timer /></el-icon></template>
+            <span>核查历史</span>
+          </el-menu-item>
+          <el-menu-item index="/warning/config">
+            <template #icon><el-icon><Setting /></el-icon></template>
+            <span>规则配置</span>
+          </el-menu-item>
         </el-sub-menu>
         
         <el-menu-item index="/ai-match">
@@ -64,11 +82,20 @@
         <el-sub-menu index="report">
           <template #title>
             <el-icon><PieChart /></el-icon>
-            <span>统计报表</span>
+            <span>统计分析</span>
           </template>
-          <el-menu-item index="/report">数据汇总</el-menu-item>
-          <el-menu-item index="/report/task">任务统计报表</el-menu-item>
-          <el-menu-item index="/report/community">社区工作统计报表</el-menu-item>
+          <el-menu-item index="/report/community">
+            <template #icon><el-icon><OfficeBuilding /></el-icon></template>
+            <span>社区统计分析</span>
+          </el-menu-item>
+          <el-menu-item index="/report/task">
+            <template #icon><el-icon><Tickets /></el-icon></template>
+            <span>任务统计分析</span>
+          </el-menu-item>
+          <el-menu-item index="/report">
+            <template #icon><el-icon><UserFilled /></el-icon></template>
+            <span>居民统计分析</span>
+          </el-menu-item>
         </el-sub-menu>
       </el-menu>
     </aside>
@@ -185,7 +212,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import {
   DataBoard, User, Upload, Warning, PieChart,
-  Menu, Expand, Bell, ArrowDown, UserFilled, Star, Tickets 
+  Menu, Expand, Bell, ArrowDown, UserFilled, Star, Tickets,
+  Clock, View, Timer, Setting, OfficeBuilding, DataAnalysis
 } from '@element-plus/icons-vue'
 import { warnings } from '../data/mock'
 import AiAssistant from '../components/AIAssistant.vue'
@@ -241,9 +269,9 @@ const titleMap = {
   '/ai-match': '政策匹配',
   '/task/visit': '走访任务',
   '/task/check': '核查历史',
-  '/report': '数据汇总',
-  '/report/task': '任务统计报表',
-  '/report/community': '社区工作统计报表'
+  '/report': '居民统计分析',
+  '/report/task': '任务统计分析',
+  '/report/community': '社区统计分析'
 }
 
 const currentTitle = computed(() => {
@@ -383,11 +411,17 @@ const handleCommand = (command) => {
 
 :deep(.el-sub-menu .el-menu-item) {
   min-width: auto;
-  padding-left: 48px !important;
+  padding-left: 14px !important;
   margin: 2px 10px;
   height: 40px;
   line-height: 40px;
   font-size: 13px;
+  gap: 10px;
+}
+
+:deep(.el-sub-menu .el-menu-item .el-icon) {
+  font-size: 15px;
+  width: 16px;
 }
 
 /* ============ 主内容区 ============ */
