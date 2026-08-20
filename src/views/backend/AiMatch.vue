@@ -102,7 +102,7 @@
               <el-input
                 v-model="policyDescText"
                 type="textarea"
-                :rows="7"
+                :rows="5"
                 placeholder="请手动输入相关政策条件，AI将智能识别并匹配居民。例如：'查找年龄在60岁以上、人均月收入低于1000元的高龄老人'…"
               />
               <el-button type="primary" size="large" class="desc-parse-btn" @click="parsePolicyDesc" :loading="parsingPolicy">
@@ -1064,6 +1064,8 @@ const getScoreColor = (score) => {
 
 .policy-desc-section {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-title {
@@ -1080,15 +1082,28 @@ const getScoreColor = (score) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1 1 0% !important;
+  min-height: 300px;
 }
 
-.desc-input-wrap .el-textarea {
-  flex: none;
+.desc-input-wrap :deep(.el-textarea) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.desc-input-wrap :deep(.el-textarea__inner) {
+  flex: 1;
+  resize: none;
+  min-height: 0 !important;
+  height: auto !important;
+  box-sizing: border-box;
 }
 
 .desc-parse-btn {
   align-self: flex-end;
-  height: auto !important;
+  flex-shrink: 0;
+  height: 36px !important;
   padding: 12px 20px;
   white-space: nowrap;
 }
@@ -1390,19 +1405,23 @@ const getScoreColor = (score) => {
 
 /* 政策文件上传 + 条件描述 左右并排 */
 .policy-upload-desc-row {
-  display: flex;
+  display: flex !important;
   gap: 20px;
   margin-bottom: 20px;
+  align-items: stretch;
 }
 
-.policy-upload-desc-row .policy-upload-section {
-  flex: 1;
+.policy-upload-desc-row > .policy-upload-section,
+.policy-upload-desc-row > .policy-desc-section {
+  flex: 1 1 0% !important;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  height: 100%;
 }
 
-.policy-upload-desc-row .policy-desc-section {
-  flex: 1;
-  min-width: 0;
+.policy-upload-desc-row > .policy-desc-section {
   margin-bottom: 0;
 }
 
@@ -1418,9 +1437,34 @@ const getScoreColor = (score) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: 320px;
+  box-sizing: border-box;
+}
+
+.policy-upload-box .policy-uploader {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.policy-upload-box .policy-uploader :deep(.el-upload) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.policy-upload-box .policy-uploader :deep(.el-upload-dragger) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .policy-upload-box .upload-placeholder {
+  flex: 1;
+  min-height: 0;
   padding: 32px 16px;
 }
 

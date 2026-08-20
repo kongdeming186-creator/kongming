@@ -232,60 +232,46 @@
           </div>
         </div>
 
-        <!-- 社区/网格口径：双图并排 -->
-        <div v-show="tagDim === 'community' || tagDim === 'grid'" class="chart-dual">
-          <div class="chart-dual-item">
-            <div class="chart-subtitle">保障类别分布</div>
-            <div ref="barChartRef" class="chart chart-tall chart-half" :class="{ 'chart-shorter': tagDim === 'grid' }"></div>
+        <!-- 社区/网格口径：合并为单图，每个社区两根柱子 -->
+        <div v-show="tagDim === 'community' || tagDim === 'grid'" class="chart-merged-wrap">
+          <div class="merged-legend-row">
+            <div class="merged-legend-group">
+              <span class="legend-group-label">保障类别</span>
+              <div class="legend-items">
+                <span v-for="s in currentDimConf.series.slice(0, 4)" :key="'cl-'+s.name" class="legend-chip">
+                  <i :style="{ background: s.color }"></i>{{ s.name }}
+                </span>
+                <el-tooltip v-if="currentDimConf.series.length > 4" :content="currentDimConf.series.slice(4).map(s=>s.name).join('、')" placement="top">
+                  <span class="legend-chip more">+{{ currentDimConf.series.length - 4 }}</span>
+                </el-tooltip>
+              </div>
+            </div>
+            <div class="merged-divider"></div>
+            <div class="merged-legend-group">
+              <span class="legend-group-label label-special">特殊人群</span>
+              <div class="legend-items">
+                <span v-for="s in currentSpecialGroupConf.series.slice(0, 4)" :key="'sl-'+s.name" class="legend-chip">
+                  <i :style="{ background: s.color }"></i>{{ s.name }}
+                </span>
+                <el-tooltip v-if="currentSpecialGroupConf.series.length > 4" :content="currentSpecialGroupConf.series.slice(4).map(s=>s.name).join('、')" placement="top">
+                  <span class="legend-chip more">+{{ currentSpecialGroupConf.series.length - 4 }}</span>
+                </el-tooltip>
+              </div>
+            </div>
+            <div class="merged-totals">
+              <span class="total-chip chip-blue">保障 {{ categoryTotal }}</span>
+              <span class="total-chip chip-orange">特殊 {{ specialTotal }}</span>
+            </div>
           </div>
-          <div class="chart-dual-item">
-            <div class="chart-subtitle">特殊人群标签分布</div>
-            <div ref="specialChartRef" class="chart chart-tall chart-half" :class="{ 'chart-shorter': tagDim === 'grid' }"></div>
-          </div>
+          <div ref="mergedChartRef" class="chart chart-flex"></div>
         </div>
 
         <!-- 保障类别/特殊人群口径：单图 -->
         <div v-show="tagDim === 'category' || tagDim === 'special'" class="chart-single-wrap">
-          <div ref="barChartSingleRef" class="chart chart-tall"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 底部：社区数据快览 -->
-    <div class="content-card community-overview">
-      <div class="card-header">
-        <div class="card-title-wrapper">
-          <h3 class="card-title">社区数据快览</h3>
-          <span class="card-subtitle">各社区核心指标对比</span>
-        </div>
-      </div>
-      <div class="community-cards">
-        <div
-          v-for="m in communityMarkers"
-          :key="'card-' + m.id"
-          class="community-card"
-          :style="{ '--card-color': m.color }"
-          @click="openCommunityDialog(m)"
-        >
-          <div class="cc-header">
-            <span class="cc-dot" :style="{ background: m.color }"></span>
-            <span class="cc-name">{{ m.name }}</span>
+          <div class="chart-subtitle">
+            <span class="sub-bar"></span>{{ tagDim === 'category' ? '保障类别分布' : '特殊人群标签分布' }}
           </div>
-          <div class="cc-body">
-            <div class="cc-row">
-              <span class="cc-label">居民</span>
-              <span class="cc-value">{{ m.resident }}</span>
-            </div>
-            <div class="cc-row">
-              <span class="cc-label">保障</span>
-              <span class="cc-value">{{ m.insured }}</span>
-            </div>
-            <div class="cc-row">
-              <span class="cc-label">预警</span>
-              <span class="cc-value" :class="{ warn: m.warn > 3 }">{{ m.warn }}条</span>
-            </div>
-          </div>
-          <div class="cc-action">查看详情 →</div>
+          <div ref="barChartSingleRef" class="chart chart-flex"></div>
         </div>
       </div>
     </div>
@@ -438,11 +424,9 @@ const getTagType = (tag) => {
 // 柱状图
 const tagDim = ref('community')
 const gridCommunity = ref(0)
-const barChartRef = ref(null)
-const specialChartRef = ref(null)
+const mergedChartRef = ref(null)
 const barChartSingleRef = ref(null)
-let barChart = null
-let specialChart = null
+let mergedChart = null
 let barChartSingle = null
 
 const gridCommunities = [
@@ -452,6 +436,16 @@ const gridCommunities = [
   { id: 3, name: '由义社区', color: '#6d28d9', gridCount: 2 },
   { id: 4, name: '民意社区', color: '#b91c1c', gridCount: 2 }
 ]
+
+// 保障类别总人数（模拟数据汇总）
+const categoryTotal = computed(() => {
+  if (tagDim.value === 'community') return '2,156'
+  return '1,820'
+})
+const specialTotal = computed(() => {
+  if (tagDim.value === 'community') return '486'
+  return '328'
+})
 
 const tagSeriesTemplate = (c) => ([
   { name: '低保', data: c.lowIncome, color: '#1e40af' },
@@ -538,57 +532,92 @@ const currentSpecialGroupConf = computed(() => {
   return specialGroupData.community
 })
 
-const initBarChart = () => {
-  if (!barChartRef.value) return
-  // 始终重建实例以确保DOM切换后正确渲染
-  if (barChart) {
-    barChart.dispose()
-    barChart = null
-  }
-  barChart = echarts.init(barChartRef.value)
+const initMergedChart = () => {
+  if (!mergedChartRef.value) return
+  if (mergedChart) { mergedChart.dispose(); mergedChart = null }
+  mergedChart = echarts.init(mergedChartRef.value)
+
   const conf = currentDimConf.value
-  const isStack = tagDim.value === 'community' || tagDim.value === 'grid'
-  const series = conf.series.map((s, idx) => ({
-    name: s.name,
-    type: 'bar',
-    stack: isStack ? 'total' : null,
-    barMaxWidth: 32,
-    itemStyle: {
-      color: s.color,
-      borderRadius: (idx === conf.series.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]
-    },
-    emphasis: { focus: 'series' },
-    data: s.data
-  }))
-  barChart.setOption({
+  const specialConf = currentSpecialGroupConf.value
+  const mergedXData = conf.xData
+
+  // 为每个社区创建两根柱子：保障类别(堆叠) + 特殊人群(堆叠)
+  const series = []
+
+  // 保障类别系列（堆叠在 '保障' 栈中）
+  conf.series.forEach((s, idx) => {
+    series.push({
+      name: s.name,
+      type: 'bar',
+      stack: '保障',
+      barMaxWidth: 24,
+      itemStyle: {
+        color: s.color,
+        borderRadius: (idx === conf.series.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]
+      },
+      emphasis: { focus: 'series' },
+      data: s.data
+    })
+  })
+
+  // 特殊人群系列（堆叠在 '特殊' 栈中）
+  specialConf.series.forEach((s, idx) => {
+    series.push({
+      name: s.name,
+      type: 'bar',
+      stack: '特殊',
+      barMaxWidth: 24,
+      itemStyle: {
+        color: s.color,
+        borderRadius: (idx === specialConf.series.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]
+      },
+      emphasis: { focus: 'series' },
+      data: s.data
+    })
+  })
+
+  mergedChart.setOption({
+    barGap: '30%',
+    barCategoryGap: '40%',
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       backgroundColor: '#fff',
       borderColor: '#e2e8f0',
       borderWidth: 1,
-      borderRadius: 4,
-      padding: [8, 12],
-      textStyle: { color: '#374151', fontSize: 12 }
-    },
-    legend: {
-      show: conf.series.length > 1,
-      top: 0,
-      right: 0,
-      itemWidth: 10, itemHeight: 10,
-      itemGap: 14,
-      textStyle: { color: '#64748b', fontSize: 11 }
+      borderRadius: 6,
+      padding: [10, 14],
+      textStyle: { color: '#374151', fontSize: 12 },
+      formatter: (params) => {
+        const groups = {}
+        params.forEach(p => {
+          const stack = p.seriesName && (conf.series.find(s => s.name === p.seriesName) ? '保障类别' : '特殊人群')
+          if (!groups[stack]) groups[stack] = []
+          groups[stack].push(p)
+        })
+        let html = `<div style="font-weight:600;margin-bottom:6px;">${params[0].axisValue}</div>`
+        Object.keys(groups).forEach(g => {
+          html += `<div style="color:#94a3b8;font-size:11px;margin:6px 0 4px;">● ${g}</div>`
+          groups[g].forEach(p => {
+            html += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;">
+              <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${p.color};margin-right:6px;"></span>${p.seriesName}</span>
+              <b style="color:#1e293b;">${p.value}</b>
+            </div>`
+          })
+        })
+        return html
+      }
     },
     grid: {
       left: '2%',
       right: '2%',
-      bottom: tagDim.value === 'community' ? '14%' : '8%',
-      top: conf.series.length > 1 ? '14%' : '6%',
+      bottom: tagDim.value === 'community' ? '14%' : '10%',
+      top: 10,
       containLabel: true
     },
     xAxis: {
       type: 'category',
-      data: conf.xData,
+      data: mergedXData,
       axisLine: { lineStyle: { color: '#e2e8f0', width: 1 } },
       axisLabel: { color: '#64748b', fontSize: 11, interval: 0, rotate: tagDim.value === 'community' ? 16 : 0 },
       axisTick: { show: false }
@@ -598,72 +627,6 @@ const initBarChart = () => {
       axisLine: { show: false },
       axisTick: { show: false },
       axisLabel: { color: '#94a3b8', fontSize: 11 },
-      splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed', width: 1 } }
-    },
-    series
-  }, true)
-}
-
-const initSpecialChart = () => {
-  if (!specialChartRef.value) return
-  if (tagDim.value !== 'community' && tagDim.value !== 'grid') {
-    if (specialChart) { specialChart.dispose(); specialChart = null }
-    return
-  }
-  if (specialChart) { specialChart.dispose(); specialChart = null }
-  specialChart = echarts.init(specialChartRef.value)
-  const conf = currentSpecialGroupConf.value
-  const series = conf.series.map((s, idx) => ({
-    name: s.name,
-    type: 'bar',
-    stack: 'total',
-    barMaxWidth: 28,
-    itemStyle: {
-      color: s.color,
-      borderRadius: (idx === conf.series.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]
-    },
-    emphasis: { focus: 'series' },
-    data: s.data
-  }))
-  specialChart.setOption({
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      backgroundColor: '#fff',
-      borderColor: '#e2e8f0',
-      borderWidth: 1,
-      borderRadius: 4,
-      padding: [8, 12],
-      textStyle: { color: '#374151', fontSize: 12 }
-    },
-    legend: {
-      show: true,
-      top: 0,
-      right: 0,
-      itemWidth: 10, itemHeight: 10,
-      itemGap: 10,
-      textStyle: { color: '#64748b', fontSize: 10 },
-      type: 'scroll'
-    },
-    grid: {
-      left: '2%',
-      right: '2%',
-      bottom: tagDim.value === 'community' ? '14%' : '8%',
-      top: '20%',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: conf.xData,
-      axisLine: { lineStyle: { color: '#e2e8f0', width: 1 } },
-      axisLabel: { color: '#64748b', fontSize: 10, interval: 0, rotate: tagDim.value === 'community' ? 16 : 0 },
-      axisTick: { show: false }
-    },
-    yAxis: {
-      type: 'value',
-      axisLine: { show: false },
-      axisTick: { show: false },
-      axisLabel: { color: '#94a3b8', fontSize: 10 },
       splitLine: { lineStyle: { color: '#f1f5f9', type: 'dashed', width: 1 } }
     },
     series
@@ -703,14 +666,16 @@ const initBarSingleChart = () => {
       top: 0,
       right: 0,
       itemWidth: 10, itemHeight: 10,
-      itemGap: 14,
-      textStyle: { color: '#64748b', fontSize: 11 }
+      itemGap: 12,
+      textStyle: { color: '#64748b', fontSize: 10 },
+      type: 'scroll',
+      pageTextStyle: { color: '#64748b' }
     },
     grid: {
       left: '2%',
       right: '2%',
-      bottom: '8%',
-      top: conf.series.length > 1 ? '14%' : '6%',
+      bottom: '10%',
+      top: conf.series.length > 1 ? '18%' : '8%',
       containLabel: true
     },
     xAxis: {
@@ -732,21 +697,15 @@ const initBarSingleChart = () => {
 }
 
 const initAllCharts = () => {
-  const isDual = tagDim.value === 'community' || tagDim.value === 'grid'
-  if (isDual) {
-    // 销毁单图实例
+  const isMerged = tagDim.value === 'community' || tagDim.value === 'grid'
+  if (isMerged) {
     if (barChartSingle) { barChartSingle.dispose(); barChartSingle = null }
-    initBarChart()
-    initSpecialChart()
-    // 延迟resize确保容器尺寸正确
+    initMergedChart()
     setTimeout(() => {
-      barChart && barChart.resize()
-      specialChart && specialChart.resize()
+      mergedChart && mergedChart.resize()
     }, 100)
   } else {
-    // 销毁双图实例
-    if (barChart) { barChart.dispose(); barChart = null }
-    if (specialChart) { specialChart.dispose(); specialChart = null }
+    if (mergedChart) { mergedChart.dispose(); mergedChart = null }
     initBarSingleChart()
     setTimeout(() => {
       barChartSingle && barChartSingle.resize()
@@ -763,8 +722,7 @@ watch([tagDim, gridCommunity], () => {
 onMounted(() => {
   initAllCharts()
   window.addEventListener('resize', () => {
-    barChart && barChart.resize()
-    specialChart && specialChart.resize()
+    mergedChart && mergedChart.resize()
     barChartSingle && barChartSingle.resize()
   })
 })
@@ -975,8 +933,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
 }
-.map-card { min-height: 480px; }
-.chart-card { min-height: 480px; }
+.map-card { min-height: 520px; }
+.chart-card { min-height: 520px; display: flex; flex-direction: column; }
 
 .card-header {
   display: flex;
@@ -1236,40 +1194,119 @@ onMounted(() => {
 
 /* ---------- 图表 ---------- */
 .chart { width: 100%; }
-.chart-tall { height: 360px; flex: 1; min-height: 320px; }
-.chart-shorter { height: 300px; min-height: 260px; }
+.chart-flex { flex: 1; min-height: 280px; }
 
-/* 双图并排 */
-.chart-dual {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-}
-.chart-single-wrap {
-  width: 100%;
-}
-.chart-dual-item {
-  flex: 1;
+/* 合并图表容器 */
+.chart-merged-wrap {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+.merged-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+.merged-legend-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e40af;
+  white-space: nowrap;
+  padding-right: 4px;
+  border-right: 1px dashed #cbd5e1;
+}
+.legend-group-label.label-special {
+  color: #b45309;
+}
+.legend-items {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #475569;
+  white-space: nowrap;
+}
+.legend-chip i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.legend-chip.more {
+  color: #64748b;
+  font-weight: 600;
+}
+.merged-divider {
+  width: 1px;
+  height: 16px;
+  background: #e2e8f0;
+  margin: 0 4px;
+}
+.merged-totals {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.total-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.total-chip.chip-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.total-chip.chip-orange {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+/* 单图容器 */
+.chart-single-wrap {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 .chart-subtitle {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #475569;
-  margin-bottom: 6px;
-  padding-left: 4px;
-  border-left: 3px solid #1e40af;
+  margin-bottom: 8px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.chart-half {
-  height: 320px;
-  min-height: 280px;
-}
-.chart-half.chart-shorter {
-  height: 280px;
-  min-height: 240px;
+.chart-subtitle .sub-bar {
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: #1e40af;
+  border-radius: 2px;
 }
 
 /* 口径切换 */
@@ -1344,83 +1381,9 @@ onMounted(() => {
   opacity: 0.75;
 }
 
-/* ---------- 社区快览卡 ---------- */
-.community-overview {
-  padding: 14px 16px;
-}
-.community-cards {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-}
-.community-card {
-  position: relative;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-left: 3px solid var(--card-color);
-  border-radius: 4px;
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-}
-.community-card:hover {
-  border-color: var(--card-color);
-  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
-}
-.cc-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #e2e8f0;
-}
-.cc-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-.cc-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1e293b;
-}
-.cc-body {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-.cc-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-.cc-label {
-  color: #64748b;
-}
-.cc-value {
-  color: #1e293b;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.cc-value.warn { color: #b91c1c; }
-.cc-action {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--card-color);
-  text-align: right;
-  padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
-}
-
 /* 响应式 */
 @media (max-width: 1320px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .chart-row { grid-template-columns: 1fr; }
-  .community-cards { grid-template-columns: repeat(3, 1fr); }
 }
 </style>
