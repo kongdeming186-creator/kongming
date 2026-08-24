@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>六角亭智慧街道民政系统 · 核心业务流程</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "SF Pro Text", "PingFang SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #F7F7F8;
+  color: #171717;
+  padding: 32px;
+  display: flex;
+  justify-content: center;
+}
+.flow-card {
+  background: #F7F7F8;
+  border: 1px solid rgba(23, 23, 23, 0.12);
+  border-radius: 12px;
+  padding: 28px;
+  width: 760px;
+}
+.flow-header { margin-bottom: 20px; }
+.flow-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #171717;
+}
+.flow-header p {
+  margin: 0;
+  font-size: 13px;
+  color: #52525B;
+}
+.flow-svg-wrap { width: 100%; }
+.flow-svg-wrap svg { display: block; width: 100%; height: auto; }
+.flow-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(23, 23, 23, 0.12);
+}
+.flow-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #52525B;
+}
+.flow-legend .dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(23, 23, 23, 0.12);
+}
+.flow-legend .dot.brand { background: #F2F7FF; border-color: #4B3FE3; }
+.flow-legend .dot.success { background: rgba(29, 201, 129, 0.14); border-color: #1DC981; }
+.flow-legend .line-dash {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 1.5px dashed #52525B;
+}
+
+/* SVG element styles */
+.th { fill: #171717; font: 500 14px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.ts { fill: #52525B; font: 400 12px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.t-phase { fill: #52525B; font: 500 12px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.t-brand-th { fill: #1A1759; font: 500 14px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.t-brand-ts { fill: #4B3FE3; font: 400 12px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.t-success-th { fill: #171717; font: 500 14px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.t-success-ts { fill: #1DC981; font: 400 12px "SF Pro Text","PingFang SC",system-ui,sans-serif; }
+.arr { stroke: #52525B; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.arr-dash { stroke: #52525B; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 5 4; fill: none; }
+.marker-fill { fill: #52525B; }
+.node-neutral > rect { fill: #F7F7F8; stroke: rgba(23,23,23,0.12); stroke-width: 1.5; }
+.node-brand > rect { fill: #F2F7FF; stroke: #4B3FE3; stroke-width: 2; }
+.node-success > rect { fill: rgba(29,201,129,0.10); stroke: #1DC981; stroke-width: 1.5; }
+.diamond-neutral > polygon { fill: #F7F7F8; stroke: rgba(23,23,23,0.12); stroke-width: 1.5; }
+.side-ref > rect { fill: #EFEFF2; stroke: rgba(23,23,23,0.12); stroke-width: 1; stroke-dasharray: 4 4; }
+.phase-pill > rect { fill: #EFEFF2; stroke: rgba(23,23,23,0.12); stroke-width: 1; }
+.label-capsule > rect { fill: #F7F7F8; stroke: rgba(23,23,23,0.12); stroke-width: 1; }
+</style>
+</head>
+<body>
+<div class="flow-card">
+  <div class="flow-header">
+    <h3>六角亭智慧街道民政系统 · 核心业务流程</h3>
+    <p>外部数据采集 → 政策比对 → 预警触发 → 自动分配 → 网格核查 → 审核决策 → 数据更新</p>
+  </div>
+  <div class="flow-svg-wrap">
+    <svg viewBox="0 0 720 910" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+          <path d="M1,1 L7,4 L1,7 Z" class="marker-fill"/>
+        </marker>
+      </defs>
+
+      <!-- Connectors -->
+      <path class="arr" d="M380,96 V160" marker-end="url(#arrow)"/>
+      <path class="arr" d="M380,216 V258" marker-end="url(#arrow)"/>
+      <path class="arr-dash" d="M540,290 H500" marker-end="url(#arrow)"/>
+      <path class="arr" d="M380,322 V380" marker-end="url(#arrow)"/>
+      <path class="arr" d="M380,436 V480" marker-end="url(#arrow)"/>
+      <path class="arr" d="M380,536 V580" marker-end="url(#arrow)"/>
+      <path class="arr" d="M380,636 V680" marker-end="url(#arrow)"/>
+      <path class="arr" d="M500,710 H590 V838 H560" marker-end="url(#arrow)"/>
+      <path class="arr" d="M260,710 H170 V608 H200" marker-end="url(#arrow)"/>
+      <path class="arr-dash" d="M560,849 H670 V188 H560" marker-end="url(#arrow)"/>
+
+      <!-- Phase pills -->
+      <g class="phase-pill"><rect x="30" y="54" width="130" height="28" rx="14"/><text x="95" y="72" text-anchor="middle" class="t-phase">① 数据采集</text></g>
+      <g class="phase-pill"><rect x="30" y="174" width="130" height="28" rx="14"/><text x="95" y="192" text-anchor="middle" class="t-phase">② 比对匹配</text></g>
+      <g class="phase-pill"><rect x="30" y="276" width="130" height="28" rx="14"/><text x="95" y="294" text-anchor="middle" class="t-phase">③ 预警生成</text></g>
+      <g class="phase-pill"><rect x="30" y="494" width="130" height="28" rx="14"/><text x="95" y="512" text-anchor="middle" class="t-phase">④ 任务分配</text></g>
+      <g class="phase-pill"><rect x="30" y="594" width="130" height="28" rx="14"/><text x="95" y="612" text-anchor="middle" class="t-phase">⑤ 上门核查</text></g>
+      <g class="phase-pill"><rect x="30" y="696" width="130" height="28" rx="14"/><text x="95" y="714" text-anchor="middle" class="t-phase">⑥ 审核决策</text></g>
+      <g class="phase-pill"><rect x="30" y="824" width="130" height="28" rx="14"/><text x="95" y="842" text-anchor="middle" class="t-phase">⑦ 数据更新</text></g>
+
+      <!-- Side reference -->
+      <g class="side-ref">
+        <rect x="540" y="262" width="140" height="56" rx="8"/>
+        <text x="610" y="286" text-anchor="middle" class="th">预警规则配置</text>
+        <text x="610" y="304" text-anchor="middle" class="ts">触发条件 · 阈值</text>
+      </g>
+
+      <!-- Node 1 -->
+      <g class="node-neutral">
+        <rect x="200" y="40" width="360" height="56" rx="8"/>
+        <text x="380" y="64" text-anchor="middle" class="th">外部数据采集</text>
+        <text x="380" y="82" text-anchor="middle" class="ts">协议配置 · 字段映射 · 接口对接</text>
+      </g>
+
+      <!-- Node 2 -->
+      <g class="node-neutral">
+        <rect x="200" y="160" width="360" height="56" rx="8"/>
+        <text x="380" y="184" text-anchor="middle" class="th">居民历史政策数据比对</text>
+        <text x="380" y="202" text-anchor="middle" class="ts">采集数据 ↔ 保障标签 · 享受状态</text>
+      </g>
+
+      <!-- Diamond 1 -->
+      <g class="diamond-neutral">
+        <polygon points="380,258 500,290 380,322 260,290"/>
+        <text x="380" y="295" text-anchor="middle" class="th">触发预警规则</text>
+      </g>
+
+      <!-- Node 4: BRAND FOCAL -->
+      <g class="node-brand">
+        <rect x="160" y="380" width="440" height="56" rx="8"/>
+        <text x="380" y="404" text-anchor="middle" class="t-brand-th">产生预警任务</text>
+        <text x="380" y="422" text-anchor="middle" class="t-brand-ts">政策不符 · 到期提醒 · 政策互斥 · 状态变化</text>
+      </g>
+
+      <!-- Node 5 -->
+      <g class="node-neutral">
+        <rect x="200" y="480" width="360" height="56" rx="8"/>
+        <text x="380" y="504" text-anchor="middle" class="th">按居民位置自动分配网格员</text>
+        <text x="380" y="522" text-anchor="middle" class="ts">社区 · 网格 → 对应片区网格员</text>
+      </g>
+
+      <!-- Node 6 -->
+      <g class="node-neutral">
+        <rect x="200" y="580" width="360" height="56" rx="8"/>
+        <text x="380" y="604" text-anchor="middle" class="th">网格员上门核查</text>
+        <text x="380" y="622" text-anchor="middle" class="ts">走访 · 佐证材料 · 核查结果提交</text>
+      </g>
+
+      <!-- Diamond 2 -->
+      <g class="diamond-neutral">
+        <polygon points="380,680 500,710 380,740 260,710"/>
+        <text x="380" y="715" text-anchor="middle" class="th">上级审核</text>
+      </g>
+
+      <!-- Node 7: SUCCESS -->
+      <g class="node-success">
+        <rect x="200" y="810" width="360" height="56" rx="28"/>
+        <text x="380" y="834" text-anchor="middle" class="t-success-th">更新居民政策数据</text>
+        <text x="380" y="852" text-anchor="middle" class="t-success-ts">继续享受 / 停发取消</text>
+      </g>
+
+      <!-- Labels -->
+      <g class="label-capsule"><rect x="392" y="343" width="36" height="18" rx="9"/><text x="410" y="356" text-anchor="middle" class="ts">命中</text></g>
+      <g class="label-capsule"><rect x="520" y="692" width="40" height="18" rx="9"/><text x="540" y="705" text-anchor="middle" class="ts">通过</text></g>
+      <g class="label-capsule"><rect x="200" y="692" width="40" height="18" rx="9"/><text x="220" y="705" text-anchor="middle" class="ts">驳回</text></g>
+      <g class="label-capsule"><rect x="596" y="491" width="56" height="18" rx="9"/><text x="624" y="504" text-anchor="middle" class="ts">数据闭环</text></g>
+    </svg>
+  </div>
+  <div class="flow-legend">
+    <span><i class="dot brand"></i>核心环节</span>
+    <span><i class="dot success"></i>数据更新</span>
+    <span><i class="line-dash"></i>数据回流 / 配置引用</span>
+  </div>
+</div>
+</body>
+</html>

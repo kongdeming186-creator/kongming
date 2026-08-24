@@ -238,25 +238,33 @@
             <div class="merged-legend-group">
               <span class="legend-group-label">保障类别</span>
               <div class="legend-items">
-                <span v-for="s in currentDimConf.series.slice(0, 4)" :key="'cl-'+s.name" class="legend-chip">
+                <span
+                  v-for="s in currentDimConf.series"
+                  :key="'cl-'+s.name"
+                  class="legend-chip"
+                  :class="{ active: selectedCategorySeries.has(s.name), muted: !selectedCategorySeries.has(s.name) && hasAnyCategoryFilter() }"
+                  @click="toggleCategoryLegend(s.name)"
+                >
                   <i :style="{ background: s.color }"></i>{{ s.name }}
                 </span>
-                <el-tooltip v-if="currentDimConf.series.length > 4" :content="currentDimConf.series.slice(4).map(s=>s.name).join('、')" placement="top">
-                  <span class="legend-chip more">+{{ currentDimConf.series.length - 4 }}</span>
-                </el-tooltip>
               </div>
+              <button v-if="hasAnyCategoryFilter()" class="legend-reset-btn" @click="resetCategoryFilter">重置</button>
             </div>
             <div class="merged-divider"></div>
             <div class="merged-legend-group">
               <span class="legend-group-label label-special">特殊人群</span>
               <div class="legend-items">
-                <span v-for="s in currentSpecialGroupConf.series.slice(0, 4)" :key="'sl-'+s.name" class="legend-chip">
+                <span
+                  v-for="s in currentSpecialGroupConf.series"
+                  :key="'sl-'+s.name"
+                  class="legend-chip"
+                  :class="{ active: selectedSpecialSeries.has(s.name), muted: !selectedSpecialSeries.has(s.name) && hasAnySpecialFilter() }"
+                  @click="toggleSpecialLegend(s.name)"
+                >
                   <i :style="{ background: s.color }"></i>{{ s.name }}
                 </span>
-                <el-tooltip v-if="currentSpecialGroupConf.series.length > 4" :content="currentSpecialGroupConf.series.slice(4).map(s=>s.name).join('、')" placement="top">
-                  <span class="legend-chip more">+{{ currentSpecialGroupConf.series.length - 4 }}</span>
-                </el-tooltip>
               </div>
+              <button v-if="hasAnySpecialFilter()" class="legend-reset-btn" @click="resetSpecialFilter">重置</button>
             </div>
             <div class="merged-totals">
               <span class="total-chip chip-blue">保障 {{ categoryTotal }}</span>
@@ -532,6 +540,70 @@ const currentSpecialGroupConf = computed(() => {
   return specialGroupData.community
 })
 
+// 图例筛选状态：Set 中存放选中的 series.name，空 Set 代表不筛选（全部显示）
+const selectedCategorySeries = ref(new Set())
+const selectedSpecialSeries = ref(new Set())
+
+const hasAnyCategoryFilter = () => selectedCategorySeries.value.size > 0
+const hasAnySpecialFilter = () => selectedSpecialSeries.value.size > 0
+
+const toggleCategoryLegend = (name) => {
+  const conf = currentDimConf.value
+  const next = new Set(selectedCategorySeries.value)
+  // 如果点击的是当前唯一选中项 -> 清空筛选 -> 全显示
+  if (next.size === 1 && next.has(name)) {
+    next.clear()
+  } else {
+    if (next.has(name)) next.delete(name)
+    else next.add(name)
+    // 如果全部手动点到最后一个，避免和"取消全部"语义冲突：这里保持选中即可
+    // 如果把所有都取消（变成空）-- 视为全显示
+    // 所以如果取消后 size 为 0 且原始总数>1, 保持为空（全显示）
+    const allNames = conf.series.map(s => s.name)
+    if (next.size > 0 && next.size === allNames.length) {
+      // 选中了全部，等价于无筛选 -> 清空 Set
+      next.clear()
+    }
+  }
+  selectedCategorySeries.value = next
+  nextTick(() => initMergedChart())
+}
+
+const resetCategoryFilter = () => {
+  if (selectedCategorySeries.value.size === 0) return
+  selectedCategorySeries.value = new Set()
+  nextTick(() => initMergedChart())
+}
+
+const toggleSpecialLegend = (name) => {
+  const conf = currentSpecialGroupConf.value
+  const next = new Set(selectedSpecialSeries.value)
+  if (next.size === 1 && next.has(name)) {
+    next.clear()
+  } else {
+    if (next.has(name)) next.delete(name)
+    else next.add(name)
+    const allNames = conf.series.map(s => s.name)
+    if (next.size > 0 && next.size === allNames.length) {
+      next.clear()
+    }
+  }
+  selectedSpecialSeries.value = next
+  nextTick(() => initMergedChart())
+}
+
+const resetSpecialFilter = () => {
+  if (selectedSpecialSeries.value.size === 0) return
+  selectedSpecialSeries.value = new Set()
+  nextTick(() => initMergedChart())
+}
+
+// 切换口径 / 网格时清空筛选状态
+const clearLegendFilter = () => {
+  selectedCategorySeries.value = new Set()
+  selectedSpecialSeries.value = new Set()
+}
+
 const initMergedChart = () => {
   if (!mergedChartRef.value) return
   if (mergedChart) { mergedChart.dispose(); mergedChart = null }
@@ -544,41 +616,69 @@ const initMergedChart = () => {
   // 为每个社区创建两根柱子：保障类别(堆叠) + 特殊人群(堆叠)
   const series = []
 
+  // 是否启用筛选：空 Set 代表全部显示
+  const catFilter = selectedCategorySeries.value
+  const catFilterOn = catFilter.size > 0
+  const spFilter = selectedSpecialSeries.value
+  const spFilterOn = spFilter.size > 0
+
   // 保障类别系列（堆叠在 '保障' 栈中）
   conf.series.forEach((s, idx) => {
+    const visible = !catFilterOn || catFilter.has(s.name)
+    const isLastVisible = (() => {
+      const rest = conf.series.slice(idx + 1).filter(x => !catFilterOn || catFilter.has(x.name))
+      return visible && rest.length === 0
+    })()
     series.push({
       name: s.name,
       type: 'bar',
       stack: '保障',
       barMaxWidth: 24,
       itemStyle: {
-        color: s.color,
-        borderRadius: (idx === conf.series.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]
+        color: visible ? s.color : 'transparent',
+        borderRadius: isLastVisible ? [4, 4, 0, 0] : [0, 0, 0, 0],
+        borderColor: visible ? undefined : 'transparent',
+        borderWidth: 0
       },
-      emphasis: { focus: 'series' },
-      data: s.data
+      emphasis: visible ? { focus: 'series' } : { disabled: true },
+      tooltip: { show: visible },
+      silent: !visible,
+      legendHoverLink: visible,
+      data: visible ? s.data : s.data.map(() => 0)
     })
   })
 
   // 特殊人群系列（堆叠在 '特殊' 栈中）
   specialConf.series.forEach((s, idx) => {
+    const visible = !spFilterOn || spFilter.has(s.name)
+    const isLastVisible = (() => {
+      const rest = specialConf.series.slice(idx + 1).filter(x => !spFilterOn || spFilter.has(x.name))
+      return visible && rest.length === 0
+    })()
     series.push({
       name: s.name,
       type: 'bar',
       stack: '特殊',
       barMaxWidth: 24,
       itemStyle: {
-        color: s.color,
-        borderRadius: (idx === specialConf.series.length - 1) ? [4, 4, 0, 0] : [0, 0, 0, 0]
+        color: visible ? s.color : 'transparent',
+        borderRadius: isLastVisible ? [4, 4, 0, 0] : [0, 0, 0, 0]
       },
-      emphasis: { focus: 'series' },
-      data: s.data
+      emphasis: visible ? { focus: 'series' } : { disabled: true },
+      tooltip: { show: visible },
+      silent: !visible,
+      legendHoverLink: visible,
+      data: visible ? s.data : s.data.map(() => 0)
     })
   })
+
+  // 高亮当前筛选系列：若有筛选，启用 select 样式
+  const selectedMode = (catFilterOn || spFilterOn) ? 'series' : false
 
   mergedChart.setOption({
     barGap: '30%',
     barCategoryGap: '40%',
+    selectedMode,
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
@@ -591,14 +691,29 @@ const initMergedChart = () => {
       formatter: (params) => {
         const groups = {}
         params.forEach(p => {
+          // 跳过筛选中被"隐藏"的系列（值为0且原数据可能0）-- 通过 itemStyle.color 判断不可靠
+          // 改为：若启用筛选且该系列名不在筛选集合里 -> 跳过
+          if (catFilterOn && conf.series.find(x => x.name === p.seriesName) && !catFilter.has(p.seriesName)) return
+          if (spFilterOn && specialConf.series.find(x => x.name === p.seriesName) && !spFilter.has(p.seriesName)) return
+          if (p.value === 0) {
+            // 全零但在筛选集合里，仍可展示（只是值为0）
+          }
           const stack = p.seriesName && (conf.series.find(s => s.name === p.seriesName) ? '保障类别' : '特殊人群')
           if (!groups[stack]) groups[stack] = []
           groups[stack].push(p)
         })
+        const validGroups = Object.fromEntries(Object.entries(groups).filter(([_k, arr]) => arr.length > 0))
+        if (!params.length || !Object.keys(validGroups).length) {
+          // 兜底筛选状态提示
+          if (catFilterOn || spFilterOn) {
+            return `<div style="font-weight:600;">已筛选图例（点击上方色块取消筛选）</div>`
+          }
+          return ''
+        }
         let html = `<div style="font-weight:600;margin-bottom:6px;">${params[0].axisValue}</div>`
-        Object.keys(groups).forEach(g => {
+        Object.keys(validGroups).forEach(g => {
           html += `<div style="color:#94a3b8;font-size:11px;margin:6px 0 4px;">● ${g}</div>`
-          groups[g].forEach(p => {
+          validGroups[g].forEach(p => {
             html += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:12px;">
               <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${p.color};margin-right:6px;"></span>${p.seriesName}</span>
               <b style="color:#1e293b;">${p.value}</b>
@@ -714,6 +829,7 @@ const initAllCharts = () => {
 }
 
 watch([tagDim, gridCommunity], () => {
+  clearLegendFilter()
   setTimeout(() => {
     initAllCharts()
   }, 80)
@@ -1243,16 +1359,48 @@ onMounted(() => {
   font-size: 11px;
   color: #475569;
   white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+  user-select: none;
 }
+.legend-chip:hover { background: #eef2ff; }
 .legend-chip i {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 2px;
+  transition: opacity 0.15s ease;
 }
+.legend-chip.active {
+  background: #eef2ff;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+.legend-chip.active i { opacity: 1; }
+.legend-chip.muted { opacity: 0.4; color: #94a3b8; }
+.legend-chip.muted i { opacity: 0.5; }
 .legend-chip.more {
   color: #64748b;
   font-weight: 600;
+}
+.legend-reset-btn {
+  font-size: 11px;
+  padding: 2px 8px;
+  line-height: 18px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: all 0.15s ease;
+}
+.legend-reset-btn:hover {
+  background: #4B3FE3;
+  color: #fff;
+  border-color: #4B3FE3;
 }
 .merged-divider {
   width: 1px;
