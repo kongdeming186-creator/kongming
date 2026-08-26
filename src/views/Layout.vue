@@ -21,80 +21,74 @@
         :collapse="sidebarCollapsed"
       >
         <el-menu-item index="/dashboard">
-          <template #icon>
-            <el-icon><DataBoard /></el-icon>
-          </template>
-          <span>首页仪表盘</span>
+          <el-icon class="menu-icon"><DataBoard /></el-icon>
+          <span class="menu-text">首页仪表盘</span>
         </el-menu-item>
-        
+
         <el-sub-menu index="resident">
           <template #title>
-            <el-icon><User /></el-icon>
-            <span>居民信息管理</span>
+            <el-icon class="menu-icon"><UserFilled /></el-icon>
+            <span class="menu-text">居民信息管理</span>
           </template>
           <el-menu-item index="/resident">
-            <template #icon><el-icon><UserFilled /></el-icon></template>
-            <span>居民列表</span>
+            <el-icon class="menu-icon"><Document /></el-icon>
+            <span class="menu-text">居民列表</span>
           </el-menu-item>
           <el-menu-item index="/resident/history">
-            <template #icon><el-icon><Clock /></el-icon></template>
-            <span>历史居民</span>
+            <el-icon class="menu-icon"><Clock /></el-icon>
+            <span class="menu-text">历史居民</span>
           </el-menu-item>
           <el-menu-item index="/import">
-            <template #icon><el-icon><DataAnalysis /></el-icon></template>
-            <span>数据采集</span>
+            <el-icon class="menu-icon"><UploadFilled /></el-icon>
+            <span class="menu-text">数据采集</span>
           </el-menu-item>
         </el-sub-menu>
-        
+
         <el-sub-menu index="warning">
           <template #title>
-            <el-icon><Bell /></el-icon>
-            <span>核查管理</span>
+            <el-icon class="menu-icon"><BellFilled /></el-icon>
+            <span class="menu-text">核查管理</span>
           </template>
           <el-menu-item index="/warning">
-            <template #icon><el-icon><View /></el-icon></template>
-            <span>核查列表</span>
+            <el-icon class="menu-icon"><Tickets /></el-icon>
+            <span class="menu-text">核查列表</span>
           </el-menu-item>
           <el-menu-item index="/task/check">
-            <template #icon><el-icon><Timer /></el-icon></template>
-            <span>核查历史</span>
+            <el-icon class="menu-icon"><CircleCheckFilled /></el-icon>
+            <span class="menu-text">核查历史</span>
           </el-menu-item>
           <el-menu-item index="/warning/config">
-            <template #icon><el-icon><Setting /></el-icon></template>
-            <span>规则配置</span>
+            <el-icon class="menu-icon"><Setting /></el-icon>
+            <span class="menu-text">规则配置</span>
           </el-menu-item>
         </el-sub-menu>
-        
+
         <el-menu-item index="/ai-match">
-          <template #icon>
-            <el-icon><Star /></el-icon>
-          </template>
-          <span>政策匹配</span>
+          <el-icon class="menu-icon"><Search /></el-icon>
+          <span class="menu-text">政策匹配</span>
         </el-menu-item>
 
         <el-menu-item index="/task/visit">
-          <template #icon>
-            <el-icon><Tickets /></el-icon>
-          </template>
-          <span>走访任务</span>
+          <el-icon class="menu-icon"><LocationFilled /></el-icon>
+          <span class="menu-text">走访任务</span>
         </el-menu-item>
 
         <el-sub-menu index="report">
           <template #title>
-            <el-icon><PieChart /></el-icon>
-            <span>统计分析</span>
+            <el-icon class="menu-icon"><PieChart /></el-icon>
+            <span class="menu-text">统计分析</span>
           </template>
           <el-menu-item index="/report/community">
-            <template #icon><el-icon><OfficeBuilding /></el-icon></template>
-            <span>社区统计分析</span>
+            <el-icon class="menu-icon"><OfficeBuilding /></el-icon>
+            <span class="menu-text">社区统计分析</span>
           </el-menu-item>
           <el-menu-item index="/report/task">
-            <template #icon><el-icon><Tickets /></el-icon></template>
-            <span>任务统计分析</span>
+            <el-icon class="menu-icon"><TrendCharts /></el-icon>
+            <span class="menu-text">任务统计分析</span>
           </el-menu-item>
           <el-menu-item index="/report">
-            <template #icon><el-icon><UserFilled /></el-icon></template>
-            <span>居民统计分析</span>
+            <el-icon class="menu-icon"><User /></el-icon>
+            <span class="menu-text">居民统计分析</span>
           </el-menu-item>
         </el-sub-menu>
       </el-menu>
@@ -211,9 +205,10 @@ import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import {
-  DataBoard, User, Upload, Warning, PieChart,
-  Menu, Expand, Bell, ArrowDown, UserFilled, Star, Tickets,
-  Clock, View, Timer, Setting, OfficeBuilding, DataAnalysis
+  DataBoard, User, UserFilled, BellFilled, PieChart,
+  Menu, Expand, ArrowDown, Clock, OfficeBuilding,
+  Document, UploadFilled, Tickets, CircleCheckFilled,
+  Setting, Search, LocationFilled, TrendCharts
 } from '@element-plus/icons-vue'
 import { warnings } from '../data/mock'
 import AiAssistant from '../components/AIAssistant.vue'
@@ -395,6 +390,8 @@ const handleCommand = (command) => {
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
 }
 
 :deep(.el-menu-item:hover),
@@ -409,19 +406,101 @@ const handleCommand = (command) => {
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 }
 
+/* ==================== 菜单图标统一样式（强兜底） ==================== */
+.menu-icon {
+  font-size: 18px;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
+  color: inherit;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.menu-icon svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor !important;
+  color: currentColor !important;
+}
+
+.menu-text {
+  flex: 1;
+  display: inline-block;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  vertical-align: middle;
+  color: inherit;
+}
+
+:deep(.el-menu-item:hover .menu-icon),
+:deep(.el-sub-menu__title:hover .menu-icon) {
+  opacity: 1;
+  transform: scale(1.06);
+}
+
+:deep(.el-menu-item.is-active .menu-icon) {
+  opacity: 1;
+  color: #fff !important;
+}
+:deep(.el-menu-item.is-active .menu-icon svg) {
+  fill: #fff !important;
+}
+
+/* 子菜单项样式 */
 :deep(.el-sub-menu .el-menu-item) {
   min-width: auto;
-  padding-left: 14px !important;
+  padding-left: 18px !important;
   margin: 2px 10px;
   height: 40px;
   line-height: 40px;
   font-size: 13px;
-  gap: 10px;
+  gap: 2px;
+  display: flex;
+  align-items: center;
 }
 
-:deep(.el-sub-menu .el-menu-item .el-icon) {
+:deep(.el-sub-menu .el-menu-item .menu-icon) {
   font-size: 15px;
-  width: 16px;
+  width: 18px !important;
+  height: 18px !important;
+  margin-right: 8px;
+}
+
+:deep(.el-sub-menu .el-menu-item .menu-text) {
+  font-size: 13px;
+}
+
+/* el-sub-menu title 展开项对齐 */
+:deep(.el-sub-menu__title) {
+  display: flex !important;
+  align-items: center !important;
+}
+
+:deep(.el-sub-menu__title .menu-icon) {
+  margin-right: 10px;
+}
+
+/* 收起态（sidebarCollapsed）：只显示图标，图标居中 */
+:deep(.el-menu--collapse .el-menu-item),
+:deep(.el-menu--collapse .el-sub-menu__title) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+}
+:deep(.el-menu--collapse .menu-icon) {
+  margin-right: 0 !important;
+  font-size: 20px;
+  width: 24px !important;
+  height: 24px !important;
+}
+:deep(.el-menu--collapse .menu-text) {
+  display: none;
 }
 
 /* ============ 主内容区 ============ */
