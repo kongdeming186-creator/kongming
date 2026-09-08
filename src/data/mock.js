@@ -1346,7 +1346,10 @@ export const warnings = [
     level: '紧急',
     status: '待处理',
     createTime: '2024-06-20 10:30',
-    ruleSource: '生存状态校验'
+    ruleSource: '生存状态校验',
+    changes: [
+      { field: '生存状态', oldValue: '在世', newValue: '已去世', abnormal: true }
+    ]
   },
   {
     id: 'w2',
@@ -1357,7 +1360,11 @@ export const warnings = [
     level: '普通',
     status: '待处理',
     createTime: '2024-06-19 14:20',
-    ruleSource: '到龄提醒校验'
+    ruleSource: '到龄提醒校验',
+    changes: [
+      { field: '年龄', oldValue: '13周岁', newValue: '14周岁', abnormal: false },
+      { field: '政策资格', oldValue: '符合独生子女保健费', newValue: '超出享受年龄范围', abnormal: true }
+    ]
   },
   {
     id: 'w3',
@@ -1368,7 +1375,11 @@ export const warnings = [
     level: '普通',
     status: '已处理',
     createTime: '2024-06-18 09:15',
-    ruleSource: '政策符合条件预警'
+    ruleSource: '政策符合条件预警',
+    changes: [
+      { field: '年龄', oldValue: '79周岁', newValue: '80周岁', abnormal: false },
+      { field: '政策资格', oldValue: '不符合高龄津贴', newValue: '符合高龄津贴', abnormal: false }
+    ]
   },
   {
     id: 'w4',
@@ -1379,7 +1390,10 @@ export const warnings = [
     level: '普通',
     status: '待处理',
     createTime: '2024-06-17 16:45',
-    ruleSource: '政策到期校验'
+    ruleSource: '政策到期校验',
+    changes: [
+      { field: '补贴有效期', oldValue: '2023-07-01至2024-06-30', newValue: '2024-06-30即将到期', abnormal: true }
+    ]
   },
   {
     id: 'w5',
@@ -1390,7 +1404,10 @@ export const warnings = [
     level: '紧急',
     status: '待处理',
     createTime: '2024-06-16 11:00',
-    ruleSource: '政策互斥校验'
+    ruleSource: '政策互斥校验',
+    changes: [
+      { field: '保障标签', oldValue: '仅低保', newValue: '低保 + 特困（互斥）', abnormal: true }
+    ]
   },
   {
     id: 'w6',
@@ -1401,7 +1418,10 @@ export const warnings = [
     level: '紧急',
     status: '待处理',
     createTime: '2024-06-20 09:00',
-    ruleSource: '生存状态校验'
+    ruleSource: '生存状态校验',
+    changes: [
+      { field: '生存状态', oldValue: '在世（系统）', newValue: '已注销户籍（公安）', abnormal: true }
+    ]
   }
 ]
 

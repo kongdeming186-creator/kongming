@@ -260,7 +260,7 @@
         <div v-if="detailMode === 'resolve'" class="detail-section">
           <h4 class="detail-section-title">预警列表 <span class="detail-section-desc">共 {{ residentWarnings.length }} 条预警</span></h4>
           <div class="tags-with-warnings">
-            <div v-for="tag in warningResidentTags" :key="tag.id" class="tag-warnings-block"
+            <div v-for="tag in warningResidentTags.filter(t => getTagWarnings(t).length > 0)" :key="tag.id" class="tag-warnings-block"
                  :class="{ 'has-pending': getTagWarnings(tag).some(w => w.status === '待处理') }">
               <!-- 标签头部 -->
               <div class="tag-header">
@@ -310,6 +310,19 @@
                         <el-tag v-else-if="w.status === '已处理'" type="success" size="small" effect="plain">已处理</el-tag>
                       </div>
                       <div class="tw-body">{{ w.content }}</div>
+                      <div v-if="w.changes && w.changes.length" class="tw-changes">
+                        <div class="tw-changes-title">
+                          <el-icon><WarningFilled /></el-icon>
+                          <span>预警变化内容</span>
+                          <span class="tw-changes-count">{{ w.changes.length }}项变化</span>
+                        </div>
+                        <div v-for="(ch, ci) in w.changes" :key="ci" class="tw-change-item" :class="{ 'is-abnormal': ch.abnormal }">
+                          <span class="ch-field">{{ ch.field }}</span>
+                          <span class="ch-old">{{ ch.oldValue }}</span>
+                          <span class="ch-arrow">→</span>
+                          <span class="ch-new">{{ ch.newValue }}</span>
+                        </div>
+                      </div>
                       <div class="tw-source">
                         <el-icon><Connection /></el-icon>
                         <span>比对来源：{{ w.ruleSource }}</span>
@@ -326,13 +339,54 @@
           </div>
         </div>
 
-        <!-- 无标签提示 -->
-        <div v-if="detailMode === 'resolve' && warningResidentTags.length === 0" class="empty-tags">
-          <el-empty description="该居民暂无保障标签信息" :image-size="80" />
+        <!-- 无预警标签提示 -->
+        <div v-if="detailMode === 'resolve' && warningResidentTags.filter(t => getTagWarnings(t).length > 0).length === 0" class="empty-tags">
+          <el-empty description="该居民暂无触发预警的保障标签" :image-size="80" />
+        </div>
+
+        <!-- 保障标签核实区域（核实模式：勾选取消标签 + 提交审核） -->
+        <div v-if="detailMode === 'resolve' && warningResidentTags.filter(t => getTagWarnings(t).length > 0).length > 0" class="detail-section verify-section">
+          <h4 class="detail-section-title">保障标签核实 <span class="detail-section-desc">仅展示触发预警的标签，勾选需停发/取消的标签，提交审核</span></h4>
+          <div class="verify-tags-box">
+            <div class="verify-tags-head">
+              <span>触发预警的保障标签（共 {{ warningResidentTags.filter(t => getTagWarnings(t).length > 0).length }} 个）</span>
+              <el-radio-group v-model="resolveForm.result" size="small" @change="onVerifyResultChange">
+                <el-radio-button label="继续享受">继续享受</el-radio-button>
+                <el-radio-button label="停发取消">停发取消</el-radio-button>
+              </el-radio-group>
+            </div>
+            <el-checkbox-group v-model="resolveForm.cancelTagIds" :disabled="resolveForm.result !== '停发取消'">
+              <div v-for="tag in warningResidentTags.filter(t => getTagWarnings(t).length > 0)" :key="tag.id" class="verify-tag-item">
+                <el-checkbox :value="tag.id" :disabled="!tag.isEnjoy">
+                  <el-tag :type="getTagType(tag.tagType)" size="small" effect="light">{{ tag.tagType }}</el-tag>
+                  <span class="verify-tag-sub">{{ tag.tagSubType }}</span>
+                  <el-tag :type="tag.isEnjoy ? 'success' : 'info'" size="small" effect="plain">
+                    {{ tag.isEnjoy ? '享受中' : '已停发' }}
+                  </el-tag>
+                  <span v-if="!tag.isEnjoy" class="verify-tag-disabled-tip">不可取消</span>
+                </el-checkbox>
+              </div>
+            </el-checkbox-group>
+            <div class="verify-tags-summary">
+              <el-icon><InfoFilled /></el-icon>
+              <span>已勾选 <strong>{{ resolveForm.cancelTagIds.length }}</strong> 个标签待停发取消</span>
+            </div>
+          </div>
+          <el-form :model="resolveForm" label-width="100px" class="verify-form">
+            <el-form-item label="核实说明" required>
+              <el-input v-model="resolveForm.remark" type="textarea" :rows="3" placeholder="请填写核实说明..." />
+            </el-form-item>
+            <el-form-item label="审批人" required>
+              <el-select v-model="resolveForm.approver" placeholder="请选择审批人" style="width: 100%">
+                <el-option v-for="a in approvers" :key="a.value" :label="a.label" :value="a.value" />
+              </el-select>
+            </el-form-item>
+          </el-form>
         </div>
       </div>
       <template #footer>
         <el-button @click="showDetailDialog = false">关闭</el-button>
+        <el-button v-if="detailMode === 'resolve'" type="primary" @click="confirmResolveFromDetail">提交审核</el-button>
       </template>
     </el-dialog>
 
@@ -386,10 +440,28 @@
             <span>核实结果需走审批流程，以街道/社区线下实地核查结果为最终判定依据</span>
           </div>
         </el-form-item>
-        <el-form-item v-if="resolveForm.result === '停发取消' && isDeathWarning">
-          <div class="confirm-tip">
-            <el-icon><Warning /></el-icon>
-            <span>涉及生存状态异常，审批通过后该人员全部保障待遇将自动改为"不享受"，并移入历史居民库</span>
+        <el-form-item v-if="resolveForm.result === '停发取消'">
+          <div class="cancel-tags-box">
+            <div class="cancel-tags-title">
+              <el-icon><Warning /></el-icon>
+              <span>选择需停发的保障标签</span>
+              <span class="cancel-tags-count">已选 {{ resolveForm.cancelTagIds.length }}/{{ resolveResidentTags.length }}</span>
+            </div>
+            <el-checkbox-group v-model="resolveForm.cancelTagIds">
+              <div v-for="tag in resolveResidentTags" :key="tag.id" class="cancel-tag-item">
+                <el-checkbox :value="tag.id">
+                  <el-tag :type="getTagType(tag.tagType)" size="small" effect="light">{{ tag.tagType }}</el-tag>
+                  <span class="cancel-tag-sub">{{ tag.tagSubType }}</span>
+                  <el-tag :type="tag.isEnjoy ? 'success' : 'info'" size="small" effect="plain">
+                    {{ tag.isEnjoy ? '享受中' : '已停发' }}
+                  </el-tag>
+                </el-checkbox>
+              </div>
+            </el-checkbox-group>
+            <div class="cancel-tags-tip">
+              <el-icon><InfoFilled /></el-icon>
+              <span>审批通过后，勾选的标签将自动改为"不享受"；如涉及生存状态异常，该人员全部保障待遇将停发并移入历史居民库</span>
+            </div>
           </div>
         </el-form-item>
       </el-form>
@@ -675,6 +747,8 @@ const openResolveForTag = (tag) => {
   resolveForm.result = '继续享受'
   resolveForm.remark = ''
   resolveForm.operator = 'admin'
+  // 停发取消默认勾选当前标签
+  resolveForm.cancelTagIds = [tag.id]
   resolveTitle.value = `核实 ${tag.tagType} · ${tag.tagSubType} 状态`
   tagPendingCount.value = pendingList.length
   showResolveDialog.value = true
@@ -1087,6 +1161,7 @@ const openResolve = (w) => {
   resolveForm.warningId = w.id
   resolveForm.warningType = w.warningType
   resolveForm.operator = 'admin'
+  resolveForm.cancelTagIds = []
   fileList.value = []
   showResolveDialog.value = true
 }
@@ -1123,7 +1198,8 @@ const resolveForm = reactive({
   tagSubType: '',
   warningId: '',
   warningType: '',
-  operator: ''
+  operator: '',
+  cancelTagIds: []
 })
 const fileList = ref([])
 const approvers = [
@@ -1137,6 +1213,12 @@ const isDeathWarning = computed(() => {
   if (!currentResolvingTag.value) return false
   const pending = getTagWarnings(currentResolvingTag.value).filter(w => w.status === '待处理')
   return pending.some(w => w.warningType.includes('死亡') || w.warningType.includes('状态不一致') || w.ruleSource === '生存状态校验')
+})
+
+// 核实弹窗中当前居民的全部保障标签（用于停发取消勾选）
+const resolveResidentTags = computed(() => {
+  if (!selectedWarning.value) return []
+  return mockTags.filter(t => t.residentId === selectedWarning.value.residentId)
 })
 
 const handleUploadSuccess = (response, file) => {
@@ -1206,13 +1288,77 @@ const confirmResolve = () => {
     w.approveRemark = resolveForm.approveRemark
   })
 
-  // 如果是停发取消且涉及生存状态校验，同步更新标签享受状态（模拟）
-  if (resolveForm.result === '停发取消' && tag && isDeathWarning.value) {
-    tag.isEnjoy = false
+  // 停发取消：把核实人勾选的标签全部置为"不享受"（待审批通过后生效，此处先模拟）
+  if (resolveForm.result === '停发取消' && resolveForm.cancelTagIds.length > 0) {
+    const residentTags = mockTags.filter(t => t.residentId === (selectedWarning.value ? selectedWarning.value.residentId : ''))
+    residentTags.forEach(t => {
+      if (resolveForm.cancelTagIds.includes(t.id)) {
+        t.isEnjoy = false
+        t.cancelReason = resolveForm.remark || '政策不符停发'
+        t.cancelTime = nowTime
+      }
+    })
   }
 
-  ElMessage.success(`已提交审批，共 ${pendingList.length} 条预警进入审批流程`)
+  const cancelTip = resolveForm.result === '停发取消' && resolveForm.cancelTagIds.length > 0 ? '，' + resolveForm.cancelTagIds.length + '个标签待停发' : ''
+  ElMessage.success(`已提交审批，共 ${pendingList.length} 条预警进入审批流程${cancelTip}`)
   showResolveDialog.value = false
+}
+
+// 核实结果切换：选继续享受时清空已勾选标签
+const onVerifyResultChange = (val) => {
+  if (val !== '停发取消') {
+    resolveForm.cancelTagIds = []
+  }
+}
+
+// 从核实详情弹窗直接提交审核（整合标签勾选）
+const confirmResolveFromDetail = () => {
+  if (!resolveForm.result) {
+    ElMessage.warning('请选择核实结果')
+    return
+  }
+  if (resolveForm.result === '停发取消' && resolveForm.cancelTagIds.length === 0) {
+    ElMessage.warning('停发取消需至少勾选一个保障标签')
+    return
+  }
+  if (!resolveForm.remark || resolveForm.remark.trim() === '') {
+    ElMessage.warning('请填写核实说明')
+    return
+  }
+  if (!resolveForm.approver) {
+    ElMessage.warning('请选择审批人')
+    return
+  }
+
+  // 处理该居民所有待处理预警
+  const pendingList = residentWarnings.value.filter(w => w.status === '待处理')
+  const nowTime = new Date().toLocaleString('zh-CN')
+  const finalStatus = '审批中'
+  pendingList.forEach(w => {
+    w.operator = 'admin'
+    w.resolveTime = nowTime
+    w.result = resolveForm.result
+    w.remark = resolveForm.remark
+    w.status = finalStatus
+    w.approver = resolveForm.approver
+  })
+
+  // 停发取消：把勾选的标签置为不享受
+  if (resolveForm.result === '停发取消' && resolveForm.cancelTagIds.length > 0) {
+    const residentTags = mockTags.filter(t => t.residentId === (selectedWarning.value ? selectedWarning.value.residentId : ''))
+    residentTags.forEach(t => {
+      if (resolveForm.cancelTagIds.includes(t.id)) {
+        t.isEnjoy = false
+        t.cancelReason = resolveForm.remark || '政策不符停发'
+        t.cancelTime = nowTime
+      }
+    })
+  }
+
+  const cancelTip = resolveForm.result === '停发取消' && resolveForm.cancelTagIds.length > 0 ? '，' + resolveForm.cancelTagIds.length + '个标签待停发' : ''
+  ElMessage.success(`已提交审批，共 ${pendingList.length} 条预警进入审批流程${cancelTip}`)
+  showDetailDialog.value = false
 }
 
 const addForm = reactive({
@@ -1995,6 +2141,40 @@ const confirmAdd = () => {
 .warning-list-table .check-tag .dot-cyan   { background: #14b8a6; }
 .warning-list-table .abnormal-count { color: #ef4444; font-size: 12px; margin-left: 4px; font-weight: 500; }
 .warning-list-table .abnormal-count-txt { color: #ef4444; font-size: 12px; margin-left: 2px; font-weight: 600; }
+/* 预警变化内容展示 */
+.tw-changes { margin-top: 8px; padding: 8px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; }
+.tw-changes-title { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #b91c1c; font-weight: 600; margin-bottom: 6px; }
+.tw-changes-count { margin-left: auto; font-weight: 400; color: #dc2626; }
+.tw-change-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: #475569; border-bottom: 1px dashed #fee2e2; }
+.tw-change-item:last-child { border-bottom: none; }
+.tw-change-item .ch-field { min-width: 90px; color: #64748b; }
+.tw-change-item .ch-old { color: #94a3b8; text-decoration: line-through; text-decoration-color: #dc2626; }
+.tw-change-item .ch-arrow { color: #94a3b8; }
+.tw-change-item .ch-new { color: #16a34a; font-weight: 600; }
+.tw-change-item.is-abnormal .ch-new { color: #dc2626; }
+
+/* 停发取消标签勾选 */
+.cancel-tags-box { width: 100%; padding: 10px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; }
+.cancel-tags-title { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #b45309; font-weight: 600; margin-bottom: 10px; }
+.cancel-tags-count { margin-left: auto; font-weight: 400; color: #92400e; }
+.cancel-tag-item { padding: 6px 0; border-bottom: 1px dashed #fed7aa; }
+.cancel-tag-item:last-child { border-bottom: none; }
+.cancel-tag-item .el-checkbox { width: 100%; }
+.cancel-tag-sub { margin: 0 8px; font-size: 13px; color: #475569; }
+.cancel-tags-tip { display: flex; align-items: flex-start; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #fed7aa; font-size: 12px; color: #92400e; line-height: 1.5; }
+
+/* 核实详情-保障标签核实区域 */
+.verify-section { margin-top: 16px; padding-top: 16px; border-top: 2px dashed #e5e7eb; }
+.verify-tags-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; }
+.verify-tags-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; color: #475569; font-weight: 600; }
+.verify-tag-item { padding: 8px 0; border-bottom: 1px dashed #e2e8f0; }
+.verify-tag-item:last-child { border-bottom: none; }
+.verify-tag-item .el-checkbox { width: 100%; }
+.verify-tag-item .el-checkbox.is-disabled .el-checkbox__label { opacity: 0.5; }
+.verify-tag-sub { margin: 0 8px; font-size: 13px; color: #475569; }
+.verify-tag-disabled-tip { margin-left: 8px; font-size: 12px; color: #94a3b8; }
+.verify-tags-summary { display: flex; align-items: center; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #b45309; }
+.verify-form { margin-top: 16px; }
 </style>
  
 
