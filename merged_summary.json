@@ -1,0 +1,206 @@
+{
+  "total": 15308,
+  "completed": 15000,
+  "incomplete": 308,
+  "completion_rate": 97.99,
+  "monthly_trend": [
+    {
+      "month": "2024-10",
+      "total": 3
+    },
+    {
+      "month": "2024-11",
+      "total": 15
+    },
+    {
+      "month": "2024-12",
+      "total": 300
+    },
+    {
+      "month": "2025-01",
+      "total": 564
+    },
+    {
+      "month": "2025-02",
+      "total": 329
+    },
+    {
+      "month": "2025-03",
+      "total": 531
+    },
+    {
+      "month": "2025-04",
+      "total": 575
+    },
+    {
+      "month": "2025-05",
+      "total": 806
+    },
+    {
+      "month": "2025-06",
+      "total": 881
+    },
+    {
+      "month": "2025-07",
+      "total": 755
+    },
+    {
+      "month": "2025-08",
+      "total": 868
+    },
+    {
+      "month": "2025-09",
+      "total": 893
+    },
+    {
+      "month": "2025-10",
+      "total": 889
+    },
+    {
+      "month": "2025-11",
+      "total": 880
+    },
+    {
+      "month": "2025-12",
+      "total": 703
+    },
+    {
+      "month": "2026-01",
+      "total": 539
+    },
+    {
+      "month": "2026-02",
+      "total": 345
+    },
+    {
+      "month": "2026-03",
+      "total": 606
+    },
+    {
+      "month": "2026-04",
+      "total": 699
+    },
+    {
+      "month": "2026-05",
+      "total": 759
+    },
+    {
+      "month": "2026-06",
+      "total": 1324
+    },
+    {
+      "month": "2026-07",
+      "total": 1092
+    },
+    {
+      "month": "2026-08",
+      "total": 466
+    }
+  ],
+  "top_issues": [
+    {
+      "name": "占道经营",
+      "count": 843
+    },
+    {
+      "name": "商业噪音问题",
+      "count": 633
+    },
+    {
+      "name": "公共设施建设规划",
+      "count": 617
+    },
+    {
+      "name": "009.商业噪音问题",
+      "count": 577
+    },
+    {
+      "name": "共享单车管理",
+      "count": 550
+    },
+    {
+      "name": "012.占道经营",
+      "count": 549
+    },
+    {
+      "name": "业主委员会",
+      "count": 464
+    },
+    {
+      "name": "生活噪声问题",
+      "count": 419
+    },
+    {
+      "name": "008.生活噪声问题",
+      "count": 373
+    },
+    {
+      "name": "油烟污染",
+      "count": 360
+    }
+  ],
+  "top_categories": [
+    {
+      "name": "城市市容管理类",
+      "count": 7289
+    },
+    {
+      "name": "社会服务类",
+      "count": 2069
+    },
+    {
+      "name": "房屋土地管理类",
+      "count": 1629
+    },
+    {
+      "name": "建设管理类",
+      "count": 882
+    },
+    {
+      "name": "交通管理类",
+      "count": 644
+    }
+  ],
+  "area_distribution": [
+    {
+      "name": "古田",
+      "count": 1850
+    },
+    {
+      "name": "长丰大道",
+      "count": 903
+    },
+    {
+      "name": "城华路",
+      "count": 838
+    },
+    {
+      "name": "汉口",
+      "count": 829
+    },
+    {
+      "name": "丰美路",
+      "count": 570
+    },
+    {
+      "name": "长风路",
+      "count": 276
+    },
+    {
+      "name": "紫华路",
+      "count": 104
+    },
+    {
+      "name": "长天路",
+      "count": 14
+    }
+  ],
+  "data_sources": {
+    "historical_dedup": 14779,
+    "historical_nocode": 0,
+    "realtime_overlap": 529,
+    "realtime_new": 304
+  },
+  "dedup_strategy": "市级编号去重，实时覆盖历史",
+  "generated_at": "2026-09-09 auto-sync"
+}
