@@ -1,0 +1,922 @@
+/* stylelint-disable */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 长丰街道基层治理大屏 · 深蓝科技风设计系统（DESIGN.md: 霓虹科技/深蓝基调） */
+
+/* 视觉重设计 Phase 2 · 红金政务风 CSS 变量系统 */
+:root {
+  --bg-primary: #0c0806;
+  --bg-secondary: #1a0f0a;
+  --bg-tertiary: #241510;
+  --accent-gold: #d4a843;
+  --accent-red: #c41e24;
+  --accent-red-bright: #e63c40;
+  --border-glow: rgba(212, 168, 67, 0.15);
+  --border-solid: rgba(212, 168, 67, 0.25);
+  --glass-bg: rgba(26, 15, 10, 0.8);
+  --text-primary: #fff5e6;
+  --text-secondary: rgba(255, 245, 230, 0.65);
+  --text-muted: rgba(255, 245, 230, 0.4);
+  --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', serif;
+  --font-data: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+@font-face {
+  font-family: 'AlibabaPuHuiTi';
+  src: url('https://resource-static.bj.bcebos.com/fonts-skill/AlibabaPuHuiTi_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'AlibabaPuHuiTi';
+  src: url('https://resource-static.bj.bcebos.com/fonts-skill/AlibabaPuHuiTi_SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.375rem;
+    --background: 20 33% 4%;
+    --foreground: 36 100% 95%;
+    --card: 19 44% 7%;
+    --card-foreground: 36 100% 95%;
+    --popover: 19 44% 10%;
+    --popover-foreground: 36 100% 95%;
+    --primary: 42 63% 55%;
+    --primary-foreground: 20 40% 6%;
+    --secondary: 15 38% 10%;
+    --secondary-foreground: 36 100% 95%;
+    --muted: 15 30% 10%;
+    --muted-foreground: 35 35% 70%;
+    --accent: 358 73% 44%;
+    --accent-foreground: 36 100% 95%;
+    --destructive: 0 84% 58%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 42 40% 22%;
+    --input: 42 40% 22%;
+    --ring: 42 63% 55%;
+    --chart-1: 358 73% 44%;
+    --chart-2: 42 63% 55%;
+    --chart-3: 359 77% 57%;
+    --chart-4: 43 50% 48%;
+    --chart-5: 45 85% 68%;
+    --sidebar-background: 19 44% 6%;
+    --sidebar-foreground: 36 100% 95%;
+    --sidebar-primary: 42 63% 55%;
+    --sidebar-primary-foreground: 20 40% 6%;
+    --sidebar-accent: 15 38% 10%;
+    --sidebar-accent-foreground: 36 100% 95%;
+    --sidebar-border: 42 40% 22%;
+    --sidebar-ring: 42 63% 55%;
+    --success: 152 68% 45%;
+    --warning: 42 63% 55%;
+    --info: 42 63% 55%;
+    --education-blue: 42 63% 55%;
+    --education-green: 152 68% 45%;
+    /* 风险热力色 */
+    --risk-high: 359 77% 57%;
+    --risk-mid: 42 63% 55%;
+    --risk-low: 152 62% 45%;
+  }
+
+  .dark {
+    --background: 20 33% 4%;
+    --foreground: 36 100% 95%;
+    --card: 19 44% 7%;
+    --card-foreground: 36 100% 95%;
+    --popover: 19 44% 10%;
+    --popover-foreground: 36 100% 95%;
+    --primary: 42 63% 55%;
+    --primary-foreground: 20 40% 6%;
+    --secondary: 15 38% 10%;
+    --secondary-foreground: 36 100% 95%;
+    --muted: 15 30% 10%;
+    --muted-foreground: 35 35% 70%;
+    --accent: 358 73% 44%;
+    --accent-foreground: 36 100% 95%;
+    --destructive: 0 84% 58%;
+    --border: 42 40% 22%;
+    --input: 42 40% 22%;
+    --ring: 42 63% 55%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', 'AlibabaPuHuiTi', sans-serif;
+    overflow: hidden;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+}
+
+@layer utilities {
+  /* 数字字体（DIN 科技风） */
+  .font-digital {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  /* 大屏玻璃面板：政务双层边框（外框中国红 + 内框描金）+ 4px 圆角 + 红金辉光 + 模块间发光分隔 */
+  .screen-panel {
+    background: linear-gradient(160deg, rgba(26, 15, 10, 0.94), rgba(18, 10, 7, 0.9));
+    border: 1px solid rgba(196, 30, 36, 0.22);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 1px rgba(212, 168, 67, 0.3),
+      inset 0 0 24px rgba(212, 168, 67, 0.04),
+      0 0 20px rgba(196, 30, 36, 0.08),
+      0 10px 18px -10px rgba(212, 168, 67, 0.14),
+      0 4px 24px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+  }
+
+  /* 面板四角科技装饰 */
+  .corner-decor {
+  position: relative;
+}
+  .corner-decor::before,
+  .corner-decor::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-style: solid;
+    pointer-events: none;
+    box-shadow: 0 0 6px rgba(212, 168, 67, 0.3);
+  }
+  /* 左上角：顶边金 + 左边红（红金双层角标） */
+  .corner-decor::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+    border-color: rgba(212, 168, 67, 0.9) transparent transparent rgba(196, 30, 36, 0.8);
+  }
+  /* 右下角：右边金 + 底边红（对角镜像） */
+  .corner-decor::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 2px 2px 0;
+    border-color: transparent rgba(212, 168, 67, 0.9) rgba(196, 30, 36, 0.8) transparent;
+  }
+
+  /* 发光文字 */
+  .glow-text {
+    text-shadow: 0 0 12px rgba(212, 168, 67, 0.6), 0 0 30px rgba(212, 168, 67, 0.28);
+  }
+  .glow-red {
+    text-shadow: 0 0 12px hsl(var(--risk-high) / 0.7);
+  }
+  .glow-green {
+    text-shadow: 0 0 12px hsl(var(--risk-low) / 0.7);
+  }
+
+  /* 背景网格 */
+  .grid-bg {
+    background-image:
+      linear-gradient(rgba(212, 168, 67, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212, 168, 67, 0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* 标题渐变下划线 */
+  .title-bar {
+    background: linear-gradient(90deg, rgba(196, 30, 36, 0.85), rgba(212, 168, 67, 0.85), rgba(196, 30, 36, 0.85));
+  }
+
+  /* 自定义卡片政务双层边框（非 PanelShell 卡片：热线概览 / 城运事件等） */
+  .tech-card {
+    border: 1px solid rgba(196, 30, 36, 0.22);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 1px rgba(212, 168, 67, 0.3),
+      inset 0 0 24px rgba(212, 168, 67, 0.04),
+      0 0 20px rgba(196, 30, 36, 0.08),
+      0 4px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 预警卡片：红色双层边框变体（趋势预警面板） */
+  .tech-card-alert {
+    border: 1px solid rgba(196, 30, 36, 0.45);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 1px rgba(212, 168, 67, 0.25),
+      inset 0 0 28px rgba(196, 30, 36, 0.07),
+      0 0 20px rgba(196, 30, 36, 0.12),
+      0 4px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  /* 标题区渐变竖条（红 → 金，带辉光） */
+  .title-vbar {
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #c41e24 0%, #d4a843 100%);
+    box-shadow: 0 0 8px rgba(212, 168, 67, 0.5);
+  }
+
+  /* KPI 大数字：26px / 700 / 金色文字辉光 */
+  .kpi-num {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+    text-shadow: 0 0 8px rgba(212, 168, 67, 0.4);
+  }
+  .num-glow {
+    text-shadow: 0 0 8px rgba(212, 168, 67, 0.4);
+  }
+
+  /* 顶部标题栏几何装饰：对称渐变线 + 菱形节点 */
+  .header-deco-line {
+    width: 72px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.8));
+  }
+  .header-deco-line.r {
+    background: linear-gradient(270deg, transparent, rgba(212, 168, 67, 0.8));
+  }
+  .header-deco-diamond {
+    width: 7px;
+    height: 7px;
+    transform: rotate(45deg);
+    border: 1px solid rgba(212, 168, 67, 0.85);
+    box-shadow: 0 0 8px rgba(212, 168, 67, 0.55), inset 0 0 4px rgba(212, 168, 67, 0.4);
+  }
+
+  /* 地图科技网格叠加层（低透明度金色网格，不拦截交互） */
+  .tech-grid-overlay {
+    background-image:
+      linear-gradient(rgba(212, 168, 67, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(212, 168, 67, 0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* 模块间发光分隔线（金色微光） */
+  .module-sep {
+    height: 1px;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.22), transparent);
+    box-shadow: 0 0 8px rgba(212, 168, 67, 0.12);
+  }
+}
+
+/* 大屏动效 */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes scan-line {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes marquee-up {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+@keyframes blink-dot {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--risk-high) / 0.6); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--risk-high) / 0); }
+}
+.animate-pulse-glow { animation: pulse-glow 2.4s ease-in-out infinite; }
+.animate-blink-dot { animation: blink-dot 1.6s ease-out infinite; }
+
+/* ========== 纯 CSS 数字滚动（@property 可动画整数 + counter 渲染，零 JS 定时器） ========== */
+/* 补零 counter 样式（pad3：3 位补零 / pad2：2 位补零） */
+@counter-style pad3 {
+  system: numeric;
+  symbols: '0' '1' '2' '3' '4' '5' '6' '7' '8' '9';
+  pad: 3 '0';
+}
+@counter-style pad2 {
+  system: numeric;
+  symbols: '0' '1' '2' '3' '4' '5' '6' '7' '8' '9';
+  pad: 2 '0';
+}
+@property --cu-a {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+@property --cu-b {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+@property --cu-d {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+/* 高位组（千位以上）：counter 默认 decimal */
+.cu-a {
+  animation: cu-roll-a 1.2s cubic-bezier(0.16, 1, 0.3, 1) var(--cu-delay, 0s) both;
+  counter-reset: cu-a var(--cu-a);
+}
+.cu-a::after {
+  content: counter(cu-a);
+}
+/* 低位组（0-999）：补零到 3 位，千分位分隔 */
+.cu-b {
+  animation: cu-roll-b 1.2s cubic-bezier(0.16, 1, 0.3, 1) var(--cu-delay, 0s) both;
+  counter-reset: cu-b var(--cu-b);
+}
+.cu-b::after {
+  content: counter(cu-b, pad3);
+}
+@keyframes cu-roll-a {
+  0% { --cu-a: 0; }
+  100% { --cu-a: var(--cu-a); }
+}
+@keyframes cu-roll-b {
+  0% { --cu-b: 0; }
+  100% { --cu-b: var(--cu-b); }
+}
+/* 小数滚动：1 位小数（0-9） */
+.cu-d1 {
+  animation: cu-roll-d 1.2s cubic-bezier(0.16, 1, 0.3, 1) var(--cu-delay, 0s) both;
+  counter-reset: cu-d var(--cu-d);
+}
+.cu-d1::after {
+  content: counter(cu-d);
+}
+/* 小数滚动：2 位小数（0-99，补零到 2 位） */
+.cu-d2 {
+  animation: cu-roll-d 1.2s cubic-bezier(0.16, 1, 0.3, 1) var(--cu-delay, 0s) both;
+  counter-reset: cu-d var(--cu-d);
+}
+.cu-d2::after {
+  content: counter(cu-d, pad2);
+}
+@keyframes cu-roll-d {
+  0% { --cu-d: 0; }
+  100% { --cu-d: var(--cu-d); }
+}
+
+/* ========== 列表条目右侧滑入（实时事件新增条目） ========== */
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ========== 红色脉冲呼吸边框（高风险区域卡片） ========== */
+.pulse-red-border {
+  animation: pulse-red-glow 1.8s ease-in-out infinite;
+}
+@keyframes pulse-red-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 77, 77, 0.25),
+      0 0 6px rgba(255, 77, 77, 0.15),
+      0 0 14px rgba(255, 77, 77, 0.08);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 77, 77, 0.45),
+      0 0 16px rgba(255, 77, 77, 0.45),
+      0 0 30px rgba(255, 77, 77, 0.22);
+  }
+}
+
+/* ========== 警示图标闪烁（趋势预警标题） ========== */
+.animate-warn-blink {
+  animation: warn-blink 1.4s ease-in-out infinite;
+}
+@keyframes warn-blink {
+  0%, 100% {
+    opacity: 0.65;
+    filter: drop-shadow(0 0 2px rgba(255, 71, 87, 0.3));
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px rgba(255, 71, 87, 0.85));
+  }
+}
+
+/* ========== 绿色呼吸灯（实时接入中） ========== */
+.green-breath {
+  animation: green-breath 1.8s ease-in-out infinite;
+}
+@keyframes green-breath {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(45, 189, 122, 0.5);
+    background-color: rgba(45, 189, 122, 0.9);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(45, 189, 122, 0);
+    background-color: rgba(45, 189, 122, 1);
+  }
+}
+
+/* ========== 上升 / 下降箭头微动效（关键指标涨跌） ========== */
+.animate-arrow-up {
+  animation: arrow-float-up 1.6s ease-in-out infinite;
+}
+.animate-arrow-down {
+  animation: arrow-float-down 1.6s ease-in-out infinite;
+}
+@keyframes arrow-float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes arrow-float-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+/* ========== 百度卫星地图 · 社区标注（中心点 + 避让标签） ========== */
+.map-spot-wrap {
+  position: absolute;
+  z-index: 10;
+  cursor: pointer;
+  user-select: none;
+}
+.map-spot-core {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2.5px solid #ffffff;
+  transform: translate(-50%, -50%);
+  transition: width 0.15s ease, height 0.15s ease;
+}
+.map-spot-core.selected {
+  width: 24px;
+  height: 24px;
+  border-width: 3px;
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.3),
+    0 0 18px rgba(255, 255, 255, 0.55) !important;
+}
+.map-spot-label {
+  position: absolute;
+  left: 0;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  padding: 2.5px 9px;
+  border-radius: 5px;
+  background: rgba(7, 15, 32, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(2px);
+}
+.map-spot-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+.map-spot-name {
+  font-family: 'AlibabaPuHuiTi', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+.map-spot-num {
+  font-family: Rajdhani, 'AlibabaPuHuiTi', sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.88);
+}
+.map-spot-badge {
+  padding: 0 5px;
+  border-radius: 3px;
+  background: rgba(239, 77, 77, 0.95);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+  box-shadow: 0 2px 10px rgba(239, 77, 77, 0.6);
+}
+.map-spot-wrap.has-live .map-spot-label {
+  animation: map-spot-live 2.2s ease-out infinite;
+}
+@keyframes map-spot-live {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 77, 77, 0.55);
+  }
+  75% {
+    box-shadow: 0 0 0 14px rgba(239, 77, 77, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 77, 77, 0);
+  }
+}
+
+/* ========== 地图 · 事件点位覆盖物（按社区螺旋归集） ========== */
+.map-evt {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.15s ease;
+  z-index: 600;
+}
+.map-evt:hover {
+  transform: scale(1.35);
+  z-index: 630;
+}
+.map-evt-char {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.map-evt-selected {
+  border: 2.5px solid #ffffff;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.4),
+    0 0 16px rgba(255, 255, 255, 0.5);
+}
+.map-evt-high {
+  animation: map-evt-pulse 1.8s ease-out infinite;
+}
+@keyframes map-evt-pulse {
+  0% {
+    box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65), 0 0 0 0 rgba(239, 77, 77, 0.6);
+  }
+  75% {
+    box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65), 0 0 0 11px rgba(239, 77, 77, 0);
+  }
+  100% {
+    box-shadow: 0 1px 7px rgba(0, 0, 0, 0.65), 0 0 0 0 rgba(239, 77, 77, 0);
+  }
+}
+
+/* ========== 地图 · 高危区域热力图层 ========== */
+.map-heat-zone {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  pointer-events: none;
+  user-select: none;
+  z-index: 5;
+}
+.map-heat-score {
+  font-family: Rajdhani, 'AlibabaPuHuiTi', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+/* ========== 右侧高危事件列表 · 纯手动滚动（不自动轮动，避免内容滚出盖住标题） ========== */
+.hre-scroll {
+  animation: none;
+}
+
+/* ========== 原生 BMap.Marker 高危脉冲动画（drop-shadow 辉光 + 心跳扩散圆环，不干扰定位 transform） ========== */
+.map-marker-high {
+  position: relative;
+  animation: map-marker-pulse 1.8s ease-out infinite;
+}
+.map-marker-high::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(239, 77, 77, 0.85);
+  box-shadow: 0 0 8px rgba(239, 77, 77, 0.5);
+  pointer-events: none;
+  animation: map-marker-ring 1.8s ease-out infinite;
+}
+@keyframes map-marker-ring {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  75% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes map-marker-pulse {
+  0% {
+    filter: drop-shadow(0 0 2px rgba(239, 77, 77, 0.5));
+  }
+  70% {
+    filter: drop-shadow(0 0 13px rgba(239, 77, 77, 0.95));
+  }
+  100% {
+    filter: drop-shadow(0 0 2px rgba(239, 77, 77, 0.5));
+  }
+}
+
+/* ========== 社区标签（BMap.Label content 内）工单量数字 ========== */
+.map-comm-num {
+  font-family: Rajdhani, 'AlibabaPuHuiTi', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-left: 4px;
+}
+
+
+/* ========== 页签内容平滑过渡 ========== */
+.animate-tab-in {
+  animation: tab-in 0.32s ease-out;
+}
+@keyframes tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== 模态弹窗入场动画 ========== */
+.animate-modal-in {
+  animation: modal-in 0.28s ease-out;
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ========== 实时事件列表 · 统一细滚动条 ========== */
+.hre-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 168, 67, 0.35) transparent;
+}
+.hre-scroll::-webkit-scrollbar {
+  width: 3px;
+}
+.hre-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hre-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(212, 168, 67, 0.35);
+  border-radius: 3px;
+}
+.hre-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(212, 168, 67, 0.55);
+}
+
+/* ============================================================
+   视觉重设计 Phase 1 · 全局基础设施
+   ============================================================ */
+
+/* 全局背景色 */
+body {
+  background-color: #0c0806;
+}
+
+/* 全局自定义滚动条 */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(212, 168, 67, 0.35);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 168, 67, 0.55);
+}
+
+/* 全局页面加载动画 */
+@keyframes slideInLeft {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 角标呼吸动画 */
+@keyframes cornerPulse {
+  0%, 100% { box-shadow: 0 0 2px rgba(212, 168, 67, 0.3); }
+  50% { box-shadow: 0 0 6px rgba(212, 168, 67, 0.6); }
+}
+
+/* 加载序列工具类 */
+.anim-fade-in {
+  animation: fadeIn 1.5s ease-out both;
+}
+.anim-slide-left {
+  animation: slideInLeft 0.8s ease-out 0.5s both;
+}
+.anim-slide-right {
+  animation: slideInRight 0.8s ease-out 0.7s both;
+}
+.anim-slide-up {
+  animation: slideInUp 1s ease-out 1s both;
+}
+
+/* 全局背景特效层 */
+.bg-grid-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(212, 168, 67, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 168, 67, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.bg-vignette-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(6, 3, 2, 0.9) 100%);
+}
+.bg-top-glow {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background-color: var(--accent-gold);
+  opacity: 0.08;
+  box-shadow: 0 0 80px 20px var(--accent-gold);
+  pointer-events: none;
+}
+
+/* PanelHUD 组件样式 */
+.panel-hud {
+  position: relative;
+  border: 1px solid rgba(196, 30, 36, 0.22);
+  background: var(--glass-bg);
+  backdrop-filter: blur(4px);
+  box-shadow: inset 0 0 0 1px rgba(212, 168, 67, 0.28);
+}
+.panel-hud-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  animation: cornerPulse 4s ease-in-out infinite;
+}
+.panel-hud-corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid var(--corner-color, var(--accent-gold));
+  border-left: 2px solid rgba(196, 30, 36, 0.75);
+}
+.panel-hud-corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid rgba(196, 30, 36, 0.75);
+  border-right: 2px solid var(--corner-color, var(--accent-gold));
+}
+.panel-hud-corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid rgba(196, 30, 36, 0.75);
+  border-left: 2px solid var(--corner-color, var(--accent-gold));
+}
+.panel-hud-corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid var(--corner-color, var(--accent-gold));
+  border-right: 2px solid rgba(196, 30, 36, 0.75);
+}
+.panel-hud-title {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+.panel-hud-title-bar {
+  width: 3px;
+  height: 14px;
+  background-color: var(--accent-red);
+  border-radius: 1px;
+}
+.panel-hud-title-icon {
+  width: 4px;
+  height: 4px;
+  background-color: var(--accent-gold);
+  border-radius: 1px;
+}
+.panel-hud-title-text {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-gold);
+  letter-spacing: 0.05em;
+}
+
+
+/* ============================================================
+   红金政务风 · Phase 2 新增组件样式
+   ============================================================ */
+
+/* 政务风双层边框面板（内红外金） */
+.panel-gov {
+  background: var(--glass-bg);
+  border: 1px solid rgba(196, 30, 36, 0.2);
+  position: relative;
+}
+.panel-gov::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  pointer-events: none;
+}
+.panel-gov .panel-title {
+  border-left: 3px solid var(--accent-red);
+  padding-left: 12px;
+  font-family: var(--font-display);
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* 趋势预测预警模块：双层红边框 + 红色呼吸光环 */
+.prediction-panel {
+  background: linear-gradient(160deg, rgba(26, 15, 10, 0.96), rgba(36, 21, 16, 0.92));
+  border: 1px solid rgba(196, 30, 36, 0.32);
+  animation: predictionPulse 3s ease-in-out infinite;
+}
+.prediction-panel::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: -1px; right: -1px; bottom: -1px;
+  border: 1px solid rgba(196, 30, 36, 0.16);
+  pointer-events: none;
+}
+@keyframes predictionPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(196, 30, 36, 0.16), inset 0 0 18px rgba(196, 30, 36, 0.05); }
+  50% { box-shadow: 0 0 24px rgba(230, 60, 64, 0.38), inset 0 0 28px rgba(230, 60, 64, 0.1); }
+}
+
+/* 金色大数字（预测核心数值：无衬线 + 金色发光） */
+.gold-num {
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-weight: 700;
+  color: #d4a843;
+  text-shadow: 0 0 10px rgba(212, 168, 67, 0.5), 0 0 26px rgba(212, 168, 67, 0.22);
+}
+
+/* 宋体标题（政务庄重） */
+.font-serif-gov {
+  font-family: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', serif;
+}
+
+/* 地图容器政务双层边框（外金内红） */
+.map-gov-frame {
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  box-shadow:
+    inset 0 0 0 1px rgba(196, 30, 36, 0.32),
+    0 0 32px rgba(212, 168, 67, 0.14);
+}
