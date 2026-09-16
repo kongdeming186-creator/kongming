@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, changfeng-dashboard]
   workflow_dispatch:
 
 permissions:
@@ -15,36 +15,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
+      - name: Checkout gh-pages (已构建产物)
         uses: actions/checkout@v5
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          ref: gh-pages
 
-      - name: Debug info
-        run: |
-          node --version
-          npm --version
-          ls -la
+      - name: Remove git metadata
+        run: rm -rf .git
 
-      - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Build
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
-        run: npm run build
-
-      - name: List dist
-        run: ls -la dist/
+      - name: List files
+        run: ls -la
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -52,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: ./dist
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
