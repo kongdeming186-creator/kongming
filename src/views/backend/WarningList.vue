@@ -231,8 +231,8 @@
     <!-- 预警详情弹窗 -->
     <el-dialog :title="(detailMode === 'view' ? '居民详情' : '居民预警核实') + (currentResident ? ' · ' + currentResident.name : '')" v-model="showDetailDialog" width="780px">
       <div v-if="currentResident" class="detail-content">
-        <!-- 比对信息表格（仅详情模式显示） -->
-        <div v-if="detailMode === 'view'" class="detail-section">
+        <!-- 比对信息表格（详情模式 + 核实模式显示） -->
+        <div v-if="detailMode === 'view' || detailMode === 'resolve'" class="detail-section">
           <h4 class="detail-section-title">比对信息 <span class="detail-section-desc">多源数据全量核查结果</span></h4>
           <el-table :data="comparisonTableData" stripe size="small" style="width: 100%" :header-cell-style="{ background: '#f5f7fa', color: '#606266', fontWeight: 600 }">
             <el-table-column prop="name" label="核查项" width="110">
@@ -256,88 +256,7 @@
           </el-table>
         </div>
 
-        <!-- 标签及预警列表（仅核实模式显示） -->
-        <div v-if="detailMode === 'resolve'" class="detail-section">
-          <h4 class="detail-section-title">预警列表 <span class="detail-section-desc">共 {{ residentWarnings.length }} 条预警</span></h4>
-          <div class="tags-with-warnings">
-            <div v-for="tag in warningResidentTags.filter(t => getTagWarnings(t).length > 0)" :key="tag.id" class="tag-warnings-block"
-                 :class="{ 'has-pending': getTagWarnings(tag).some(w => w.status === '待处理') }">
-              <!-- 标签头部 -->
-              <div class="tag-header">
-                <div class="tag-info">
-                  <el-tag :type="getTagType(tag.tagType)" size="default" effect="light">{{ tag.tagType }}</el-tag>
-                  <span class="tag-sub">{{ tag.tagSubType }}</span>
-                  <el-tag :type="tag.isEnjoy ? 'success' : 'info'" size="small" effect="plain">
-                    {{ tag.isEnjoy ? '享受中' : '已停发' }}
-                  </el-tag>
-                </div>
-                <div class="tag-stats">
-                  <el-button
-                    v-if="getTagWarnings(tag).length > 0 && getTagWarnings(tag).some(w => w.status === '待处理')"
-                    type="primary"
-                    size="small"
-                    @click="openResolveForTag(tag)">
-                    <el-icon><Edit /></el-icon>核实
-                  </el-button>
-                  <span v-if="getTagWarnings(tag).length > 0" class="warn-count">
-                    <el-icon><WarningFilled /></el-icon>
-                    {{ getTagWarnings(tag).length }} 条预警
-                  </span>
-                  <span v-if="getTagWarnings(tag).filter(w => w.status === '待处理').length > 0" class="pending-count">
-                    {{ getTagWarnings(tag).filter(w => w.status === '待处理').length }} 条待处理
-                  </span>
-                </div>
-              </div>
-
-              <!-- 标签信息 -->
-              <div class="tag-meta">
-                <span v-if="tag.subsidyAmount"><strong>补贴：</strong>{{ tag.subsidyAmount }}元/月</span>
-                <span><strong>有效期：</strong>{{ tag.expireDate || '目前在保' }}</span>
-                <span v-if="tag.effectiveDate"><strong>生效日期：</strong>{{ tag.effectiveDate }}</span>
-              </div>
-
-              <!-- 该标签下的预警列表 -->
-              <div v-if="getTagWarnings(tag).length > 0" class="tag-warning-list">
-                <div v-for="(w, wIdx) in getTagWarnings(tag)" :key="w.id" class="tag-warning-item"
-                     :class="{ 'is-pending': w.status === '待处理' }">
-                  <div class="tw-left">
-                    <div class="tw-status-dot" :class="getStatusDotClass(w.status)"></div>
-                    <div class="tw-content">
-                      <div class="tw-header">
-                        <el-tag :type="getWarningTagType(w.warningType)" size="small" effect="dark">{{ w.warningType }}</el-tag>
-                        <span class="tw-time">{{ w.createTime }}</span>
-                        <el-tag v-if="w.status === '审批中'" type="warning" size="small" effect="plain">审批中</el-tag>
-                        <el-tag v-else-if="w.status === '已处理'" type="success" size="small" effect="plain">已处理</el-tag>
-                      </div>
-                      <div class="tw-body">{{ w.content }}</div>
-                      <div v-if="w.changes && w.changes.length" class="tw-changes">
-                        <div class="tw-changes-title">
-                          <el-icon><WarningFilled /></el-icon>
-                          <span>预警变化内容</span>
-                          <span class="tw-changes-count">{{ w.changes.length }}项变化</span>
-                        </div>
-                        <div v-for="(ch, ci) in w.changes" :key="ci" class="tw-change-item" :class="{ 'is-abnormal': ch.abnormal }">
-                          <span class="ch-field">{{ ch.field }}</span>
-                          <span class="ch-old">{{ ch.oldValue }}</span>
-                          <span class="ch-arrow">→</span>
-                          <span class="ch-new">{{ ch.newValue }}</span>
-                        </div>
-                      </div>
-                      <div class="tw-source">
-                        <el-icon><Connection /></el-icon>
-                        <span>比对来源：{{ w.ruleSource }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="no-warning-tip">
-                <el-icon><CircleCheck /></el-icon>
-                <span>该标签暂无预警信息</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- 预警列表已移除，由上方比对信息表格替代 -->
 
         <!-- 无预警标签提示 -->
         <div v-if="detailMode === 'resolve' && warningResidentTags.filter(t => getTagWarnings(t).length > 0).length === 0" class="empty-tags">
