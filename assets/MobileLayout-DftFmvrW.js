@@ -1,0 +1,1 @@
+import{_ as o,c as t,d as c,r,o as s}from"./index-CixNjrjk.js";const a={},n={class:"mobile-layout"};function _(d,i){const e=r("router-view");return s(),t("div",n,[c(e)])}const m=o(a,[["render",_],["__scopeId","data-v-d80e1d15"]]);export{m as default};
